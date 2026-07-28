@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agent Brain Platform — POC</title>
+<style>
+  :root {
+    --bg: #0d1117; --surface: #161b22; --surface2: #21262d;
+    --border: #30363d; --accent: #58a6ff; --accent2: #3fb950;
+    --warn: #d29922; --danger: #f85149; --text: #c9d1d9;
+    --text2: #8b949e; --text3: #6e7681;
+    --slot-perception: #1f3a5f; --slot-memory: #2d1b4e;
+    --slot-reasoning: #1a3a2a; --slot-planning: #3a2a1a;
+    --slot-value: #3a1a2a; --slot-explore: #1a2a3a;
+    --slot-action: #3a3a1a; --slot-feedback: #2a1a1a;
+    --slot-safety: #1a3a3a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; font-size: 13px; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+  /* Header */
+  .header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 10px 20px; display: flex; align-items: center; gap: 16px; flex-shrink: 0; }
+  .logo { font-size: 16px; font-weight: 700; color: var(--accent); letter-spacing: -0.5px; }
+  .logo span { color: var(--text2); font-weight: 400; }
+  .agent-name-input { background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 5px 10px; border-radius: 6px; font-size: 13px; width: 200px; }
+  .agent-name-input:focus { outline: none; border-color: var(--accent); }
+  .header-actions { margin-left: auto; display: flex; gap: 8px; }
+  .btn { padding: 6px 14px; border-radius: 6px; border: 1px solid var(--border); background: var(--surface2); color: var(--text); cursor: pointer; font-size: 12px; transition: all 0.15s; }
+  .btn:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-primary { background: var(--accent); border-color: var(--accent); color: #000; font-weight: 600; }
+  .btn-primary:hover { background: #79c0ff; color: #000; }
+  .btn-success { background: var(--accent2); border-color: var(--accent2); color: #000; font-weight: 600; }
+  .btn-success:hover { background: #56d364; color: #000; }
+
+  /* Main layout */
+  .main { display: flex; flex: 1; overflow: hidden; }
+
+  /* Left panel — Goal */
+  .left-panel { width: 260px; background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; overflow-y: auto; }
+  .panel-section { padding: 14px; border-bottom: 1px solid var(--border); }
+  .panel-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text2); margin-bottom: 10px; }
+  .goal-textarea { width: 100%; background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 8px; border-radius: 6px; font-size: 12px; resize: vertical; min-height: 80px; font-family: inherit; }
+  .goal-textarea:focus { outline: none; border-color: var(--accent); }
+  .dimension-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .dimension-label { font-size: 12px; color: var(--text2); }
+  .toggle { width: 32px; height: 17px; background: var(--surface2); border: 1px solid var(--border); border-radius: 9px; cursor: pointer; position: relative; transition: background 0.2s; }
+  .toggle.on { background: var(--accent); border-color: var(--accent); }
+  .toggle::after { content: ''; position: absolute; top: 2px; left: 2px; width: 11px; height: 11px; border-radius: 50%; background: #fff; transition: left 0.2s; }
+  .toggle.on::after { left: 17px; }
+  .encode-btn { width: 100%; margin-top: 10px; }
+
+  /* Component info */
+  .comp-info { padding: 14px; }
+  .comp-info-title { font-size: 13px; font-weight: 600; color: var(--accent); margin-bottom: 6px; }
+  .comp-info-desc { font-size: 12px; color: var(--text2); line-height: 1.5; }
+  .comp-info-empty { font-size: 12px; color: var(--text3); font-style: italic; }
+
+  /* Canvas */
+  .canvas { flex: 1; overflow: auto; padding: 24px; display: flex; flex-direction: column; gap: 0; background: var(--bg); }
+  .canvas-label { font-size: 11px; color: var(--text3); text-align: center; margin-bottom: 20px; letter-spacing: 0.5px; }
+
+  /* Flow layout */
+  .flow { display: flex; flex-direction: column; align-items: center; gap: 0; }
+  .flow-row { display: flex; align-items: flex-start; gap: 16px; }
+  .flow-col { display: flex; flex-direction: column; align-items: center; }
+  .flow-arrow { width: 2px; height: 20px; background: var(--border); margin: 0 auto; position: relative; }
+  .flow-arrow::after { content: '▼'; position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%); color: var(--text3); font-size: 10px; }
+  .flow-arrow-h { width: 20px; height: 2px; background: var(--border); margin: auto 0; position: relative; flex-shrink: 0; align-self: center; }
+  .flow-arrow-h::after { content: '▶'; position: absolute; right: -8px; top: 50%; transform: translateY(-50%); color: var(--text3); font-size: 10px; }
+  .flow-back { display: flex; align-items: center; gap: 6px; color: var(--text3); font-size: 11px; margin-top: 6px; }
+  .flow-back-line { flex: 1; height: 1px; background: var(--border); border-top: 1px dashed var(--border); }
+
+  /* Slot card */
+  .slot { background: var(--surface); border: 1.5px solid var(--border); border-radius: 10px; padding: 12px 14px; min-width: 180px; max-width: 220px; cursor: pointer; transition: all 0.15s; position: relative; }
+  .slot:hover { border-color: var(--accent); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(88,166,255,0.15); }
+  .slot.active { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(88,166,255,0.2); }
+  .slot.filled { border-color: var(--accent2); }
+  .slot.filled.active { border-color: var(--accent); }
+  .slot-icon { font-size: 18px; margin-bottom: 4px; }
+  .slot-name { font-size: 12px; font-weight: 600; color: var(--text); }
+  .slot-purpose { font-size: 11px; color: var(--text3); margin-top: 2px; }
+  .slot-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; min-height: 20px; }
+  .slot-tag { background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; padding: 2px 6px; font-size: 10px; color: var(--text2); display: flex; align-items: center; gap: 4px; }
+  .slot-tag .remove { cursor: pointer; color: var(--text3); font-size: 9px; }
+  .slot-tag .remove:hover { color: var(--danger); }
+  .slot-empty { font-size: 11px; color: var(--text3); font-style: italic; }
+  .slot-count { position: absolute; top: 8px; right: 8px; background: var(--accent); color: #000; border-radius: 50%; width: 16px; height: 16px; font-size: 9px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+
+  /* Right panel — Techniques */
+  .right-panel { width: 280px; background: var(--surface); border-left: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; overflow-y: auto; }
+  .technique-slot-title { font-size: 13px; font-weight: 600; color: var(--accent); }
+  .technique-list { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+  .technique-item { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; cursor: pointer; transition: all 0.15s; }
+  .technique-item:hover { border-color: var(--accent); }
+  .technique-item.selected { border-color: var(--accent2); background: rgba(63,185,80,0.08); }
+  .tech-header { display: flex; align-items: center; justify-content: space-between; }
+  .tech-name { font-size: 12px; font-weight: 600; color: var(--text); }
+  .tech-rank { display: flex; gap: 1px; }
+  .star { font-size: 9px; color: var(--text3); }
+  .star.filled { color: var(--warn); }
+  .tech-tags { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 5px; }
+  .tech-tag { background: var(--bg); border: 1px solid var(--border); border-radius: 3px; padding: 1px 5px; font-size: 10px; color: var(--text3); }
+  .tech-desc { font-size: 11px; color: var(--text2); margin-top: 4px; line-height: 1.4; }
+  .no-slot-msg { font-size: 12px; color: var(--text3); font-style: italic; padding: 14px; }
+
+  /* Draft modal */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 100; align-items: center; justify-content: center; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; width: 720px; max-height: 85vh; overflow-y: auto; padding: 24px; }
+  .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+  .modal-title { font-size: 16px; font-weight: 700; color: var(--text); }
+  .modal-close { cursor: pointer; color: var(--text3); font-size: 18px; }
+  .modal-close:hover { color: var(--text); }
+  .draft-section { margin-bottom: 16px; }
+  .draft-section-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text2); margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+  .draft-row { display: flex; align-items: flex-start; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--border); }
+  .draft-row:last-child { border-bottom: none; }
+  .draft-slot-name { width: 130px; flex-shrink: 0; font-size: 12px; font-weight: 600; color: var(--text2); }
+  .draft-techniques { flex: 1; display: flex; flex-wrap: wrap; gap: 4px; }
+  .draft-tech-tag { background: var(--surface2); border: 1px solid var(--accent2); border-radius: 4px; padding: 2px 8px; font-size: 11px; color: var(--accent2); }
+  .draft-tech-empty { font-size: 11px; color: var(--danger); font-style: italic; }
+  .draft-status { display: flex; align-items: center; gap: 10px; padding: 12px; background: var(--surface2); border-radius: 8px; margin-bottom: 16px; }
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .status-dot.ok { background: var(--accent2); }
+  .status-dot.warn { background: var(--warn); }
+  .status-text { font-size: 12px; color: var(--text); }
+  .draft-export { display: flex; gap: 8px; margin-top: 16px; }
+  .json-block { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px; font-family: 'Consolas', monospace; font-size: 11px; color: var(--text2); margin-top: 10px; max-height: 200px; overflow-y: auto; white-space: pre; display: none; }
+  .json-block.open { display: block; }
+
+  /* Compatibility badge */
+  .compat-bar { display: flex; align-items: center; gap: 8px; padding: 6px 14px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+  .compat-label { font-size: 11px; color: var(--text3); }
+  .compat-pill { padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+  .compat-pill.ok { background: rgba(63,185,80,0.15); color: var(--accent2); }
+  .compat-pill.warn { background: rgba(210,153,34,0.15); color: var(--warn); }
+  .filled-count { font-size: 11px; color: var(--text2); margin-left: auto; }
+
+  /* Tooltip */
+  .tooltip { position: relative; }
+  .tooltip-text { display: none; position: absolute; bottom: 120%; left: 50%; transform: translateX(-50%); background: #000; border: 1px solid var(--border); color: var(--text); padding: 6px 10px; border-radius: 6px; font-size: 11px; white-space: nowrap; z-index: 50; }
+  .tooltip:hover .tooltip-text { display: block; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="logo">Agent Brain <span>Platform</span></div>
+  <div style="width:1px;height:20px;background:var(--border)"></div>
+  <input class="agent-name-input" id="agentName" placeholder="Agent name..." value="My Agent v1">
+  <div class="header-actions">
+    <button class="btn" onclick="clearAll()">Clear</button>
+    <button class="btn btn-success" onclick="openDraft()">Generate Draft ▶</button>
+  </div>
+</div>
+
+<!-- Compat bar -->
+<div class="compat-bar">
+  <span class="compat-label">Status:</span>
+  <span class="compat-pill ok" id="compatPill">● Valid</span>
+  <span class="compat-label" style="margin-left:12px">Slots filled:</span>
+  <span id="filledCount" style="font-size:11px;color:var(--text2)">0 / 11</span>
+  <span class="filled-count" id="techCountTotal"></span>
+</div>
+
+<!-- Main -->
+<div class="main">
+
+  <!-- Left: Goal -->
+  <div class="left-panel">
+    <div class="panel-section">
+      <div class="panel-title">Goal Definition</div>
+      <textarea class="goal-textarea" id="goalText" placeholder="Describe the agent's goal...&#10;&#10;e.g. Autonomously negotiate vendor contracts, balancing cost vs compliance in adversarial settings"></textarea>
+      <button class="btn btn-primary encode-btn" onclick="encodeGoal()">⚡ Encode + Rank</button>
+    </div>
+
+    <div class="panel-section">
+      <div class="panel-title">Environment Dimensions</div>
+      <div class="dimension-row"><span class="dimension-label">Adversarial</span><div class="toggle" id="dim-adversarial" onclick="toggleDim(this)"></div></div>
+      <div class="dimension-row"><span class="dimension-label">Real-time</span><div class="toggle" id="dim-realtime" onclick="toggleDim(this)"></div></div>
+      <div class="dimension-row"><span class="dimension-label">Long Horizon</span><div class="toggle" id="dim-longHorizon" onclick="toggleDim(this)"></div></div>
+      <div class="dimension-row"><span class="dimension-label">Data Scarce</span><div class="toggle" id="dim-dataScarce" onclick="toggleDim(this)"></div></div>
+      <div class="dimension-row"><span class="dimension-label">Multi-Agent</span><div class="toggle" id="dim-multiAgent" onclick="toggleDim(this)"></div></div>
+      <div class="dimension-row"><span class="dimension-label">Interpretable</span><div class="toggle" id="dim-interpretable" onclick="toggleDim(this)"></div></div>
+      <div class="dimension-row"><span class="dimension-label">Partial Observability</span><div class="toggle" id="dim-partialObs" onclick="toggleDim(this)"></div></div>
+    </div>
+
+    <div class="comp-info" id="compInfo">
+      <p class="comp-info-empty">Click a component block on the canvas to see its description and select techniques.</p>
+    </div>
+  </div>
+
+  <!-- Canvas -->
+  <div class="canvas">
+    <div class="canvas-label">COGNITIVE ARCHITECTURE CANVAS — click a block to configure it</div>
+    <div class="flow">
+
+      <!-- Perception -->
+      <div class="flow-col">
+        <div class="slot" id="slot-perception" onclick="selectSlot('perception')">
+          <div class="slot-icon">👁</div>
+          <div class="slot-name">Perception</div>
+          <div class="slot-purpose">Receive + structure world input</div>
+          <div class="slot-tags" id="tags-perception"><span class="slot-empty">no technique selected</span></div>
+        </div>
+        <div class="flow-arrow"></div>
+      </div>
+
+      <!-- State Encoder -->
+      <div class="flow-col">
+        <div class="slot" id="slot-stateEncoder" onclick="selectSlot('stateEncoder')">
+          <div class="slot-icon">🔄</div>
+          <div class="slot-name">State Encoder</div>
+          <div class="slot-purpose">History → compact Markov state</div>
+          <div class="slot-tags" id="tags-stateEncoder"><span class="slot-empty">no technique selected</span></div>
+        </div>
+        <div class="flow-arrow"></div>
+      </div>
+
+      <!-- Reasoning + Memory side by side -->
+      <div class="flow-row" style="align-items:flex-start;gap:0">
+        <div class="flow-col" style="align-items:flex-end;padding-right:0">
+          <div class="slot" id="slot-memory" onclick="selectSlot('memory')">
+            <div class="slot-icon">🧠</div>
+            <div class="slot-name">Memory</div>
+            <div class="slot-purpose">Store + retrieve knowledge</div>
+            <div class="slot-tags" id="tags-memory"><span class="slot-empty">no technique selected</span></div>
+          </div>
+        </div>
+        <div class="flow-arrow-h" style="width:24px;margin:28px 0 0 0"></div>
+        <div class="flow-col">
+          <div class="slot" id="slot-reasoning" onclick="selectSlot('reasoning')" style="min-width:200px">
+            <div class="slot-icon">💡</div>
+            <div class="slot-name">Reasoning Engine</div>
+            <div class="slot-purpose">Core decision-making brain</div>
+            <div class="slot-tags" id="tags-reasoning"><span class="slot-empty">no technique selected</span></div>
+          </div>
+          <div class="flow-arrow"></div>
+        </div>
+        <div class="flow-arrow-h" style="width:24px;margin:28px 0 0 0"></div>
+        <div class="flow-col" style="align-items:flex-start;padding-left:0">
+          <div class="slot" id="slot-value" onclick="selectSlot('value')">
+            <div class="slot-icon">📊</div>
+            <div class="slot-name">Value / Critic</div>
+            <div class="slot-purpose">Evaluate state desirability</div>
+            <div class="slot-tags" id="tags-value"><span class="slot-empty">no technique selected</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Planning -->
+      <div class="flow-col">
+        <div class="slot" id="slot-planning" onclick="selectSlot('planning')">
+          <div class="slot-icon">🗺</div>
+          <div class="slot-name">Planning</div>
+          <div class="slot-purpose">Decompose goals → action sequences</div>
+          <div class="slot-tags" id="tags-planning"><span class="slot-empty">no technique selected</span></div>
+        </div>
+        <div class="flow-arrow"></div>
+      </div>
+
+      <!-- Exploration -->
+      <div class="flow-col">
+        <div class="slot" id="slot-exploration" onclick="selectSlot('exploration')">
+          <div class="slot-icon">🔍</div>
+          <div class="slot-name">Exploration Strategy</div>
+          <div class="slot-purpose">Balance known vs unknown</div>
+          <div class="slot-tags" id="tags-exploration"><span class="slot-empty">no technique selected</span></div>
+        </div>
+        <div class="flow-arrow"></div>
+      </div>
+
+      <!-- Action -->
+      <div class="flow-col">
+        <div class="slot" id="slot-action" onclick="selectSlot('action')">
+          <div class="slot-icon">⚡</div>
+          <div class="slot-name">Action Layer</div>
+          <div class="slot-purpose">Execute decisions on the world</div>
+          <div class="slot-tags" id="tags-action"><span class="slot-empty">no technique selected</span></div>
+        </div>
+        <div class="flow-arrow"></div>
+      </div>
+
+      <!-- Feedback + Safety side by side -->
+      <div class="flow-row" style="gap:0">
+        <div class="flow-col" style="align-items:flex-end;padding-right:0">
+          <div class="slot" id="slot-safety" onclick="selectSlot('safety')">
+            <div class="slot-icon">🛡</div>
+            <div class="slot-name">Safety / Guardrails</div>
+            <div class="slot-purpose">Constrain harmful behavior</div>
+            <div class="slot-tags" id="tags-safety"><span class="slot-empty">no technique selected</span></div>
+          </div>
+        </div>
+        <div class="flow-arrow-h" style="width:24px;margin:28px 0 0 0"></div>
+        <div class="flow-col">
+          <div class="slot" id="slot-feedback" onclick="selectSlot('feedback')">
+            <div class="slot-icon">🔁</div>
+            <div class="slot-name">Feedback / Learning</div>
+            <div class="slot-purpose">Update from outcomes</div>
+            <div class="slot-tags" id="tags-feedback"><span class="slot-empty">no technique selected</span></div>
+          </div>
+        </div>
+        <div class="flow-arrow-h" style="width:24px;margin:28px 0 0 0"></div>
+        <div class="flow-col" style="align-items:flex-start;padding-left:0">
+          <div class="slot" id="slot-orchestration" onclick="selectSlot('orchestration')">
+            <div class="slot-icon">🎛</div>
+            <div class="slot-name">Orchestration</div>
+            <div class="slot-purpose">Coordinate all components</div>
+            <div class="slot-tags" id="tags-orchestration"><span class="slot-empty">no technique selected</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Back arrow -->
+      <div class="flow-back" style="width:80%;margin-top:8px">
+        <div class="flow-back-line"></div>
+        <span>← feedback loop back to Perception</span>
+        <div class="flow-back-line"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Right panel: Techniques -->
+  <div class="right-panel">
+    <div class="panel-section" id="techPanel">
+      <div class="no-slot-msg" id="noSlotMsg">← Select a component block to view and assign techniques.</div>
+      <div id="techContent" style="display:none">
+        <div class="technique-slot-title" id="techSlotTitle"></div>
+        <div class="technique-list" id="techniqueList"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Draft Modal -->
+<div class="modal-overlay" id="draftModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">🧠 Cognitive Blueprint — <span id="draftAgentName"></span></div>
+      <span class="modal-close" onclick="closeDraft()">✕</span>
+    </div>
+
+    <div id="draftGoalBlock" class="draft-section">
+      <div class="draft-section-title">Goal</div>
+      <div id="draftGoalText" style="font-size:13px;color:var(--text);line-height:1.5"></div>
+    </div>
+
+    <div class="draft-section">
+      <div class="draft-section-title">Compatibility Check</div>
+      <div class="draft-status" id="draftStatus"></div>
+    </div>
+
+    <div class="draft-section">
+      <div class="draft-section-title">Component Configuration</div>
+      <div id="draftRows"></div>
+    </div>
+
+    <div class="draft-section">
+      <div class="draft-section-title">Export</div>
+      <div class="draft-export">
+        <button class="btn" onclick="toggleJSON()">{ } JSON Config</button>
+        <button class="btn" onclick="copyJSON()">Copy JSON</button>
+        <button class="btn btn-primary" onclick="exportMarkdown()">↓ Markdown Blueprint</button>
+      </div>
+      <pre class="json-block" id="jsonBlock"></pre>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── DATA ──────────────────────────────────────────────────────────────────
+
+const SLOTS = {
+  perception:    { label: 'Perception',          icon: '👁',  desc: 'How the agent receives and structures information from the environment — users, APIs, sensors, documents.', optional: false },
+  stateEncoder:  { label: 'State Encoder',        icon: '🔄', desc: 'Compresses raw history into a compact, actionable state representation. Ensures compliance with the Markov Property.', optional: false },
+  memory:        { label: 'Memory',               icon: '🧠', desc: 'Stores and retrieves knowledge across time — working memory for current task, long-term for accumulated knowledge.', optional: false },
+  reasoning:     { label: 'Reasoning Engine',     icon: '💡', desc: 'The core decision-making brain. Interprets state, integrates memory, selects the next action or tool.', optional: false },
+  planning:      { label: 'Planning',             icon: '🗺', desc: 'Decomposes high-level goals into action sequences. Can use lookahead, search trees, or LLM-based decomposition.', optional: false },
+  value:         { label: 'Value / Critic',       icon: '📊', desc: 'Estimates how desirable a state or action is. Drives policy improvement by steering toward high-value states.', optional: true },
+  exploration:   { label: 'Exploration Strategy', icon: '🔍', desc: 'Balances exploiting known-good paths against discovering new ones. Prevents the agent from getting stuck in local optima.', optional: true },
+  action:        { label: 'Action Layer',         icon: '⚡', desc: 'Where decisions are executed — API calls, tool use, file writes, RPA, physical actuators.', optional: false },
+  feedback:      { label: 'Feedback / Learning',  icon: '🔁', desc: 'Captures outcomes and updates the agent — reward signals, TD learning, policy gradient, RLHF.', optional: false },
+  safety:        { label: 'Safety / Guardrails',  icon: '🛡', desc: 'Constrains harmful behavior — policy limits, reward shaping, constitutional rules, output filtering.', optional: true },
+  orchestration: { label: 'Orchestration',        icon: '🎛', desc: 'Coordinates all components. Handles the agent loop, multi-agent routing, and hierarchical task management.', optional: false },
+};
+
+const TECHNIQUES = {
+  perception: [
+    { id: 'rag',      name: 'RAG',              desc: 'Retrieval-Augmented Generation — fetch relevant docs at query time', tags: ['retrieval','LLM'], baseRank: 5, boosts: {} },
+    { id: 'apiPoll',  name: 'API Polling',       desc: 'Periodic fetch from external APIs for live state', tags: ['real-time','integration'], baseRank: 3, boosts: { realtime: 2 } },
+    { id: 'docParse', name: 'Document Parser',   desc: 'Structured extraction from PDFs, tables, text', tags: ['NLP','structured'], baseRank: 3, boosts: { interpretable: 1 } },
+    { id: 'sensor',   name: 'Sensor Fusion',     desc: 'Combine multiple sensor streams into unified input', tags: ['multimodal','robotics'], baseRank: 2, boosts: {} },
+    { id: 'webScrape',name: 'Web Scraper',       desc: 'Extract live data from web pages', tags: ['real-time','web'], baseRank: 2, boosts: { realtime: 1 } },
+  ],
+  stateEncoder: [
+    { id: 'markov',   name: 'Markov State',      desc: 'Compact sufficient statistic of history — future ⊥ past given present', tags: ['RL','MDP','theory'], baseRank: 5, boosts: { interpretable: 1 } },
+    { id: 'rnn',      name: 'RNN / LSTM',        desc: 'Recurrent encoder for sequential state compression', tags: ['deep-RL','POMDP'], baseRank: 4, boosts: { partialObs: 2, longHorizon: 1 } },
+    { id: 'belief',   name: 'Belief State (Bayesian)', desc: 'Probability distribution over world states for POMDPs', tags: ['Bayesian','POMDP'], baseRank: 4, boosts: { partialObs: 2, dataScarce: 1 } },
+    { id: 'attention',name: 'Attention Mechanism', desc: 'Transformer-based selective focus over input history', tags: ['transformer','LLM'], baseRank: 3, boosts: { longHorizon: 1 } },
+  ],
+  memory: [
+    { id: 'vectorDB', name: 'Vector DB',          desc: 'Semantic similarity search over embedded knowledge', tags: ['RAG','long-term'], baseRank: 5, boosts: {} },
+    { id: 'episodic', name: 'Episodic Buffer',     desc: 'Store + replay past interaction episodes', tags: ['RL','experience'], baseRank: 4, boosts: { longHorizon: 1 } },
+    { id: 'working',  name: 'Working Memory',     desc: 'Short-term in-context buffer for current task steps', tags: ['LLM','context'], baseRank: 4, boosts: { realtime: 1 } },
+    { id: 'kg',       name: 'Knowledge Graph',    desc: 'Structured entity-relation store for factual reasoning', tags: ['structured','reasoning'], baseRank: 3, boosts: { interpretable: 2 } },
+  ],
+  reasoning: [
+    { id: 'llm',      name: 'LLM (Claude/GPT)',   desc: 'Large language model as core reasoning engine', tags: ['LLM','general'], baseRank: 5, boosts: {} },
+    { id: 'mdpPolicy',name: 'MDP Policy',         desc: 'Formal Markov Decision Process — state→action mapping via Bellman equations', tags: ['RL','MDP','theory'], baseRank: 4, boosts: { interpretable: 2, longHorizon: 1 } },
+    { id: 'cot',      name: 'Chain-of-Thought',   desc: 'Step-by-step reasoning traces for complex problems', tags: ['LLM','reasoning'], baseRank: 4, boosts: { interpretable: 1 } },
+    { id: 'bayes',    name: 'Bayesian Inference', desc: 'Probabilistic reasoning under uncertainty', tags: ['Bayesian','uncertainty'], baseRank: 3, boosts: { dataScarce: 2, partialObs: 1 } },
+    { id: 'rules',    name: 'Rule Engine',        desc: 'Explicit if-then rule execution for deterministic domains', tags: ['symbolic','deterministic'], baseRank: 2, boosts: { interpretable: 3, realtime: 1 } },
+  ],
+  planning: [
+    { id: 'mcts',     name: 'MCTS',              desc: 'Monte Carlo Tree Search — stochastic lookahead via simulation rollouts', tags: ['RL','search','game'], baseRank: 4, boosts: { adversarial: 2, longHorizon: 1, multiAgent: 1 } },
+    { id: 'minimax',  name: 'Minimax',           desc: 'Adversarial game tree search — optimal play against rational opponent', tags: ['game-theory','adversarial'], baseRank: 3, boosts: { adversarial: 3, multiAgent: 2 } },
+    { id: 'mdpPlan',  name: 'MDP Planning',      desc: 'Value iteration / policy iteration over known state-transition model', tags: ['RL','MDP','theory'], baseRank: 4, boosts: { interpretable: 2, longHorizon: 2 } },
+    { id: 'llmPlan',  name: 'LLM Planner',       desc: 'Natural language task decomposition via LLM', tags: ['LLM','flexible'], baseRank: 4, boosts: {} },
+    { id: 'hierRL',   name: 'Hierarchical RL',   desc: 'Multi-level planning: high-level goals decompose into sub-goals', tags: ['RL','hierarchical'], baseRank: 3, boosts: { longHorizon: 3, multiAgent: 1 } },
+    { id: 'aStar',    name: 'A* Search',         desc: 'Heuristic graph search for deterministic shortest-path planning', tags: ['search','deterministic'], baseRank: 2, boosts: { interpretable: 2, realtime: 1 } },
+  ],
+  value: [
+    { id: 'vFunc',    name: 'Value Function V(s)', desc: 'Expected cumulative reward from state s forward', tags: ['RL','theory'], baseRank: 5, boosts: { longHorizon: 1 } },
+    { id: 'qFunc',    name: 'Q-Function Q(s,a)',   desc: 'Expected reward for taking action a in state s', tags: ['RL','Q-learning'], baseRank: 4, boosts: {} },
+    { id: 'advantage',name: 'Advantage A(s,a)',    desc: 'How much better action a is vs average — used in Actor-Critic', tags: ['RL','actor-critic'], baseRank: 4, boosts: { multiAgent: 1 } },
+    { id: 'rlhf',     name: 'RLHF Reward Model',  desc: 'Human preference-trained reward model', tags: ['RLHF','alignment'], baseRank: 3, boosts: { interpretable: 1 } },
+  ],
+  exploration: [
+    { id: 'thompson', name: 'Thompson Sampling',  desc: 'Bayesian posterior sampling — optimal for data-scarce settings', tags: ['Bayesian','bandit'], baseRank: 5, boosts: { dataScarce: 2 } },
+    { id: 'ucb',      name: 'UCB',               desc: 'Upper Confidence Bound — principled optimism under uncertainty', tags: ['bandit','theory'], baseRank: 4, boosts: { longHorizon: 1 } },
+    { id: 'eGreedy',  name: 'ε-Greedy',          desc: 'Explore randomly with probability ε, exploit otherwise', tags: ['RL','simple'], baseRank: 3, boosts: { realtime: 1 } },
+    { id: 'curiosity',name: 'Curiosity-Driven',  desc: 'Intrinsic reward for novel states — self-supervised exploration', tags: ['RL','intrinsic'], baseRank: 3, boosts: { longHorizon: 2, dataScarce: 1 } },
+    { id: 'boltzmann',name: 'Boltzmann / Softmax', desc: 'Temperature-scaled probabilistic action selection', tags: ['RL','stochastic'], baseRank: 2, boosts: {} },
+  ],
+  action: [
+    { id: 'toolUse',  name: 'Tool Use',           desc: 'LLM function calling / MCP tool invocation', tags: ['LLM','MCP'], baseRank: 5, boosts: {} },
+    { id: 'apiCall',  name: 'API Call',           desc: 'Direct HTTP/REST/SOAP calls to external systems', tags: ['integration'], baseRank: 4, boosts: { realtime: 1 } },
+    { id: 'codeExec', name: 'Code Execution',     desc: 'Run generated code in sandboxed environment', tags: ['autonomous','code'], baseRank: 3, boosts: {} },
+    { id: 'rpa',      name: 'RPA',               desc: 'Robotic Process Automation — UI-level system interaction', tags: ['automation','legacy'], baseRank: 3, boosts: { interpretable: 1 } },
+    { id: 'actuator', name: 'Physical Actuator',  desc: 'Control physical hardware — robotics, industrial', tags: ['robotics','embodied'], baseRank: 2, boosts: {} },
+  ],
+  feedback: [
+    { id: 'reward',   name: 'Reward Signal',      desc: 'Scalar R_t fed back to the agent after each action', tags: ['RL','theory'], baseRank: 5, boosts: {} },
+    { id: 'tdLearn',  name: 'TD Learning',        desc: 'Temporal-Difference: bootstrap value updates from partial episodes', tags: ['RL','online'], baseRank: 4, boosts: { realtime: 1, longHorizon: 1 } },
+    { id: 'polGrad',  name: 'Policy Gradient',    desc: 'REINFORCE / PPO — direct optimization of policy parameters', tags: ['RL','deep-RL'], baseRank: 4, boosts: { longHorizon: 1 } },
+    { id: 'rlhfFeed', name: 'RLHF',              desc: 'Human feedback loop to align agent behavior with preferences', tags: ['alignment','human'], baseRank: 3, boosts: { interpretable: 1 } },
+    { id: 'criticUp', name: 'Critic Update',      desc: 'Actor-Critic value network update from rollout data', tags: ['RL','actor-critic'], baseRank: 3, boosts: { multiAgent: 1 } },
+  ],
+  safety: [
+    { id: 'constAI',  name: 'Constitutional AI',  desc: 'Rule-based self-critique loop for alignment', tags: ['alignment','Anthropic'], baseRank: 4, boosts: { interpretable: 2 } },
+    { id: 'rewardShap',name: 'Reward Shaping',    desc: 'Auxiliary reward terms that guide safe behavior', tags: ['RL','safety'], baseRank: 4, boosts: {} },
+    { id: 'polConst', name: 'Policy Constraints', desc: 'Hard constraints on action space — never do X', tags: ['safety','deterministic'], baseRank: 3, boosts: { interpretable: 2 } },
+    { id: 'outFilter',name: 'Output Filtering',   desc: 'Post-hoc filtering of unsafe outputs before execution', tags: ['guardrail','safety'], baseRank: 3, boosts: { realtime: 1 } },
+  ],
+  orchestration: [
+    { id: 'singleLoop',name: 'Single-Agent Loop', desc: 'Classic perceive→reason→act loop for one agent', tags: ['simple','RL'], baseRank: 4, boosts: {} },
+    { id: 'multiAgent',name: 'Multi-Agent Coord', desc: 'Multiple agents communicating and coordinating', tags: ['multi-agent','complex'], baseRank: 4, boosts: { multiAgent: 3 } },
+    { id: 'hierOrch',  name: 'Hierarchical Orchestration', desc: 'Manager agents decompose tasks to worker agents', tags: ['hierarchical','enterprise'], baseRank: 3, boosts: { longHorizon: 2, multiAgent: 1 } },
+    { id: 'reactLoop', name: 'ReAct Loop',        desc: 'Reason + Act interleaved with tool-use observations', tags: ['LLM','tool-use'], baseRank: 4, boosts: {} },
+  ],
+};
+
+// ─── STATE ─────────────────────────────────────────────────────────────────
+let selectedSlot = null;
+let slotSelections = {}; // { slotId: Set<techId> }
+let dims = {};
+
+// ─── INIT ──────────────────────────────────────────────────────────────────
+Object.keys(SLOTS).forEach(id => { slotSelections[id] = new Set(); });
+
+// ─── DIMS ──────────────────────────────────────────────────────────────────
+function toggleDim(el) {
+  el.classList.toggle('on');
+  const key = el.id.replace('dim-', '');
+  dims[key] = el.classList.contains('on');
+}
+
+// ─── GOAL ENCODER ─────────────────────────────────────────────────────────
+function encodeGoal() {
+  const goal = document.getElementById('goalText').value.toLowerCase();
+  const keywords = {
+    adversarial: ['adversarial','compet','negotiat','game','opponent','rival'],
+    realtime:    ['real-time','realtime','live','instant','fast','low latency'],
+    longHorizon: ['long','horizon','strategic','multi-step','complex','optimize over'],
+    dataScarce:  ['few data','scarce','limited','small dataset','sample efficient'],
+    multiAgent:  ['multi-agent','multiple agent','team','cooperat','coordinat','swarm'],
+    interpretable:['explain','interpret','audit','comply','transparent','justif'],
+    partialObs:  ['partial','unknown','hidden','uncertain','sensor','noisy'],
+  };
+
+  Object.entries(keywords).forEach(([dim, words]) => {
+    const hit = words.some(w => goal.includes(w));
+    const el = document.getElementById('dim-' + dim);
+    if (hit) { el.classList.add('on'); dims[dim] = true; }
+  });
+
+  // Re-render current slot if open
+  if (selectedSlot) renderTechniques(selectedSlot);
+
+  // Flash feedback
+  const btn = document.querySelector('.encode-btn');
+  btn.textContent = '✓ Encoded';
+  btn.style.background = 'var(--accent2)';
+  setTimeout(() => { btn.textContent = '⚡ Encode + Rank'; btn.style.background = ''; }, 1200);
+}
+
+// ─── SLOT SELECT ───────────────────────────────────────────────────────────
+function selectSlot(slotId) {
+  if (selectedSlot) document.getElementById('slot-' + selectedSlot)?.classList.remove('active');
+  selectedSlot = slotId;
+  document.getElementById('slot-' + slotId).classList.add('active');
+
+  const slot = SLOTS[slotId];
+  document.getElementById('compInfo').innerHTML = `
+    <div class="comp-info-title">${slot.icon || ''} ${slot.label}</div>
+    <div class="comp-info-desc">${slot.desc}</div>
+    <div style="margin-top:8px;font-size:11px;color:var(--text3)">${slot.optional ? '○ Optional slot' : '● Required slot'}</div>
+  `;
+
+  document.getElementById('noSlotMsg').style.display = 'none';
+  document.getElementById('techContent').style.display = 'block';
+  document.getElementById('techSlotTitle').textContent = slot.label + ' — Techniques';
+  renderTechniques(slotId);
+}
+
+// ─── RENDER TECHNIQUES ─────────────────────────────────────────────────────
+function getRank(tech) {
+  let rank = tech.baseRank;
+  Object.entries(dims).forEach(([dim, on]) => {
+    if (on && tech.boosts[dim]) rank += tech.boosts[dim];
+  });
+  return Math.min(5, rank);
+}
+
+function renderTechniques(slotId) {
+  const techs = [...(TECHNIQUES[slotId] || [])].sort((a, b) => getRank(b) - getRank(a));
+  const selected = slotSelections[slotId];
+  const list = document.getElementById('techniqueList');
+  list.innerHTML = '';
+
+  techs.forEach(tech => {
+    const rank = getRank(tech);
+    const stars = Array.from({length: 5}, (_, i) =>
+      `<span class="star ${i < rank ? 'filled' : ''}">★</span>`).join('');
+    const isSelected = selected.has(tech.id);
+    const div = document.createElement('div');
+    div.className = 'technique-item' + (isSelected ? ' selected' : '');
+    div.innerHTML = `
+      <div class="tech-header">
+        <div class="tech-name">${tech.name}</div>
+        <div class="tech-rank">${stars}</div>
+      </div>
+      <div class="tech-desc">${tech.desc}</div>
+      <div class="tech-tags">${tech.tags.map(t => `<span class="tech-tag">${t}</span>`).join('')}</div>
+    `;
+    div.onclick = () => toggleTech(slotId, tech.id, tech.name);
+    list.appendChild(div);
+  });
+}
+
+// ─── TOGGLE TECH ──────────────────────────────────────────────────────────
+function toggleTech(slotId, techId, techName) {
+  const sel = slotSelections[slotId];
+  if (sel.has(techId)) sel.delete(techId);
+  else sel.add(techId);
+
+  renderTechniques(slotId);
+  renderSlotTags(slotId);
+  updateCompat();
+}
+
+function renderSlotTags(slotId) {
+  const sel = slotSelections[slotId];
+  const el = document.getElementById('tags-' + slotId);
+  const slotEl = document.getElementById('slot-' + slotId);
+
+  if (sel.size === 0) {
+    el.innerHTML = '<span class="slot-empty">no technique selected</span>';
+    slotEl.classList.remove('filled');
+  } else {
+    const techMap = {};
+    (TECHNIQUES[slotId] || []).forEach(t => { techMap[t.id] = t.name; });
+    el.innerHTML = [...sel].map(id =>
+      `<span class="slot-tag">${techMap[id] || id}<span class="remove" onclick="removeTech('${slotId}','${id}',event)">✕</span></span>`
+    ).join('');
+    slotEl.classList.add('filled');
+  }
+
+  // Update count badge
+  const existing = slotEl.querySelector('.slot-count');
+  if (existing) existing.remove();
+  if (sel.size > 1) {
+    const badge = document.createElement('div');
+    badge.className = 'slot-count';
+    badge.textContent = sel.size;
+    slotEl.appendChild(badge);
+  }
+}
+
+function removeTech(slotId, techId, e) {
+  e.stopPropagation();
+  slotSelections[slotId].delete(techId);
+  renderSlotTags(slotId);
+  if (selectedSlot === slotId) renderTechniques(slotId);
+  updateCompat();
+}
+
+// ─── COMPAT ───────────────────────────────────────────────────────────────
+function updateCompat() {
+  const required = Object.entries(SLOTS).filter(([,s]) => !s.optional).map(([id]) => id);
+  const filled = required.filter(id => slotSelections[id].size > 0);
+  const total = Object.values(slotSelections).filter(s => s.size > 0).length;
+
+  document.getElementById('filledCount').textContent = `${total} / ${Object.keys(SLOTS).length}`;
+
+  const pill = document.getElementById('compatPill');
+  if (filled.length === required.length) {
+    pill.textContent = '● Valid';
+    pill.className = 'compat-pill ok';
+  } else {
+    const missing = required.length - filled.length;
+    pill.textContent = `⚠ ${missing} required slot${missing>1?'s':''} empty`;
+    pill.className = 'compat-pill warn';
+  }
+}
+
+// ─── DRAFT ────────────────────────────────────────────────────────────────
+function openDraft() {
+  const name = document.getElementById('agentName').value || 'Unnamed Agent';
+  const goal = document.getElementById('goalText').value || '—';
+
+  document.getElementById('draftAgentName').textContent = name;
+  document.getElementById('draftGoalText').textContent = goal;
+
+  // Status
+  const required = Object.entries(SLOTS).filter(([,s]) => !s.optional).map(([id]) => id);
+  const missing = required.filter(id => slotSelections[id].size === 0)
+    .map(id => SLOTS[id].label);
+
+  const statusEl = document.getElementById('draftStatus');
+  if (missing.length === 0) {
+    statusEl.innerHTML = '<div class="status-dot ok"></div><span class="status-text">✅ All required slots configured. Architecture is valid.</span>';
+  } else {
+    statusEl.innerHTML = `<div class="status-dot warn"></div><span class="status-text">⚠️ Missing required slots: <strong>${missing.join(', ')}</strong></span>`;
+  }
+
+  // Rows
+  const rows = document.getElementById('draftRows');
+  rows.innerHTML = '';
+  Object.entries(SLOTS).forEach(([slotId, slot]) => {
+    const sel = slotSelections[slotId];
+    const techMap = {};
+    (TECHNIQUES[slotId] || []).forEach(t => { techMap[t.id] = t.name; });
+    const row = document.createElement('div');
+    row.className = 'draft-row';
+    const techsHtml = sel.size > 0
+      ? [...sel].map(id => `<span class="draft-tech-tag">${techMap[id] || id}</span>`).join('')
+      : `<span class="draft-tech-empty">⚠ not configured${slot.optional ? ' (optional)' : ''}</span>`;
+    row.innerHTML = `<div class="draft-slot-name">${slot.icon} ${slot.label}</div><div class="draft-techniques">${techsHtml}</div>`;
+    rows.appendChild(row);
+  });
+
+  // JSON
+  const config = {
+    agent: name,
+    goal: goal,
+    dimensions: dims,
+    architecture: {}
+  };
+  Object.entries(SLOTS).forEach(([slotId, slot]) => {
+    const sel = slotSelections[slotId];
+    const techMap = {};
+    (TECHNIQUES[slotId] || []).forEach(t => { techMap[t.id] = t.name; });
+    config.architecture[slotId] = {
+      label: slot.label,
+      techniques: [...sel].map(id => ({ id, name: techMap[id] || id })),
+      configured: sel.size > 0
+    };
+  });
+  document.getElementById('jsonBlock').textContent = JSON.stringify(config, null, 2);
+
+  document.getElementById('draftModal').classList.add('open');
+}
+
+function closeDraft() { document.getElementById('draftModal').classList.remove('open'); }
+function toggleJSON() { document.getElementById('jsonBlock').classList.toggle('open'); }
+function copyJSON() {
+  navigator.clipboard.writeText(document.getElementById('jsonBlock').textContent);
+  const btn = event.target; btn.textContent = '✓ Copied'; setTimeout(() => btn.textContent = 'Copy JSON', 1200);
+}
+
+function exportMarkdown() {
+  const name = document.getElementById('agentName').value || 'Agent';
+  const goal = document.getElementById('goalText').value || '—';
+  let md = `# Cognitive Blueprint — ${name}\n\n**Goal**: ${goal}\n\n## Architecture\n\n| Slot | Techniques |\n|---|---|\n`;
+  Object.entries(SLOTS).forEach(([slotId, slot]) => {
+    const sel = slotSelections[slotId];
+    const techMap = {};
+    (TECHNIQUES[slotId] || []).forEach(t => { techMap[t.id] = t.name; });
+    const techs = sel.size > 0 ? [...sel].map(id => techMap[id] || id).join(', ') : '*(not configured)*';
+    md += `| ${slot.icon} ${slot.label} | ${techs} |\n`;
+  });
+  md += `\n*Generated by Agent Brain Platform — ${new Date().toISOString().slice(0,10)}*\n`;
+  const blob = new Blob([md], {type: 'text/markdown'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `${name.replace(/\s+/g,'-')}-blueprint.md`;
+  a.click();
+}
+
+function clearAll() {
+  Object.keys(slotSelections).forEach(id => {
+    slotSelections[id].clear();
+    renderSlotTags(id);
+  });
+  document.querySelectorAll('.slot').forEach(s => s.classList.remove('active', 'filled'));
+  selectedSlot = null;
+  document.getElementById('noSlotMsg').style.display = '';
+  document.getElementById('techContent').style.display = 'none';
+  document.getElementById('compInfo').innerHTML = '<p class="comp-info-empty">Click a component block on the canvas to see its description and select techniques.</p>';
+  document.querySelectorAll('.toggle').forEach(t => { t.classList.remove('on'); });
+  dims = {};
+  document.getElementById('goalText').value = '';
+  updateCompat();
+}
+
+// Init compat
+updateCompat();
+</script>
+</body>
+</html>
