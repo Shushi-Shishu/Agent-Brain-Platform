@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "task_id": "CRV-P002",
+  "content_id": "review-pagination-boundaries-v1",
+  "surface": "seeded",
+  "location_tolerance_lines": 1,
+  "defects": [
+    {
+      "defect_id": "crv-p002-partial-page",
+      "file": "pagination.py",
+      "line": 6,
+      "category": "correctness",
+      "severity": "medium",
+      "title": "Partial final page is omitted",
+      "expected_finding": "Use ceiling division while preserving zero pages for an empty collection.",
+      "evidence": "return total // size"
+    },
+    {
+      "defect_id": "crv-p002-page-domain",
+      "file": "pagination.py",
+      "line": 10,
+      "category": "input_validation",
+      "severity": "medium",
+      "title": "Slice helper does not validate page or size bounds",
+      "expected_finding": "Reject page values below one and non-positive sizes before calculating the slice offset.",
+      "evidence": "start = (page - 1) * size"
+    }
+  ]
+}

@@ -1,0 +1,100 @@
+{
+  "schema": "poc6c-code-testing-run-v1",
+  "diagnostic_only": true,
+  "valid_run": true,
+  "task_id": "TST-P005",
+  "workload": "code_testing",
+  "split": "pilot",
+  "arm": "generic",
+  "instruction": {
+    "sha256": "A69EE0B145DAE95F320AA4B8D94B3BE2DBE542B3C6AE32128B023BD2515EF4E6",
+    "decision_architecture": null,
+    "max_candidate_tests": 8
+  },
+  "matched_conditions": {
+    "model_id": "same_collaboration_runtime_unaudited",
+    "tools": "same_workspace_tools",
+    "network": "not_required",
+    "task_budget": "one_subagent_turn",
+    "max_candidate_tests": 8,
+    "timeout_seconds_per_test_run": 3
+  },
+  "provider": {
+    "provider": null,
+    "model_id": null,
+    "model_version": null,
+    "model_calls": null,
+    "input_tokens": null,
+    "output_tokens": null,
+    "total_tokens": null,
+    "cost_amount": null,
+    "cost_currency": null
+  },
+  "agent": {
+    "duration_ms": 185438,
+    "result": "eight retry/exhaustion/exception tests; all pass",
+    "error": null
+  },
+  "candidate_tests": {
+    "output_file": "test_candidate.py",
+    "created": true,
+    "declared_test_count": 8,
+    "max_tests": 8
+  },
+  "integrity": {
+    "arms_byte_identical_at_start": true,
+    "source_public_sha256_pre": "404FF08A3EBF289FF133565FCEA66BE2B4B5703EC5B201C754ECC21B658ED582",
+    "source_public_sha256_post": "404FF08A3EBF289FF133565FCEA66BE2B4B5703EC5B201C754ECC21B658ED582",
+    "private_sha256_pre": "C6CA9DDBE1E487524AC422F6096EB0047EA4071DE7FB17DAC9CC54B5D1015EE9",
+    "private_sha256_post": "C6CA9DDBE1E487524AC422F6096EB0047EA4071DE7FB17DAC9CC54B5D1015EE9",
+    "workspace_sha256_pre": "404FF08A3EBF289FF133565FCEA66BE2B4B5703EC5B201C754ECC21B658ED582",
+    "workspace_sha256_post_agent": "7B1DA35351D9B5E4E268C938FA935D2749C2DE3DCF9EAEAAE34B98094A9D226B",
+    "workspace_sha256_post_evaluator": "7B1DA35351D9B5E4E268C938FA935D2749C2DE3DCF9EAEAAE34B98094A9D226B",
+    "workspace_changes": [
+      "created:test_candidate.py"
+    ],
+    "protected_roots_unchanged": true,
+    "unauthorized_edit_detected": false,
+    "guard_scope": [
+      "fixture public package",
+      "fixture private package",
+      "other arm workspace",
+      "all other files inside paired run directory",
+      "assigned files (test_candidate.py creation only)"
+    ],
+    "guard_limitation": "Declared roots are audited; OS-level sandboxing is required to prevent arbitrary external writes.",
+    "leakage_canary_ids": [],
+    "violations": []
+  },
+  "evaluator": {
+    "executed": true,
+    "timed_out": false,
+    "returncode": 0,
+    "duration_ms": 1313,
+    "metrics": {
+      "schema_version": 1,
+      "task_id": "TST-P005",
+      "valid": true,
+      "invalid_reasons": [],
+      "declared_test_count": 8,
+      "max_tests": 8,
+      "timeout_seconds_per_run": 3.0,
+      "baseline_passes": true,
+      "stable": true,
+      "implementation_coupling_findings": [],
+      "faults_exposed": [
+        "TST-P005-F01-one-fewer-attempt",
+        "TST-P005-F02-retries-unselected-error",
+        "TST-P005-F03-swallows-final-error"
+      ],
+      "fault_count": 3,
+      "distinct_faults_exposed": 3,
+      "fault_exposure_rate": 1.0,
+      "runtime_seconds": 1.297304,
+      "runtime_within_budget": true,
+      "flaky": false,
+      "implementation_coupled": false
+    },
+    "leakage_canary_ids": []
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "status": "diagnostic_inter_evaluator_agreement",
+  "blind_output_count": 20,
+  "mean_absolute_total_score_difference": 4.45,
+  "max_absolute_total_score_difference": 10,
+  "critical_failure_agreement_rate": 1.0,
+  "pair_preference_agreement_rate": 0.9
+}

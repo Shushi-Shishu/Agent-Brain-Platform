@@ -1,0 +1,7 @@
+{
+  "task_id": "DEV-P005",
+  "defect_id": "retry-cap-ignored",
+  "location": "retry.py:retry_delays",
+  "behavior": "Exponential values continue growing after the configured cap.",
+  "repair_target": "Clamp every generated delay to cap_seconds."
+}

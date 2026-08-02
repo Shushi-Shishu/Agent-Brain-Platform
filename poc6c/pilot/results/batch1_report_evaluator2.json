@@ -1,0 +1,349 @@
+{
+  "summary": {
+    "status": "instrumentation_only_no_efficacy_claim",
+    "task_count": 10,
+    "arm_descriptives": {
+      "configured": {
+        "mean_quality": 80.6,
+        "min_quality": 75.0,
+        "max_quality": 86.0,
+        "critical_failures": 0
+      },
+      "generic": {
+        "mean_quality": 87.2,
+        "min_quality": 84.0,
+        "max_quality": 91.0,
+        "critical_failures": 0
+      }
+    },
+    "paired_descriptives": {
+      "mean_quality_delta_configured_minus_generic": -6.6,
+      "median_quality_delta_configured_minus_generic": -7.0,
+      "configured_wins": 0,
+      "ties": 1,
+      "configured_losses": 9
+    }
+  },
+  "rows": [
+    {
+      "task_id": "Q001",
+      "repeat": 1,
+      "arm": "configured",
+      "quality": 82,
+      "critical_failure": false,
+      "components": {
+        "claim_support": 23,
+        "question_coverage": 19,
+        "gap_handling": 11,
+        "unsupported_claim_avoidance": 10,
+        "practical_usefulness": 10,
+        "citation_precision": 9
+      },
+      "notes": "Strong production-reliability synthesis and coverage, but several specific practices, including circuit breakers, incident playbooks, and governed change details, extend beyond the supplied excerpts; no evidence-limit gap is declared."
+    },
+    {
+      "task_id": "Q001",
+      "repeat": 1,
+      "arm": "generic",
+      "quality": 85,
+      "critical_failure": false,
+      "components": {
+        "claim_support": 23,
+        "question_coverage": 19,
+        "gap_handling": 14,
+        "unsupported_claim_avoidance": 10,
+        "practical_usefulness": 10,
+        "citation_precision": 9
+      },
+      "notes": "Citations support durable memory, external state, observability, isolation, and gated lifecycle concepts, while task contracts, approval placement, secret separation, and broad versioning are less directly evidenced; the numerical-threshold gap is appropriately bounded."
+    },
+    {
+      "task_id": "Q002",
+      "repeat": 1,
+      "arm": "configured",
+      "quality": 75,
+      "critical_failure": false,
+      "components": {
+        "claim_support": 20,
+        "question_coverage": 18,
+        "gap_handling": 11,
+        "unsupported_claim_avoidance": 8,
+        "practical_usefulness": 10,
+        "citation_precision": 8
+      },
+      "notes": "Directly explains the demo-to-production distinction, but the short excerpts substantiate only the controlled-demo trap, secondary model choice, and change management; much of the detailed readiness checklist is uncited."
+    },
+    {
+      "task_id": "Q002",
+      "repeat": 1,
+      "arm": "generic",
+      "quality": 84,
+      "critical_failure": false,
+      "components": {
+        "claim_support": 22,
+        "question_coverage": 19,
+        "gap_handling": 14,
+        "unsupported_claim_avoidance": 10,
+        "practical_usefulness": 10,
+        "citation_precision": 9
+      },
+      "notes": "The excerpts closely support demo degradation, limits of functional benchmarks, production outcome monitoring, and environment controls. Some claims about access, recovery, costs, gates, and feedback loops go beyond the cited text, but the readiness-threshold gap is clearly declared."
+    },
+    {
+      "task_id": "Q003",
+      "repeat": 1,
+      "arm": "generic",
+      "quality": 89,
+      "critical_failure": false,
+      "components": {
+        "claim_support": 24,
+        "question_coverage": 20,
+        "gap_handling": 15,
+        "unsupported_claim_avoidance": 10,
+        "practical_usefulness": 10,
+        "citation_precision": 10
+      },
+      "notes": "The core RL, RLHF, reward-hacking, negative-side-effect, and self-play claims are precisely supported and the answer covers both uses and failures. Bias, diversity loss, distribution shift, and several mitigation claims are not directly supported, while the limits of the evidence are explicitly bounded."
+    },
+    {
+      "task_id": "Q003",
+      "repeat": 1,
+      "arm": "configured",
+      "quality": 77,
+      "critical_failure": false,
+      "components": {
+        "claim_support": 20,
+        "question_coverage": 14,
+        "gap_handling": 15,
+        "unsupported_claim_avoidance": 10,
+        "practical_usefulness": 9,
+        "citation_precision": 9
+      },
+      "notes": "The supplied excerpts strongly support self-play plateauing, artificial reward exploitation, and guided judging, but the answer gives only partial coverage of language-model RL and no cited RLHF mechanism. Its algorithm-comparison limitation is appropriately declared."
+    },
+    {
+      "task_id": "Q004",
+      "repeat": 1,
+      "arm": "generic",
+      "quality": 86,
+      "critical_failure": false,
+      "components": {
+        "claim_support": 22,
+        "question_coverage": 20,
+        "gap_handling": 15,
+        "unsupported_claim_avoidance": 9,
+        "practical_usefulness": 10,
+        "citation_precision": 10
+      },
+      "notes": "Comprehensive before-and-after deployment guidance is grounded in acceptance criteria, trajectory evaluation, broader quality auditing, and objective and semantic monitoring. Adversarial sets, controlled experiments, replay, alerting, and several diagnostic dimensions are useful but not directly established by the excerpts; threshold gaps are properly disclosed."
+    },
+    {
+      "task_id": "Q004",
+      "repeat": 1,
+      "arm": "configured",
+      "quality": 81,
+      "critical_failure": false,
+      "components": {
+        "claim_support": 22,
+        "question_coverage": 19,
+        "gap_handling": 11,
+        "unsupported_claim_avoidance": 10,
+        "practical_usefulness": 10,
+        "citation_precision": 9
+      },
+      "notes": "The evidence precisely supports living expert-built evaluation data, production metrics, semantic signals, and the self-report warning. The three-level test taxonomy, regression gates, controlled experiments, full traces, and human routing are only partially supported, and no limits or threshold gap is declared."
+    },
+    {
+      "task_id": "Q005",
+      "repeat": 1,
+      "arm": "configured",
+      "quality": 81,
+      "critical_failure": false,
+      "components": {
+        "claim_support": 22,
+        "question_coverage": 19,
+        "gap_handling": 10,
+        "unsupported_claim_avoidance": 10,
+        "practical_usefulness": 10,
+        "citation_precision": 10
+      },
+      "notes": "The working-set approach, progressive tool discovery, lean indexed instructions, and risks of bloat and excessive compaction are well supported. Fresh-session transfer, decision summaries, and a runtime layer reconciling communications and relationships are not established by the excerpts, and no parameter or evidence gap is noted."
+    },
+    {
+      "task_id": "Q005",
+      "repeat": 1,
+      "arm": "generic",
+      "quality": 90,
+      "critical_failure": false,
+      "components": {
+        "claim_support": 24,
+        "question_coverage": 20,
+        "gap_handling": 15,
+        "unsupported_claim_avoidance": 11,
+        "practical_usefulness": 10,
+        "citation_precision": 10
+      },
+      "notes": "Strong, well-cited treatment of context engineering, progressive disclosure, structured memory, restartable state, targeted retrieval, and compression. Provenance rules, permission-based selection, canonical-record mechanics, and detailed retrieval-failure categories extend beyond the excerpts; quantitative settings are correctly identified as unspecified."
+    },
+    {
+      "task_id": "Q006",
+      "repeat": 1,
+      "arm": "generic",
+      "quality": 86,
+      "critical_failure": false,
+      "components": {
+        "claim_support": 22,
+        "question_coverage": 20,
+        "gap_handling": 15,
+        "unsupported_claim_avoidance": 10,
+        "practical_usefulness": 10,
+        "citation_precision": 9
+      },
+      "notes": "It gives a complete and actionable single-versus-multi-agent decision rule, with support for minimalism, builder-critic separation, swarm risk, and deterministic coordination. Several decomposition criteria and coordination-cost claims are reasonable but uncited; the lack of a universal break-even point is clearly stated."
+    },
+    {
+      "task_id": "Q006",
+      "repeat": 1,
+      "arm": "configured",
+      "quality": 80,
+      "critical_failure": false,
+      "components": {
+        "claim_support": 21,
+        "question_coverage": 19,
+        "gap_handling": 11,
+        "unsupported_claim_avoidance": 10,
+        "practical_usefulness": 10,
+        "citation_precision": 9
+      },
+      "notes": "The excerpts support rapid complexity growth, orchestrator-worker control, and the danger of an uncoordinated swarm. Event-driven choreography, detailed coordination burdens, and the full decomposition test are not directly evidenced, and the answer does not declare the absence of quantitative selection thresholds."
+    },
+    {
+      "task_id": "Q007",
+      "repeat": 1,
+      "arm": "generic",
+      "quality": 90,
+      "critical_failure": false,
+      "components": {
+        "claim_support": 24,
+        "question_coverage": 20,
+        "gap_handling": 15,
+        "unsupported_claim_avoidance": 11,
+        "practical_usefulness": 10,
+        "citation_precision": 10
+      },
+      "notes": "The citations directly support a shared MCP layer, agent-oriented schemas, progressive discovery, credential isolation, secret handling, and prompt-content exfiltration risk. Idempotency, audit, validation, least privilege, and approval controls are not all explicit in the excerpts; the missing complete threat model is properly disclosed."
+    },
+    {
+      "task_id": "Q007",
+      "repeat": 1,
+      "arm": "configured",
+      "quality": 84,
+      "critical_failure": false,
+      "components": {
+        "claim_support": 22,
+        "question_coverage": 17,
+        "gap_handling": 15,
+        "unsupported_claim_avoidance": 11,
+        "practical_usefulness": 10,
+        "citation_precision": 9
+      },
+      "notes": "The design guidance and gateway authentication, authorization, observability, and single-point-of-failure concern are supported. Security coverage is intentionally partial, and role enforcement, health visibility, harness-data separation, and governance bottleneck claims are only indirectly supported; the omitted threat mechanics are explicitly bounded."
+    },
+    {
+      "task_id": "Q008",
+      "repeat": 1,
+      "arm": "configured",
+      "quality": 86,
+      "critical_failure": false,
+      "components": {
+        "claim_support": 25,
+        "question_coverage": 19,
+        "gap_handling": 10,
+        "unsupported_claim_avoidance": 12,
+        "practical_usefulness": 10,
+        "citation_precision": 10
+      },
+      "notes": "The deterministic core, imperative shell, hermetic builds, locked dependencies, idempotent deployment, and stateful-system tradeoff are strongly and precisely supported. Versioning prompts, policies, evaluation sets, and trace schemas is uncited, and no evidence limitation is declared."
+    },
+    {
+      "task_id": "Q008",
+      "repeat": 1,
+      "arm": "generic",
+      "quality": 86,
+      "critical_failure": false,
+      "components": {
+        "claim_support": 22,
+        "question_coverage": 20,
+        "gap_handling": 15,
+        "unsupported_claim_avoidance": 9,
+        "practical_usefulness": 10,
+        "citation_precision": 10
+      },
+      "notes": "Broad maintainability coverage is supported for minimal orchestration, memory separation, generator-evaluator roles, task-oriented tools, and architectural-quality auditing. Replaceable dependency boundaries, least privilege, reproducible sandboxes, comprehensive versioning, and multi-agent cost criteria are not directly evidenced; the framework limitation is stated."
+    },
+    {
+      "task_id": "Q009",
+      "repeat": 1,
+      "arm": "configured",
+      "quality": 83,
+      "critical_failure": false,
+      "components": {
+        "claim_support": 23,
+        "question_coverage": 20,
+        "gap_handling": 10,
+        "unsupported_claim_avoidance": 10,
+        "practical_usefulness": 10,
+        "citation_precision": 10
+      },
+      "notes": "The excerpts precisely support deep decision and tool tracing, objective metrics, user regeneration, and automated root-cause triage. The exhaustive version, handoff, retry, outcome, and correction fields plus semantic-signal list go beyond the cited text, and no trace-schema or threshold gap is declared."
+    },
+    {
+      "task_id": "Q009",
+      "repeat": 1,
+      "arm": "generic",
+      "quality": 91,
+      "critical_failure": false,
+      "components": {
+        "claim_support": 25,
+        "question_coverage": 20,
+        "gap_handling": 15,
+        "unsupported_claim_avoidance": 11,
+        "practical_usefulness": 10,
+        "citation_precision": 10
+      },
+      "notes": "Strong support for production trace analysis, objective metrics, trajectory statistics, costs, and tamper-resistant audit trails. Some proposed trace fields, segmentation, failure clustering, and replay-to-regression mechanics are not explicit in the excerpts; schema, retention, and alert-threshold gaps are well bounded."
+    },
+    {
+      "task_id": "Q010",
+      "repeat": 1,
+      "arm": "generic",
+      "quality": 85,
+      "critical_failure": false,
+      "components": {
+        "claim_support": 22,
+        "question_coverage": 20,
+        "gap_handling": 15,
+        "unsupported_claim_avoidance": 9,
+        "practical_usefulness": 10,
+        "citation_precision": 9
+      },
+      "notes": "The excerpts substantiate steerable interrupt gates, human premerge proof, high-consequence review, and human refinement. The detailed trigger taxonomy, retry and authority escalations, gate-information checklist, and auditable feedback loop are not directly evidenced; domain-specific thresholds and matrices are correctly declared missing."
+    },
+    {
+      "task_id": "Q010",
+      "repeat": 1,
+      "arm": "configured",
+      "quality": 77,
+      "critical_failure": false,
+      "components": {
+        "claim_support": 21,
+        "question_coverage": 18,
+        "gap_handling": 10,
+        "unsupported_claim_avoidance": 9,
+        "practical_usefulness": 10,
+        "citation_precision": 9
+      },
+      "notes": "The citations support confidence-triggered breakpoints, fallbacks, human handoffs, general oversight, and human taste and judgment. Specific consequential-action categories, repeated-error and conflict triggers, post-execution sampling, and feedback updates are uncited, while threshold and domain limits are acknowledged but not formally declared as evidence gaps."
+    }
+  ]
+}

@@ -1,0 +1,216 @@
+{
+  "version": 1,
+  "status": "draft_questions",
+  "cases": [
+    {
+      "id": "Q001",
+      "domain": "AI agent architecture",
+      "question": "What architecture and operating practices make an agentic AI system reliable enough for production?",
+      "seed_tags": ["agentic-ai"],
+      "expected_behavior": "answer"
+    },
+    {
+      "id": "Q002",
+      "domain": "AI engineering",
+      "question": "What separates an impressive AI demo from a production-grade AI engineering system?",
+      "seed_tags": ["ai-engineering"],
+      "expected_behavior": "answer"
+    },
+    {
+      "id": "Q003",
+      "domain": "Reinforcement learning",
+      "question": "How is reinforcement learning used with language models and agents, and what failure modes should an engineer expect?",
+      "seed_tags": ["reinforcement-learning"],
+      "expected_behavior": "answer"
+    },
+    {
+      "id": "Q004",
+      "domain": "Evaluation",
+      "question": "How should an engineering team evaluate an AI agent before and after production deployment?",
+      "seed_tags": ["evaluation"],
+      "expected_behavior": "answer"
+    },
+    {
+      "id": "Q005",
+      "domain": "Context management",
+      "question": "How should an agent manage limited context without losing important information or repeatedly processing irrelevant history?",
+      "seed_tags": ["context-management"],
+      "expected_behavior": "answer"
+    },
+    {
+      "id": "Q006",
+      "domain": "Multi-agent systems",
+      "question": "When is a multi-agent system justified, and when is one well-designed agent preferable?",
+      "seed_tags": ["multi-agent-systems"],
+      "expected_behavior": "answer"
+    },
+    {
+      "id": "Q007",
+      "domain": "Model Context Protocol",
+      "question": "What problem does the Model Context Protocol solve, and what design and security concerns arise when using MCP tools?",
+      "seed_tags": ["model-context-protocol"],
+      "expected_behavior": "answer"
+    },
+    {
+      "id": "Q008",
+      "domain": "Software architecture",
+      "question": "Which software architecture principles are most important when building maintainable agent systems?",
+      "seed_tags": ["software-architecture"],
+      "expected_behavior": "answer"
+    },
+    {
+      "id": "Q009",
+      "domain": "Observability",
+      "question": "What should be traced and measured to debug an agent that behaves inconsistently?",
+      "seed_tags": ["observability"],
+      "expected_behavior": "answer"
+    },
+    {
+      "id": "Q010",
+      "domain": "Human oversight",
+      "question": "Where should human approval, correction, or escalation be inserted into an autonomous workflow?",
+      "seed_tags": ["human-in-the-loop"],
+      "expected_behavior": "answer"
+    },
+    {
+      "id": "Q011",
+      "domain": "Knowledge management",
+      "question": "How should a knowledge base be structured so that humans and AI agents can retrieve and reuse its contents effectively?",
+      "seed_tags": ["knowledge-management"],
+      "expected_behavior": "answer"
+    },
+    {
+      "id": "Q012",
+      "domain": "Neural networks",
+      "question": "What core concepts are required to understand how neural networks learn, generalize, and fail?",
+      "seed_tags": ["neural-networks"],
+      "expected_behavior": "answer"
+    },
+    {
+      "id": "Q013",
+      "domain": "Bayesian methods",
+      "question": "How do Bayesian networks represent uncertainty, and when are they useful for reasoning or inference?",
+      "seed_tags": ["bayesian-networks"],
+      "expected_behavior": "answer"
+    },
+    {
+      "id": "Q014",
+      "domain": "Game theory",
+      "question": "How can game theory help analyze strategic decisions involving competing or adaptive actors?",
+      "seed_tags": ["game-theory"],
+      "expected_behavior": "answer"
+    },
+    {
+      "id": "Q015",
+      "domain": "Optimization",
+      "question": "Which optimization ideas recur across machine learning and engineering, and what assumptions can make an optimization method fail?",
+      "seed_tags": ["optimization"],
+      "expected_behavior": "answer"
+    },
+    {
+      "id": "Q016",
+      "domain": "Retrieval-augmented generation",
+      "question": "How should a retrieval-augmented generation system retrieve evidence while limiting hallucination and unnecessary context?",
+      "seed_tags": ["rag"],
+      "expected_behavior": "answer"
+    },
+    {
+      "id": "Q017",
+      "domain": "Agent memory",
+      "question": "What types of memory should an AI agent have, and how should information be stored, retrieved, compressed, or forgotten?",
+      "seed_tags": ["memory-systems"],
+      "expected_behavior": "answer"
+    },
+    {
+      "id": "Q018",
+      "domain": "Token optimization",
+      "question": "How can an agent reduce token usage without sacrificing answer quality or important context?",
+      "seed_tags": ["token-optimization"],
+      "expected_behavior": "answer"
+    },
+    {
+      "id": "Q019",
+      "domain": "Code review",
+      "question": "How can AI-assisted code review improve software quality without creating false confidence or review noise?",
+      "seed_tags": ["code-review"],
+      "expected_behavior": "answer"
+    },
+    {
+      "id": "Q020",
+      "domain": "Workflow optimization",
+      "question": "How should an organization decide which parts of a workflow to automate or optimize with AI agents?",
+      "seed_tags": ["workflow-optimization"],
+      "expected_behavior": "answer"
+    },
+    {
+      "id": "Q021",
+      "domain": "Parallel computing",
+      "question": "What principles determine whether parallel computing improves performance or merely adds coordination overhead?",
+      "seed_tags": ["parallel-computing"],
+      "expected_behavior": "answer"
+    },
+    {
+      "id": "Q022",
+      "domain": "Quantum computing",
+      "question": "What are the mathematical and physical foundations of quantum computing, and where are its practical limitations?",
+      "seed_tags": ["quantum-computing"],
+      "expected_behavior": "answer"
+    },
+    {
+      "id": "Q023",
+      "domain": "Algorithmic trading",
+      "question": "What risks and evaluation requirements should be considered before trusting an AI-driven algorithmic trading system?",
+      "seed_tags": ["algorithmic-trading"],
+      "expected_behavior": "answer"
+    },
+    {
+      "id": "Q024",
+      "domain": "Design systems",
+      "question": "How do design systems improve consistency and speed, and how does AI change the way they should be created or governed?",
+      "seed_tags": ["design-systems"],
+      "expected_behavior": "answer"
+    },
+    {
+      "id": "Q025",
+      "domain": "Productivity",
+      "question": "Which productivity practices in the vault are supported by repeatable systems rather than short-lived motivation?",
+      "seed_tags": ["productivity"],
+      "expected_behavior": "answer"
+    },
+    {
+      "id": "Q026",
+      "domain": "Industrial maintenance",
+      "question": "What maintenance schedule should be used for industrial centrifugal pumps operating with abrasive slurry?",
+      "seed_tags": [],
+      "expected_behavior": "abstain"
+    },
+    {
+      "id": "Q027",
+      "domain": "Agricultural regulation",
+      "question": "Compare the current crop-irrigation permit requirements across Indian states.",
+      "seed_tags": [],
+      "expected_behavior": "abstain"
+    },
+    {
+      "id": "Q028",
+      "domain": "Clinical medicine",
+      "question": "What pediatric drug-dosage adjustments are required for a child with chronic kidney disease?",
+      "seed_tags": [],
+      "expected_behavior": "abstain"
+    },
+    {
+      "id": "Q029",
+      "domain": "Archaeology",
+      "question": "What archaeological evidence explains Bronze Age textile-dyeing techniques in Central Asia?",
+      "seed_tags": [],
+      "expected_behavior": "abstain"
+    },
+    {
+      "id": "Q030",
+      "domain": "Municipal regulation",
+      "question": "Which municipal permits are required to build a commercial warehouse in Bengaluru in 2026?",
+      "seed_tags": [],
+      "expected_behavior": "abstain"
+    }
+  ]
+}

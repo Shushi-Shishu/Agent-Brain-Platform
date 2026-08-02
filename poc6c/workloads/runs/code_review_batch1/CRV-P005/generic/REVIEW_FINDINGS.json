@@ -1,0 +1,9 @@
+[
+  {
+    "file": "settings.py",
+    "line": 8,
+    "category": "input_validation",
+    "severity": "medium",
+    "explanation": "Because bool is a subclass of int, this check accepts True and False as retry counts, contrary to the required plain-integer contract. Explicitly reject bool before accepting int values."
+  }
+]

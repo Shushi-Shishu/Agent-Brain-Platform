@@ -1,0 +1,37 @@
+{
+  "status": "instrumentation_only_no_efficacy_claim",
+  "workload": "code_development",
+  "task_count": 5,
+  "arm_descriptives": {
+    "configured": {
+      "task_count": 5,
+      "successful_tasks": 5,
+      "success_rate": 1.0,
+      "invalid_runs": 0,
+      "mean_evaluator_tests_passed": 3.0,
+      "mean_agent_duration_ms": 168775.0,
+      "provider_usage_complete": false
+    },
+    "generic": {
+      "task_count": 5,
+      "successful_tasks": 4,
+      "success_rate": 0.8,
+      "invalid_runs": 0,
+      "mean_evaluator_tests_passed": 2.8,
+      "mean_agent_duration_ms": 161725.2,
+      "provider_usage_complete": false
+    }
+  },
+  "paired_outcomes": {
+    "both_succeeded": 4,
+    "generic_only_succeeded": 0,
+    "configured_only_succeeded": 1,
+    "neither_succeeded": 0
+  },
+  "limitations": [
+    "Five seen pilot tasks are not a confirmation sample.",
+    "Provider token and cost telemetry may be unavailable.",
+    "Agent duration includes orchestration and queue delay in manual sub-agent runs and is not provider latency.",
+    "Host-level isolation is instructed and audited at guarded roots, not enforced by an OS sandbox."
+  ]
+}

@@ -1,0 +1,152 @@
+{
+  "schema": "poc6c-code-development-boundary-v1",
+  "task_id": "DEV-P003",
+  "arm": "configured",
+  "pair_root": "C:\\XboxGames\\My Projects\\10. Project_ID_010_Agnet_Brain_Platform\\poc6c\\workloads\\runs\\code_development_batch1\\DEV-P003",
+  "matched_conditions": {
+    "model_id": "same_collaboration_runtime_unaudited",
+    "tools": "same_workspace_tools",
+    "network": "not_required",
+    "task_budget": "one_subagent_turn",
+    "provider_usage": null
+  },
+  "source_public_snapshot": {
+    "schema": "poc6c-package-snapshot-v1",
+    "sha256": "6AB2E7D357D9DD46AB5BEF03C84753AE0507C2BE3A00CBBC8D9B3CAA90E1BF4F",
+    "files": [
+      {
+        "path": "TASK.md",
+        "size_bytes": 408,
+        "sha256": "E0F10AA932F08DA3E46CE21ED277839074FD4927B19A04E9B6DBD1F3D0A25AE7"
+      },
+      {
+        "path": "windows.py",
+        "size_bytes": 536,
+        "sha256": "282CC5BBAA19FDE9E0DAE41E7ABB7A112E0432681D94D6C776984B17A7248EFE"
+      }
+    ]
+  },
+  "private_snapshot": {
+    "schema": "poc6c-package-snapshot-v1",
+    "sha256": "DD1992555A262E0896B4C7F9658B0FBB07934CE3614248CE0D2DBBDCDB42B05A",
+    "files": [
+      {
+        "path": "canary.txt",
+        "size_bytes": 33,
+        "sha256": "E521C50511877987765D26EB0405C3E80F005D41BDF2AF17727D0BD0A57A1F0C"
+      },
+      {
+        "path": "defect_inventory.json",
+        "size_bytes": 290,
+        "sha256": "5B158A83820563DEF2473737CCF5B93FD5AD9A0DD27846EFB2240219056266CC"
+      },
+      {
+        "path": "evaluator_tests.py",
+        "size_bytes": 847,
+        "sha256": "CD9EB061F23D326C77B22DB520FA7237CBD0C2FFB7FB89B68D99E24DE0ED76A5"
+      }
+    ]
+  },
+  "arm_start_snapshot": {
+    "schema": "poc6c-package-snapshot-v1",
+    "sha256": "6AB2E7D357D9DD46AB5BEF03C84753AE0507C2BE3A00CBBC8D9B3CAA90E1BF4F",
+    "files": [
+      {
+        "path": "TASK.md",
+        "size_bytes": 408,
+        "sha256": "E0F10AA932F08DA3E46CE21ED277839074FD4927B19A04E9B6DBD1F3D0A25AE7"
+      },
+      {
+        "path": "windows.py",
+        "size_bytes": 536,
+        "sha256": "282CC5BBAA19FDE9E0DAE41E7ABB7A112E0432681D94D6C776984B17A7248EFE"
+      }
+    ]
+  },
+  "workspace_pre": {
+    "schema": "poc6c-package-snapshot-v1",
+    "sha256": "6AB2E7D357D9DD46AB5BEF03C84753AE0507C2BE3A00CBBC8D9B3CAA90E1BF4F",
+    "files": [
+      {
+        "path": "TASK.md",
+        "size_bytes": 408,
+        "sha256": "E0F10AA932F08DA3E46CE21ED277839074FD4927B19A04E9B6DBD1F3D0A25AE7"
+      },
+      {
+        "path": "windows.py",
+        "size_bytes": 536,
+        "sha256": "282CC5BBAA19FDE9E0DAE41E7ABB7A112E0432681D94D6C776984B17A7248EFE"
+      }
+    ]
+  },
+  "source_public_pre": {
+    "schema": "poc6c-package-snapshot-v1",
+    "sha256": "6AB2E7D357D9DD46AB5BEF03C84753AE0507C2BE3A00CBBC8D9B3CAA90E1BF4F",
+    "files": [
+      {
+        "path": "TASK.md",
+        "size_bytes": 408,
+        "sha256": "E0F10AA932F08DA3E46CE21ED277839074FD4927B19A04E9B6DBD1F3D0A25AE7"
+      },
+      {
+        "path": "windows.py",
+        "size_bytes": 536,
+        "sha256": "282CC5BBAA19FDE9E0DAE41E7ABB7A112E0432681D94D6C776984B17A7248EFE"
+      }
+    ]
+  },
+  "private_pre": {
+    "schema": "poc6c-package-snapshot-v1",
+    "sha256": "DD1992555A262E0896B4C7F9658B0FBB07934CE3614248CE0D2DBBDCDB42B05A",
+    "files": [
+      {
+        "path": "canary.txt",
+        "size_bytes": 33,
+        "sha256": "E521C50511877987765D26EB0405C3E80F005D41BDF2AF17727D0BD0A57A1F0C"
+      },
+      {
+        "path": "defect_inventory.json",
+        "size_bytes": 290,
+        "sha256": "5B158A83820563DEF2473737CCF5B93FD5AD9A0DD27846EFB2240219056266CC"
+      },
+      {
+        "path": "evaluator_tests.py",
+        "size_bytes": 847,
+        "sha256": "CD9EB061F23D326C77B22DB520FA7237CBD0C2FFB7FB89B68D99E24DE0ED76A5"
+      }
+    ]
+  },
+  "other_arm_pre": {
+    "schema": "poc6c-package-snapshot-v1",
+    "sha256": "BA8FA4C748ECA15DE3AAAE5208EE98086CC42E142C3F7A76490E20730F5E9EC9",
+    "files": [
+      {
+        "path": "TASK.md",
+        "size_bytes": 408,
+        "sha256": "E0F10AA932F08DA3E46CE21ED277839074FD4927B19A04E9B6DBD1F3D0A25AE7"
+      },
+      {
+        "path": "windows.py",
+        "size_bytes": 537,
+        "sha256": "CA5AEFA7B52C10B44A27C691721BF784B00EEEAECD5310283E675B37CF14B3B9"
+      }
+    ]
+  },
+  "outside_assigned_pre": {
+    "schema": "poc6c-package-snapshot-v1",
+    "sha256": "D614E61995AFE9CE8364E2DCDCEE9BEAF1676DECD52468C514A620A68E8DCB00",
+    "files": [
+      {
+        "path": "generic/TASK.md",
+        "size_bytes": 408,
+        "sha256": "E0F10AA932F08DA3E46CE21ED277839074FD4927B19A04E9B6DBD1F3D0A25AE7"
+      },
+      {
+        "path": "generic/windows.py",
+        "size_bytes": 537,
+        "sha256": "CA5AEFA7B52C10B44A27C691721BF784B00EEEAECD5310283E675B37CF14B3B9"
+      }
+    ]
+  },
+  "started_monotonic": 12677.468
+}

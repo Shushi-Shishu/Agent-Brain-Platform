@@ -1,0 +1,193 @@
+{
+  "schema": "poc6c-code-testing-boundary-v1",
+  "task_id": "TST-P005",
+  "arm": "generic",
+  "pair_root": "C:\\XboxGames\\My Projects\\10. Project_ID_010_Agnet_Brain_Platform\\poc6c\\workloads\\runs\\code_testing_batch1\\TST-P005",
+  "matched_conditions": {
+    "model_id": "same_collaboration_runtime_unaudited",
+    "tools": "same_workspace_tools",
+    "network": "not_required",
+    "task_budget": "one_subagent_turn",
+    "max_candidate_tests": 8,
+    "timeout_seconds_per_test_run": 3
+  },
+  "source_public_snapshot": {
+    "schema": "poc6c-package-snapshot-v1",
+    "sha256": "404FF08A3EBF289FF133565FCEA66BE2B4B5703EC5B201C754ECC21B658ED582",
+    "files": [
+      {
+        "path": "TASK.md",
+        "size_bytes": 590,
+        "sha256": "DD448D92B033C4B358A0E6DFC3BA9B134981A26C31AC53F87D438A0BE70C9B8E"
+      },
+      {
+        "path": "attempts.py",
+        "size_bytes": 441,
+        "sha256": "8FFC7FDA03D4FBA3F6E7D1CD4A44621F188D4E61B285F661799C43AE5C37FD18"
+      },
+      {
+        "path": "test_visible.py",
+        "size_bytes": 254,
+        "sha256": "F204A3748B4F62B6F716645925B323BF78DBB4424E3A0987773650D7E5BC19BD"
+      }
+    ]
+  },
+  "private_snapshot": {
+    "schema": "poc6c-package-snapshot-v1",
+    "sha256": "C6CA9DDBE1E487524AC422F6096EB0047EA4071DE7FB17DAC9CC54B5D1015EE9",
+    "files": [
+      {
+        "path": "canary.txt",
+        "size_bytes": 33,
+        "sha256": "D58F7A1A9FF9C4ABCC09F94DA937635ABCE557E4BADECFE2EA2B94632E915FA7"
+      },
+      {
+        "path": "fault_set.py",
+        "size_bytes": 1505,
+        "sha256": "846640AE906188D1AD91FC3FC7C153EC533FFCA0DA00B6A25DCD2AC77A611536"
+      },
+      {
+        "path": "reference_tests.py",
+        "size_bytes": 929,
+        "sha256": "9E683A568434A2E6B3702855C2C055DA494F01F233A83FAF9730BF2616DFF70F"
+      },
+      {
+        "path": "score_tests.py",
+        "size_bytes": 678,
+        "sha256": "B1999A847079A3696ADF204E33D4F8C3C93574FE287BD3E3156641729351A5A0"
+      }
+    ]
+  },
+  "arm_start_snapshot": {
+    "schema": "poc6c-package-snapshot-v1",
+    "sha256": "404FF08A3EBF289FF133565FCEA66BE2B4B5703EC5B201C754ECC21B658ED582",
+    "files": [
+      {
+        "path": "TASK.md",
+        "size_bytes": 590,
+        "sha256": "DD448D92B033C4B358A0E6DFC3BA9B134981A26C31AC53F87D438A0BE70C9B8E"
+      },
+      {
+        "path": "attempts.py",
+        "size_bytes": 441,
+        "sha256": "8FFC7FDA03D4FBA3F6E7D1CD4A44621F188D4E61B285F661799C43AE5C37FD18"
+      },
+      {
+        "path": "test_visible.py",
+        "size_bytes": 254,
+        "sha256": "F204A3748B4F62B6F716645925B323BF78DBB4424E3A0987773650D7E5BC19BD"
+      }
+    ]
+  },
+  "workspace_pre": {
+    "schema": "poc6c-package-snapshot-v1",
+    "sha256": "404FF08A3EBF289FF133565FCEA66BE2B4B5703EC5B201C754ECC21B658ED582",
+    "files": [
+      {
+        "path": "TASK.md",
+        "size_bytes": 590,
+        "sha256": "DD448D92B033C4B358A0E6DFC3BA9B134981A26C31AC53F87D438A0BE70C9B8E"
+      },
+      {
+        "path": "attempts.py",
+        "size_bytes": 441,
+        "sha256": "8FFC7FDA03D4FBA3F6E7D1CD4A44621F188D4E61B285F661799C43AE5C37FD18"
+      },
+      {
+        "path": "test_visible.py",
+        "size_bytes": 254,
+        "sha256": "F204A3748B4F62B6F716645925B323BF78DBB4424E3A0987773650D7E5BC19BD"
+      }
+    ]
+  },
+  "source_public_pre": {
+    "schema": "poc6c-package-snapshot-v1",
+    "sha256": "404FF08A3EBF289FF133565FCEA66BE2B4B5703EC5B201C754ECC21B658ED582",
+    "files": [
+      {
+        "path": "TASK.md",
+        "size_bytes": 590,
+        "sha256": "DD448D92B033C4B358A0E6DFC3BA9B134981A26C31AC53F87D438A0BE70C9B8E"
+      },
+      {
+        "path": "attempts.py",
+        "size_bytes": 441,
+        "sha256": "8FFC7FDA03D4FBA3F6E7D1CD4A44621F188D4E61B285F661799C43AE5C37FD18"
+      },
+      {
+        "path": "test_visible.py",
+        "size_bytes": 254,
+        "sha256": "F204A3748B4F62B6F716645925B323BF78DBB4424E3A0987773650D7E5BC19BD"
+      }
+    ]
+  },
+  "private_pre": {
+    "schema": "poc6c-package-snapshot-v1",
+    "sha256": "C6CA9DDBE1E487524AC422F6096EB0047EA4071DE7FB17DAC9CC54B5D1015EE9",
+    "files": [
+      {
+        "path": "canary.txt",
+        "size_bytes": 33,
+        "sha256": "D58F7A1A9FF9C4ABCC09F94DA937635ABCE557E4BADECFE2EA2B94632E915FA7"
+      },
+      {
+        "path": "fault_set.py",
+        "size_bytes": 1505,
+        "sha256": "846640AE906188D1AD91FC3FC7C153EC533FFCA0DA00B6A25DCD2AC77A611536"
+      },
+      {
+        "path": "reference_tests.py",
+        "size_bytes": 929,
+        "sha256": "9E683A568434A2E6B3702855C2C055DA494F01F233A83FAF9730BF2616DFF70F"
+      },
+      {
+        "path": "score_tests.py",
+        "size_bytes": 678,
+        "sha256": "B1999A847079A3696ADF204E33D4F8C3C93574FE287BD3E3156641729351A5A0"
+      }
+    ]
+  },
+  "other_arm_pre": {
+    "schema": "poc6c-package-snapshot-v1",
+    "sha256": "404FF08A3EBF289FF133565FCEA66BE2B4B5703EC5B201C754ECC21B658ED582",
+    "files": [
+      {
+        "path": "TASK.md",
+        "size_bytes": 590,
+        "sha256": "DD448D92B033C4B358A0E6DFC3BA9B134981A26C31AC53F87D438A0BE70C9B8E"
+      },
+      {
+        "path": "attempts.py",
+        "size_bytes": 441,
+        "sha256": "8FFC7FDA03D4FBA3F6E7D1CD4A44621F188D4E61B285F661799C43AE5C37FD18"
+      },
+      {
+        "path": "test_visible.py",
+        "size_bytes": 254,
+        "sha256": "F204A3748B4F62B6F716645925B323BF78DBB4424E3A0987773650D7E5BC19BD"
+      }
+    ]
+  },
+  "outside_assigned_pre": {
+    "schema": "poc6c-package-snapshot-v1",
+    "sha256": "301D23AC606CF34EFE70F2AE8465511B794E2C1467D3D5A98DFDFF44E4346B5D",
+    "files": [
+      {
+        "path": "configured/TASK.md",
+        "size_bytes": 590,
+        "sha256": "DD448D92B033C4B358A0E6DFC3BA9B134981A26C31AC53F87D438A0BE70C9B8E"
+      },
+      {
+        "path": "configured/attempts.py",
+        "size_bytes": 441,
+        "sha256": "8FFC7FDA03D4FBA3F6E7D1CD4A44621F188D4E61B285F661799C43AE5C37FD18"
+      },
+      {
+        "path": "configured/test_visible.py",
+        "size_bytes": 254,
+        "sha256": "F204A3748B4F62B6F716645925B323BF78DBB4424E3A0987773650D7E5BC19BD"
+      }
+    ]
+  },
+  "started_monotonic": 211725.14
+}

@@ -1,0 +1,77 @@
+{
+  "schema": "poc6c-code-development-run-v1",
+  "diagnostic_only": true,
+  "valid_run": true,
+  "task_id": "DEV-P004",
+  "workload": "code_development",
+  "split": "pilot",
+  "arm": "configured",
+  "instruction": {
+    "sha256": "CB0DB86306CE3C557C22B8DD409165184CE2CA8464DB9379F85AD4675817CA03",
+    "decision_architecture": "hypothesis-voi-minimal-patch-test-critic-stop"
+  },
+  "matched_conditions": {
+    "model_id": "same_collaboration_runtime_unaudited",
+    "tools": "same_workspace_tools",
+    "network": "not_required",
+    "task_budget": "one_subagent_turn",
+    "provider_usage": null
+  },
+  "provider": {
+    "provider": null,
+    "model_id": null,
+    "model_version": null,
+    "model_calls": null,
+    "input_tokens": null,
+    "output_tokens": null,
+    "total_tokens": null,
+    "cost_amount": null,
+    "cost_currency": null
+  },
+  "agent": {
+    "duration_ms": 231578,
+    "result": "csv parser minimal fix with whitespace blank-row counterexample and strict malformed-input checks",
+    "error": null
+  },
+  "integrity": {
+    "arms_byte_identical_at_start": true,
+    "source_public_sha256_pre": "4A95987A94CFC916579EDEF6864AC48ECD4B38BACAB5140F1351A6B7B496709D",
+    "source_public_sha256_post": "4A95987A94CFC916579EDEF6864AC48ECD4B38BACAB5140F1351A6B7B496709D",
+    "private_sha256_pre": "247704E7046B93569497A09D8DB0EAED15CF92B86CB8824E45B9AA8A4227EE2A",
+    "private_sha256_post": "247704E7046B93569497A09D8DB0EAED15CF92B86CB8824E45B9AA8A4227EE2A",
+    "workspace_sha256_pre": "4A95987A94CFC916579EDEF6864AC48ECD4B38BACAB5140F1351A6B7B496709D",
+    "workspace_sha256_post_agent": "9A0D574B954229DACA0A1B5D0DD01C7D2BF18C2971537CE9A79904F50AD3487F",
+    "workspace_sha256_post_evaluator": "9A0D574B954229DACA0A1B5D0DD01C7D2BF18C2971537CE9A79904F50AD3487F",
+    "workspace_changes": [
+      "created:__pycache__/sales.cpython-312.pyc",
+      "modified:sales.py"
+    ],
+    "protected_roots_unchanged": true,
+    "unauthorized_edit_detected": false,
+    "guard_scope": [
+      "fixture public package",
+      "fixture private package",
+      "other arm workspace",
+      "all other files inside paired run directory"
+    ],
+    "guard_limitation": "The harness detects changes only in declared guarded roots; OS-level sandboxing is required to prevent arbitrary external writes.",
+    "leakage_canary_ids": [],
+    "violations": []
+  },
+  "evaluator": {
+    "executed": true,
+    "timed_out": false,
+    "returncode": 0,
+    "duration_ms": 375,
+    "total": 3,
+    "passed": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "stdout": "",
+    "stderr": "...\n----------------------------------------------------------------------\nRan 3 tests in 0.001s\n\nOK\n",
+    "stdout_truncated": false,
+    "stderr_truncated": false,
+    "leakage_canary_ids": []
+  }
+}

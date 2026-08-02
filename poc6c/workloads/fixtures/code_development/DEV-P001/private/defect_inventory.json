@@ -1,0 +1,7 @@
+{
+  "task_id": "DEV-P001",
+  "defect_id": "slug-run-collapse",
+  "location": "slugify.py:slugify",
+  "behavior": "Each separator character is replaced independently and edge separators remain.",
+  "repair_target": "Collapse separator runs and strip edge dashes."
+}

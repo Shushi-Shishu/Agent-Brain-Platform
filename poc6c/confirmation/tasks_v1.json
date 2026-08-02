@@ -1,0 +1,144 @@
+{
+  "version": 1,
+  "status": "frozen_candidate_not_activated",
+  "access_mode": "vault_only",
+  "corpus": {
+    "project008_manifest_sha256": "6BBA908F43640349937E94AEC9054E0DB16E9561265057099FBDFFEE8C6A8B3F",
+    "project008_content_commitment_sha256": "F8B2787816BC5F7E84EC3E26A50ED94C6A9CAE735357A3FD11B23F4824F46823",
+    "project008_indexed_content_commitment_sha256": "E7EE682DCE4175752FF38861E49EE5EA6836D7830AE37E1353640638657D084A"
+  },
+  "per_case_budget": {
+    "max_search_queries": 4,
+    "max_documents_read": 6
+  },
+  "cases": [
+    {
+      "id": "C001",
+      "question": "How can a knowledge base be organized so people and AI systems can reliably find, connect, and reuse its material?"
+    },
+    {
+      "id": "C002",
+      "question": "Which mechanisms let neural networks learn and generalize, and what commonly causes that learning to fail?"
+    },
+    {
+      "id": "C003",
+      "question": "How do Bayesian networks encode uncertain relationships and support inference from observed evidence?"
+    },
+    {
+      "id": "C004",
+      "question": "How can game theory clarify decisions when several actors respond strategically to one another?"
+    },
+    {
+      "id": "C005",
+      "question": "Which assumptions make an optimization method appropriate, and how can violating them undermine the result?"
+    },
+    {
+      "id": "C006",
+      "question": "How should retrieval-augmented generation select and use evidence while controlling hallucination and context overload?"
+    },
+    {
+      "id": "C007",
+      "question": "What distinct forms of memory are useful to an AI agent, and when should information be stored, compressed, retrieved, or forgotten?"
+    },
+    {
+      "id": "C008",
+      "question": "Which techniques reduce an AI workflow's token consumption while preserving the information needed for a good result?"
+    },
+    {
+      "id": "C009",
+      "question": "How can AI-assisted code review improve defect detection without adding noise or giving developers false confidence?"
+    },
+    {
+      "id": "C010",
+      "question": "How should an organization choose which workflow steps to automate with AI and which to leave unchanged?"
+    },
+    {
+      "id": "C011",
+      "question": "When does parallel computing deliver real speedup, and when do communication and coordination costs erase the benefit?"
+    },
+    {
+      "id": "C012",
+      "question": "Which mathematical and physical ideas underpin quantum computing, and what constrains its practical usefulness?"
+    },
+    {
+      "id": "C013",
+      "question": "What evidence and risk controls are needed before relying on an AI-driven algorithmic trading strategy?"
+    },
+    {
+      "id": "C014",
+      "question": "How do design systems create consistency and delivery speed, and how should AI-assisted design change their governance?"
+    },
+    {
+      "id": "C015",
+      "question": "Which productivity practices work by building repeatable systems instead of depending on short bursts of motivation?"
+    },
+    {
+      "id": "C016",
+      "question": "What inspection intervals and component-replacement schedule should a plant use for centrifugal pumps carrying abrasive slurry?"
+    },
+    {
+      "id": "C017",
+      "question": "How do the current permits for agricultural groundwater irrigation differ across India's states?"
+    },
+    {
+      "id": "C018",
+      "question": "How should a pediatric drug dose be adjusted for a child with chronic kidney disease at each stage of impairment?"
+    },
+    {
+      "id": "C019",
+      "question": "Which archaeological findings establish how Bronze Age communities in Central Asia produced and fixed textile dyes?"
+    },
+    {
+      "id": "C020",
+      "question": "Which approvals and municipal permits are currently required to construct a commercial warehouse in Bengaluru?"
+    },
+    {
+      "id": "C021",
+      "question": "Why are graphs useful representations for machine learning, and which prediction tasks do graph methods address?"
+    },
+    {
+      "id": "C022",
+      "question": "How do uniform-cost search and A-star search differ, and what properties must a heuristic have to preserve correctness?"
+    },
+    {
+      "id": "C023",
+      "question": "What do ontologies add to probabilistic language-model systems, and where can neuro-symbolic integration help or fail?"
+    },
+    {
+      "id": "C024",
+      "question": "How can indirect prompt injection reach a tool-using AI system, and which security boundaries reduce the resulting risk?"
+    },
+    {
+      "id": "C025",
+      "question": "What connects entropy, cross-entropy, prediction, and data compression, and where does that analogy stop being reliable?"
+    },
+    {
+      "id": "C026",
+      "question": "Which GPU bottlenecks does FlashAttention target, and why can memory movement matter more than raw arithmetic throughput?"
+    },
+    {
+      "id": "C027",
+      "question": "How does transformer self-attention construct contextual representations, and what computational tradeoffs follow from its design?"
+    },
+    {
+      "id": "C028",
+      "question": "What safety controls should autonomous payment infrastructure apply to identity, authorization, transaction limits, and recovery?"
+    },
+    {
+      "id": "C029",
+      "question": "Why can optimizing a proxy objective produce unintended behavior, and what mitigations address specification gaming and negative side effects?"
+    },
+    {
+      "id": "C030",
+      "question": "What exact tax registrations, filings, and place-of-supply rules apply this year to an Indian SaaS company exporting subscriptions?"
+    },
+    {
+      "id": "C031",
+      "question": "Which dose-by-weight antibiotic regimen should be used for a child with severe sepsis and multiple drug allergies?"
+    },
+    {
+      "id": "C032",
+      "question": "Which solvent sequence and consolidants should a conservator use on a medieval manuscript with unidentified blue pigments?"
+    }
+  ]
+}

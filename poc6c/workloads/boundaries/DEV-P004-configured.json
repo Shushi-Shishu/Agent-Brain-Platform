@@ -1,0 +1,152 @@
+{
+  "schema": "poc6c-code-development-boundary-v1",
+  "task_id": "DEV-P004",
+  "arm": "configured",
+  "pair_root": "C:\\XboxGames\\My Projects\\10. Project_ID_010_Agnet_Brain_Platform\\poc6c\\workloads\\runs\\code_development_batch1\\DEV-P004",
+  "matched_conditions": {
+    "model_id": "same_collaboration_runtime_unaudited",
+    "tools": "same_workspace_tools",
+    "network": "not_required",
+    "task_budget": "one_subagent_turn",
+    "provider_usage": null
+  },
+  "source_public_snapshot": {
+    "schema": "poc6c-package-snapshot-v1",
+    "sha256": "4A95987A94CFC916579EDEF6864AC48ECD4B38BACAB5140F1351A6B7B496709D",
+    "files": [
+      {
+        "path": "TASK.md",
+        "size_bytes": 384,
+        "sha256": "45FA87035CFA93DAE1A9BFFCFF7C8A69B63343D0C475595049BDCA075611EE88"
+      },
+      {
+        "path": "sales.py",
+        "size_bytes": 688,
+        "sha256": "D1F30641D722FE31E70F7BBB1B30BD0A98166905D9036316B1B06168C110B7AA"
+      }
+    ]
+  },
+  "private_snapshot": {
+    "schema": "poc6c-package-snapshot-v1",
+    "sha256": "247704E7046B93569497A09D8DB0EAED15CF92B86CB8824E45B9AA8A4227EE2A",
+    "files": [
+      {
+        "path": "canary.txt",
+        "size_bytes": 33,
+        "sha256": "97B3FC2B803B390440794F4D9E365752FB5DBE6CA71ADF79F1AAA5FAF7298A4A"
+      },
+      {
+        "path": "defect_inventory.json",
+        "size_bytes": 301,
+        "sha256": "0D78702480706A9C634120074BF9D380371968011D2E761FABC06EBDA37A15A6"
+      },
+      {
+        "path": "evaluator_tests.py",
+        "size_bytes": 877,
+        "sha256": "1936A0654C8C75CAF4502CE6BA755F570211FFD03160F604AE5E67D3F3BFFE29"
+      }
+    ]
+  },
+  "arm_start_snapshot": {
+    "schema": "poc6c-package-snapshot-v1",
+    "sha256": "4A95987A94CFC916579EDEF6864AC48ECD4B38BACAB5140F1351A6B7B496709D",
+    "files": [
+      {
+        "path": "TASK.md",
+        "size_bytes": 384,
+        "sha256": "45FA87035CFA93DAE1A9BFFCFF7C8A69B63343D0C475595049BDCA075611EE88"
+      },
+      {
+        "path": "sales.py",
+        "size_bytes": 688,
+        "sha256": "D1F30641D722FE31E70F7BBB1B30BD0A98166905D9036316B1B06168C110B7AA"
+      }
+    ]
+  },
+  "workspace_pre": {
+    "schema": "poc6c-package-snapshot-v1",
+    "sha256": "4A95987A94CFC916579EDEF6864AC48ECD4B38BACAB5140F1351A6B7B496709D",
+    "files": [
+      {
+        "path": "TASK.md",
+        "size_bytes": 384,
+        "sha256": "45FA87035CFA93DAE1A9BFFCFF7C8A69B63343D0C475595049BDCA075611EE88"
+      },
+      {
+        "path": "sales.py",
+        "size_bytes": 688,
+        "sha256": "D1F30641D722FE31E70F7BBB1B30BD0A98166905D9036316B1B06168C110B7AA"
+      }
+    ]
+  },
+  "source_public_pre": {
+    "schema": "poc6c-package-snapshot-v1",
+    "sha256": "4A95987A94CFC916579EDEF6864AC48ECD4B38BACAB5140F1351A6B7B496709D",
+    "files": [
+      {
+        "path": "TASK.md",
+        "size_bytes": 384,
+        "sha256": "45FA87035CFA93DAE1A9BFFCFF7C8A69B63343D0C475595049BDCA075611EE88"
+      },
+      {
+        "path": "sales.py",
+        "size_bytes": 688,
+        "sha256": "D1F30641D722FE31E70F7BBB1B30BD0A98166905D9036316B1B06168C110B7AA"
+      }
+    ]
+  },
+  "private_pre": {
+    "schema": "poc6c-package-snapshot-v1",
+    "sha256": "247704E7046B93569497A09D8DB0EAED15CF92B86CB8824E45B9AA8A4227EE2A",
+    "files": [
+      {
+        "path": "canary.txt",
+        "size_bytes": 33,
+        "sha256": "97B3FC2B803B390440794F4D9E365752FB5DBE6CA71ADF79F1AAA5FAF7298A4A"
+      },
+      {
+        "path": "defect_inventory.json",
+        "size_bytes": 301,
+        "sha256": "0D78702480706A9C634120074BF9D380371968011D2E761FABC06EBDA37A15A6"
+      },
+      {
+        "path": "evaluator_tests.py",
+        "size_bytes": 877,
+        "sha256": "1936A0654C8C75CAF4502CE6BA755F570211FFD03160F604AE5E67D3F3BFFE29"
+      }
+    ]
+  },
+  "other_arm_pre": {
+    "schema": "poc6c-package-snapshot-v1",
+    "sha256": "3631968B5E140F9F6EEF6D8214F16FF0BD36D41FDE8E80DBDDC5A2C0DC7049AA",
+    "files": [
+      {
+        "path": "TASK.md",
+        "size_bytes": 384,
+        "sha256": "45FA87035CFA93DAE1A9BFFCFF7C8A69B63343D0C475595049BDCA075611EE88"
+      },
+      {
+        "path": "sales.py",
+        "size_bytes": 1038,
+        "sha256": "AE0FD17CB31BFD4EF9A34294BF09077652374DA271EBC2C77E83B0F7D3001C9B"
+      }
+    ]
+  },
+  "outside_assigned_pre": {
+    "schema": "poc6c-package-snapshot-v1",
+    "sha256": "E74B3EAF9334D78F44C80B60A7FA765AE391876958AAD42D796BA86A329E69D0",
+    "files": [
+      {
+        "path": "generic/TASK.md",
+        "size_bytes": 384,
+        "sha256": "45FA87035CFA93DAE1A9BFFCFF7C8A69B63343D0C475595049BDCA075611EE88"
+      },
+      {
+        "path": "generic/sales.py",
+        "size_bytes": 1038,
+        "sha256": "AE0FD17CB31BFD4EF9A34294BF09077652374DA271EBC2C77E83B0F7D3001C9B"
+      }
+    ]
+  },
+  "started_monotonic": 13044.89
+}

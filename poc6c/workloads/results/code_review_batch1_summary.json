@@ -1,0 +1,56 @@
+{
+  "status": "instrumentation_only_no_efficacy_claim",
+  "workload": "code_review",
+  "task_count": 5,
+  "valid_pair_count": 3,
+  "arm_descriptives": {
+    "configured": {
+      "task_count": 5,
+      "valid_task_count": 3,
+      "invalid_runs": 2,
+      "mean_severity_weighted_recall": 1.0,
+      "micro_precision": 1.0,
+      "total_false_positives": 0,
+      "provider_usage_complete": false
+    },
+    "generic": {
+      "task_count": 5,
+      "valid_task_count": 5,
+      "invalid_runs": 0,
+      "mean_severity_weighted_recall": 1.0,
+      "micro_precision": 0.9,
+      "total_false_positives": 1,
+      "provider_usage_complete": false
+    }
+  },
+  "paired_task_deltas": [
+    {
+      "task_id": "CRV-P001",
+      "configured_minus_generic_severity_weighted_recall": 0.0,
+      "configured_minus_generic_precision": 0.0,
+      "generic_minus_configured_false_positives": 0
+    },
+    {
+      "task_id": "CRV-P004",
+      "configured_minus_generic_severity_weighted_recall": 0.0,
+      "configured_minus_generic_precision": 0.0,
+      "generic_minus_configured_false_positives": 0
+    },
+    {
+      "task_id": "CRV-P005",
+      "configured_minus_generic_severity_weighted_recall": 0.0,
+      "configured_minus_generic_precision": 0.0,
+      "generic_minus_configured_false_positives": 0
+    }
+  ],
+  "mean_paired_deltas": {
+    "configured_minus_generic_severity_weighted_recall": 0.0,
+    "configured_minus_generic_precision": 0.0,
+    "generic_minus_configured_false_positives": 0.0
+  },
+  "limitations": [
+    "Five seen pilot fixtures are not a confirmation sample.",
+    "Provider usage and cost remain null when the adapter cannot expose them.",
+    "Root guards detect violations but do not replace an OS sandbox."
+  ]
+}

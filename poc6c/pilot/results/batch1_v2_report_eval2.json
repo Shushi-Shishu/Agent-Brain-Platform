@@ -1,0 +1,349 @@
+{
+  "summary": {
+    "status": "instrumentation_only_no_efficacy_claim",
+    "task_count": 10,
+    "arm_descriptives": {
+      "configured": {
+        "mean_quality": 85.6,
+        "min_quality": 76.0,
+        "max_quality": 92.0,
+        "critical_failures": 0
+      },
+      "generic": {
+        "mean_quality": 80.8,
+        "min_quality": 74.0,
+        "max_quality": 84.0,
+        "critical_failures": 0
+      }
+    },
+    "paired_descriptives": {
+      "mean_quality_delta_configured_minus_generic": 4.8,
+      "median_quality_delta_configured_minus_generic": 4.5,
+      "configured_wins": 9,
+      "ties": 0,
+      "configured_losses": 1
+    }
+  },
+  "rows": [
+    {
+      "task_id": "Q001",
+      "repeat": 1,
+      "arm": "generic",
+      "quality": 74,
+      "critical_failure": false,
+      "components": {
+        "claim_support": 21,
+        "question_coverage": 18,
+        "gap_handling": 10,
+        "unsupported_claim_avoidance": 7,
+        "practical_usefulness": 10,
+        "citation_precision": 8
+      },
+      "notes": "Broad and useful architecture answer, but several specific controls, versioning practices, and approval rules extend beyond the supplied excerpts."
+    },
+    {
+      "task_id": "Q001",
+      "repeat": 1,
+      "arm": "configured",
+      "quality": 83,
+      "critical_failure": false,
+      "components": {
+        "claim_support": 24,
+        "question_coverage": 15,
+        "gap_handling": 14,
+        "unsupported_claim_avoidance": 12,
+        "practical_usefulness": 9,
+        "citation_precision": 9
+      },
+      "notes": "Concise and mostly excerpt-grounded with strong boundary-setting, though coverage is narrower and tiered memory is not directly supported by the cited passages."
+    },
+    {
+      "task_id": "Q002",
+      "repeat": 1,
+      "arm": "generic",
+      "quality": 83,
+      "critical_failure": false,
+      "components": {
+        "claim_support": 23,
+        "question_coverage": 18,
+        "gap_handling": 13,
+        "unsupported_claim_avoidance": 10,
+        "practical_usefulness": 10,
+        "citation_precision": 9
+      },
+      "notes": "Strong distinction and coverage; durable recovery, least privilege, and several operating controls are reasonable but not directly evidenced by the supplied excerpts."
+    },
+    {
+      "task_id": "Q002",
+      "repeat": 1,
+      "arm": "configured",
+      "quality": 76,
+      "critical_failure": false,
+      "components": {
+        "claim_support": 24,
+        "question_coverage": 16,
+        "gap_handling": 7,
+        "unsupported_claim_avoidance": 11,
+        "practical_usefulness": 9,
+        "citation_precision": 9
+      },
+      "notes": "Direct and substantially supported, but it introduces architectural clarity, governance, contracts, and deployment controls without nearby excerpt support and declares no limitations."
+    },
+    {
+      "task_id": "Q003",
+      "repeat": 1,
+      "arm": "generic",
+      "quality": 80,
+      "critical_failure": false,
+      "components": {
+        "claim_support": 23,
+        "question_coverage": 18,
+        "gap_handling": 12,
+        "unsupported_claim_avoidance": 8,
+        "practical_usefulness": 10,
+        "citation_precision": 9
+      },
+      "notes": "Covers RL use and major failures well, but several claimed failure modes, agent reward sources, and mitigation practices are not established by the four excerpts."
+    },
+    {
+      "task_id": "Q003",
+      "repeat": 1,
+      "arm": "configured",
+      "quality": 88,
+      "critical_failure": false,
+      "components": {
+        "claim_support": 26,
+        "question_coverage": 16,
+        "gap_handling": 14,
+        "unsupported_claim_avoidance": 13,
+        "practical_usefulness": 9,
+        "citation_precision": 10
+      },
+      "notes": "Carefully bounded and well supported on self-play and reward exploitation, though it gives only a partial account of language-model reinforcement learning."
+    },
+    {
+      "task_id": "Q004",
+      "repeat": 1,
+      "arm": "generic",
+      "quality": 81,
+      "critical_failure": false,
+      "components": {
+        "claim_support": 22,
+        "question_coverage": 19,
+        "gap_handling": 13,
+        "unsupported_claim_avoidance": 8,
+        "practical_usefulness": 10,
+        "citation_precision": 9
+      },
+      "notes": "Excellent lifecycle coverage, but adversarial testing, environment isolation, failure segmentation, production experiments, replay, and review guidance exceed the cited excerpts."
+    },
+    {
+      "task_id": "Q004",
+      "repeat": 1,
+      "arm": "configured",
+      "quality": 92,
+      "critical_failure": false,
+      "components": {
+        "claim_support": 28,
+        "question_coverage": 17,
+        "gap_handling": 14,
+        "unsupported_claim_avoidance": 14,
+        "practical_usefulness": 9,
+        "citation_precision": 10
+      },
+      "notes": "Highly precise evidence-grounded evaluation loop with a valuable replay gap; post-deployment measurement and operations coverage is somewhat narrow."
+    },
+    {
+      "task_id": "Q005",
+      "repeat": 1,
+      "arm": "configured",
+      "quality": 92,
+      "critical_failure": false,
+      "components": {
+        "claim_support": 27,
+        "question_coverage": 17,
+        "gap_handling": 15,
+        "unsupported_claim_avoidance": 14,
+        "practical_usefulness": 9,
+        "citation_precision": 10
+      },
+      "notes": "Strongly grounded context and memory guidance with unusually clear limits; it omits some operational detail about durable state and retrieval failure handling."
+    },
+    {
+      "task_id": "Q005",
+      "repeat": 1,
+      "arm": "generic",
+      "quality": 81,
+      "critical_failure": false,
+      "components": {
+        "claim_support": 23,
+        "question_coverage": 19,
+        "gap_handling": 13,
+        "unsupported_claim_avoidance": 8,
+        "practical_usefulness": 10,
+        "citation_precision": 8
+      },
+      "notes": "Comprehensive and actionable, but authority and permission ranking, canonical provenance, anti-resummarization, and detailed retrieval diagnostics are not supported by the cited passages."
+    },
+    {
+      "task_id": "Q006",
+      "repeat": 1,
+      "arm": "generic",
+      "quality": 84,
+      "critical_failure": false,
+      "components": {
+        "claim_support": 23,
+        "question_coverage": 19,
+        "gap_handling": 13,
+        "unsupported_claim_avoidance": 10,
+        "practical_usefulness": 10,
+        "citation_precision": 9
+      },
+      "notes": "Thorough decision framework with useful safeguards; several break-even factors, handoff costs, and role-selection claims are broader than the supplied evidence."
+    },
+    {
+      "task_id": "Q006",
+      "repeat": 1,
+      "arm": "configured",
+      "quality": 87,
+      "critical_failure": false,
+      "components": {
+        "claim_support": 28,
+        "question_coverage": 18,
+        "gap_handling": 8,
+        "unsupported_claim_avoidance": 14,
+        "practical_usefulness": 9,
+        "citation_precision": 10
+      },
+      "notes": "Concise, well-supported rule for progressive multi-agent adoption and coordination, but it declares no evidence limits or quantitative decision gap."
+    },
+    {
+      "task_id": "Q007",
+      "repeat": 1,
+      "arm": "configured",
+      "quality": 80,
+      "critical_failure": false,
+      "components": {
+        "claim_support": 21,
+        "question_coverage": 17,
+        "gap_handling": 15,
+        "unsupported_claim_avoidance": 10,
+        "practical_usefulness": 9,
+        "citation_precision": 8
+      },
+      "notes": "Good bounded overview with excellent threat-model gaps, though the core common-protocol claim and several security prescriptions are only indirectly supported."
+    },
+    {
+      "task_id": "Q007",
+      "repeat": 1,
+      "arm": "generic",
+      "quality": 77,
+      "critical_failure": false,
+      "components": {
+        "claim_support": 22,
+        "question_coverage": 19,
+        "gap_handling": 11,
+        "unsupported_claim_avoidance": 7,
+        "practical_usefulness": 10,
+        "citation_precision": 8
+      },
+      "notes": "Very broad and practical, but identity, structured-result, idempotency, authorization, auditing, validation, approval, and prompt-injection controls outrun the supplied excerpts."
+    },
+    {
+      "task_id": "Q008",
+      "repeat": 1,
+      "arm": "generic",
+      "quality": 83,
+      "critical_failure": false,
+      "components": {
+        "claim_support": 23,
+        "question_coverage": 19,
+        "gap_handling": 13,
+        "unsupported_claim_avoidance": 9,
+        "practical_usefulness": 10,
+        "citation_precision": 9
+      },
+      "notes": "Well-structured and comprehensive, but replaceability, permissions, observability, extensive versioning, and some deterministic-gate guidance lack direct excerpt support."
+    },
+    {
+      "task_id": "Q008",
+      "repeat": 1,
+      "arm": "configured",
+      "quality": 86,
+      "critical_failure": false,
+      "components": {
+        "claim_support": 27,
+        "question_coverage": 18,
+        "gap_handling": 8,
+        "unsupported_claim_avoidance": 14,
+        "practical_usefulness": 9,
+        "citation_precision": 10
+      },
+      "notes": "Focused architecture answer closely matched to its excerpts, with only modest inference; it does not acknowledge limits or cover observability and governance."
+    },
+    {
+      "task_id": "Q009",
+      "repeat": 1,
+      "arm": "generic",
+      "quality": 83,
+      "critical_failure": false,
+      "components": {
+        "claim_support": 23,
+        "question_coverage": 20,
+        "gap_handling": 13,
+        "unsupported_claim_avoidance": 8,
+        "practical_usefulness": 10,
+        "citation_precision": 9
+      },
+      "notes": "Exceptionally complete diagnostic checklist, but many trace fields, segmentation dimensions, failure clustering, and regression-replay practices are not supplied in the excerpts."
+    },
+    {
+      "task_id": "Q009",
+      "repeat": 1,
+      "arm": "configured",
+      "quality": 84,
+      "critical_failure": false,
+      "components": {
+        "claim_support": 27,
+        "question_coverage": 18,
+        "gap_handling": 8,
+        "unsupported_claim_avoidance": 12,
+        "practical_usefulness": 9,
+        "citation_precision": 10
+      },
+      "notes": "Compact and strongly grounded in execution traces plus objective and semantic metrics, though some detailed trace fields and version correlation are unsupported and no gaps are declared."
+    },
+    {
+      "task_id": "Q010",
+      "repeat": 1,
+      "arm": "generic",
+      "quality": 82,
+      "critical_failure": false,
+      "components": {
+        "claim_support": 23,
+        "question_coverage": 19,
+        "gap_handling": 13,
+        "unsupported_claim_avoidance": 8,
+        "practical_usefulness": 10,
+        "citation_precision": 9
+      },
+      "notes": "Broad, usable placement framework with good declared limits, but many escalation triggers, gate payload details, and audit-feedback practices are not directly evidenced."
+    },
+    {
+      "task_id": "Q010",
+      "repeat": 1,
+      "arm": "configured",
+      "quality": 88,
+      "critical_failure": false,
+      "components": {
+        "claim_support": 28,
+        "question_coverage": 18,
+        "gap_handling": 8,
+        "unsupported_claim_avoidance": 14,
+        "practical_usefulness": 10,
+        "citation_precision": 10
+      },
+      "notes": "Evidence-aligned and practical risk-based guidance with strong correction signals; it does not explicitly declare the absence of universal thresholds or domain-specific approval rules."
+    }
+  ]
+}

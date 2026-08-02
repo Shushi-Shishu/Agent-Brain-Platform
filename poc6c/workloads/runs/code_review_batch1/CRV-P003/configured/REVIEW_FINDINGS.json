@@ -1,0 +1,16 @@
+[
+  {
+    "file": "cache.py",
+    "line": 3,
+    "category": "state-isolation",
+    "severity": "high",
+    "explanation": "The mutable default cache is created once and reused by every call that omits cache, so unrelated callers can read or overwrite each other's entries. Default cache to None and create a new mapping per call, while preserving explicitly supplied caches."
+  },
+  {
+    "file": "cache.py",
+    "line": 5,
+    "category": "cache-correctness",
+    "severity": "high",
+    "explanation": "Testing the cached value by truthiness treats valid cached values such as 0, False, an empty string, or None as misses, causing the factory to run again and potentially produce repeated side effects. Test key membership in the cache instead."
+  }
+]

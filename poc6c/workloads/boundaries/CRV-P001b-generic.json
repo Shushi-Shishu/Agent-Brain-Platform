@@ -1,0 +1,152 @@
+{
+  "schema": "poc6c-code-review-boundary-v1",
+  "task_id": "CRV-P001",
+  "arm": "generic",
+  "pair_root": "C:\\XboxGames\\My Projects\\10. Project_ID_010_Agnet_Brain_Platform\\poc6c\\workloads\\runs\\code_review_batch1b\\CRV-P001",
+  "matched_conditions": {
+    "model_id": "same_collaboration_runtime_unaudited",
+    "tools": "same_workspace_tools",
+    "network": "not_required",
+    "task_budget": "one_subagent_turn",
+    "max_findings": 6
+  },
+  "source_public_snapshot": {
+    "schema": "poc6c-package-snapshot-v1",
+    "sha256": "BDFCF2B98120940B906D7D4DD915DDA122F4CFB4ABBB34ACF4A4A7E28DB212A2",
+    "files": [
+      {
+        "path": "TASK.md",
+        "size_bytes": 450,
+        "sha256": "7B8BE98B8ABD89A3ADBA83E2E36199F56DE8D8F81946470A66E722CD199AC040"
+      },
+      {
+        "path": "access.py",
+        "size_bytes": 321,
+        "sha256": "3E4660D8D6A61D59502A2182034D0D56BEF019BB4A7FD1002001BB105B3B8077"
+      }
+    ]
+  },
+  "private_snapshot": {
+    "schema": "poc6c-package-snapshot-v1",
+    "sha256": "51B085B82BFCDF2C4ED3C6D820FAB0AAF0F3AE45F4386B2C9A4FA56B66451BEF",
+    "files": [
+      {
+        "path": "canary.txt",
+        "size_bytes": 33,
+        "sha256": "C7A100B16FF9BF9E328968BEAA12EA491EEB2A19BEC11DDD0694429BF37E0379"
+      },
+      {
+        "path": "defect_inventory.json",
+        "size_bytes": 963,
+        "sha256": "B466B1FF2A737852A5C8B76A126296B058792DD210ACA752693A26B4B6A9BCC5"
+      },
+      {
+        "path": "evaluate_review.py",
+        "size_bytes": 2290,
+        "sha256": "D6F05243D6258CF101A5177FA31D732DF48E7C528DC7DBDE0A6A032511F20C33"
+      }
+    ]
+  },
+  "arm_start_snapshot": {
+    "schema": "poc6c-package-snapshot-v1",
+    "sha256": "BDFCF2B98120940B906D7D4DD915DDA122F4CFB4ABBB34ACF4A4A7E28DB212A2",
+    "files": [
+      {
+        "path": "TASK.md",
+        "size_bytes": 450,
+        "sha256": "7B8BE98B8ABD89A3ADBA83E2E36199F56DE8D8F81946470A66E722CD199AC040"
+      },
+      {
+        "path": "access.py",
+        "size_bytes": 321,
+        "sha256": "3E4660D8D6A61D59502A2182034D0D56BEF019BB4A7FD1002001BB105B3B8077"
+      }
+    ]
+  },
+  "workspace_pre": {
+    "schema": "poc6c-package-snapshot-v1",
+    "sha256": "BDFCF2B98120940B906D7D4DD915DDA122F4CFB4ABBB34ACF4A4A7E28DB212A2",
+    "files": [
+      {
+        "path": "TASK.md",
+        "size_bytes": 450,
+        "sha256": "7B8BE98B8ABD89A3ADBA83E2E36199F56DE8D8F81946470A66E722CD199AC040"
+      },
+      {
+        "path": "access.py",
+        "size_bytes": 321,
+        "sha256": "3E4660D8D6A61D59502A2182034D0D56BEF019BB4A7FD1002001BB105B3B8077"
+      }
+    ]
+  },
+  "source_public_pre": {
+    "schema": "poc6c-package-snapshot-v1",
+    "sha256": "BDFCF2B98120940B906D7D4DD915DDA122F4CFB4ABBB34ACF4A4A7E28DB212A2",
+    "files": [
+      {
+        "path": "TASK.md",
+        "size_bytes": 450,
+        "sha256": "7B8BE98B8ABD89A3ADBA83E2E36199F56DE8D8F81946470A66E722CD199AC040"
+      },
+      {
+        "path": "access.py",
+        "size_bytes": 321,
+        "sha256": "3E4660D8D6A61D59502A2182034D0D56BEF019BB4A7FD1002001BB105B3B8077"
+      }
+    ]
+  },
+  "private_pre": {
+    "schema": "poc6c-package-snapshot-v1",
+    "sha256": "51B085B82BFCDF2C4ED3C6D820FAB0AAF0F3AE45F4386B2C9A4FA56B66451BEF",
+    "files": [
+      {
+        "path": "canary.txt",
+        "size_bytes": 33,
+        "sha256": "C7A100B16FF9BF9E328968BEAA12EA491EEB2A19BEC11DDD0694429BF37E0379"
+      },
+      {
+        "path": "defect_inventory.json",
+        "size_bytes": 963,
+        "sha256": "B466B1FF2A737852A5C8B76A126296B058792DD210ACA752693A26B4B6A9BCC5"
+      },
+      {
+        "path": "evaluate_review.py",
+        "size_bytes": 2290,
+        "sha256": "D6F05243D6258CF101A5177FA31D732DF48E7C528DC7DBDE0A6A032511F20C33"
+      }
+    ]
+  },
+  "other_arm_pre": {
+    "schema": "poc6c-package-snapshot-v1",
+    "sha256": "BDFCF2B98120940B906D7D4DD915DDA122F4CFB4ABBB34ACF4A4A7E28DB212A2",
+    "files": [
+      {
+        "path": "TASK.md",
+        "size_bytes": 450,
+        "sha256": "7B8BE98B8ABD89A3ADBA83E2E36199F56DE8D8F81946470A66E722CD199AC040"
+      },
+      {
+        "path": "access.py",
+        "size_bytes": 321,
+        "sha256": "3E4660D8D6A61D59502A2182034D0D56BEF019BB4A7FD1002001BB105B3B8077"
+      }
+    ]
+  },
+  "outside_assigned_pre": {
+    "schema": "poc6c-package-snapshot-v1",
+    "sha256": "F5626DFA7C3D36A3F649384644B27DBC281CB790B0CB9A10F80AC32E93708941",
+    "files": [
+      {
+        "path": "configured/TASK.md",
+        "size_bytes": 450,
+        "sha256": "7B8BE98B8ABD89A3ADBA83E2E36199F56DE8D8F81946470A66E722CD199AC040"
+      },
+      {
+        "path": "configured/access.py",
+        "size_bytes": 321,
+        "sha256": "3E4660D8D6A61D59502A2182034D0D56BEF019BB4A7FD1002001BB105B3B8077"
+      }
+    ]
+  },
+  "started_monotonic": 14078.765
+}

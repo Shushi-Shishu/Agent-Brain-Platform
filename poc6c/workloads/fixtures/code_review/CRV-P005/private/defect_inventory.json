@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "task_id": "CRV-P005",
+  "content_id": "review-settings-near-clean-v1",
+  "surface": "near_clean",
+  "location_tolerance_lines": 1,
+  "defects": [
+    {
+      "defect_id": "crv-p005-boolean-count",
+      "file": "settings.py",
+      "line": 8,
+      "category": "input_validation",
+      "severity": "low",
+      "title": "Boolean values pass the integer type check",
+      "expected_finding": "Reject bool explicitly or require the exact int type.",
+      "evidence": "if not isinstance(value, int):"
+    }
+  ]
+}

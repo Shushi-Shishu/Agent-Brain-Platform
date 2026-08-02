@@ -1,0 +1,9 @@
+[
+  {
+    "file": "settings.py",
+    "line": 8,
+    "category": "input_validation",
+    "severity": "medium",
+    "explanation": "The isinstance(value, int) check accepts True and False because bool subclasses int, allowing forbidden retry counts to pass as 1 or 0. Reject bool explicitly or require type(value) is int before applying the range check."
+  }
+]

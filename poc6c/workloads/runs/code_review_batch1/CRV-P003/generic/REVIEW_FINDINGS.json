@@ -1,0 +1,16 @@
+[
+  {
+    "file": "cache.py",
+    "line": 3,
+    "category": "shared_mutable_default",
+    "severity": "high",
+    "explanation": "The default dictionary is created once, so unrelated callers that omit cache silently share entries and factories may be skipped across otherwise independent uses. Default cache to None and create a new dictionary inside the function."
+  },
+  {
+    "file": "cache.py",
+    "line": 5,
+    "category": "incorrect_cache_hit_check",
+    "severity": "high",
+    "explanation": "Testing the cached value by truthiness treats valid cached values such as 0, False, an empty string, or None as misses, repeatedly invoking the factory. Check key membership in cache before retrieving and returning the stored value."
+  }
+]

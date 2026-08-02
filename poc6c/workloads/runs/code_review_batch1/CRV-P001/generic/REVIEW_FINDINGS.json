@@ -1,0 +1,16 @@
+[
+  {
+    "file": "access.py",
+    "line": 6,
+    "category": "input_validation",
+    "severity": "medium",
+    "explanation": "Splitting on a literal space and taking index 1 accepts or mishandles malformed payloads: `Bearer ` returns an empty token and `Bearer token extra` silently ignores trailing data. Parse the scheme and credential exactly once, require one non-empty credential, and return None for every malformed form."
+  },
+  {
+    "file": "access.py",
+    "line": 12,
+    "category": "authentication",
+    "severity": "high",
+    "explanation": "Case-folding opaque bearer credentials makes distinct tokens authenticate as equal when they differ only by letter case, allowing an invalid credential to be accepted. Compare the original strings case-sensitively, preferably with a constant-time equality function suitable for secrets."
+  }
+]

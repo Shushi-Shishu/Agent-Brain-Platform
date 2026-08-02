@@ -1,0 +1,100 @@
+{
+  "schema": "poc6c-code-testing-run-v1",
+  "diagnostic_only": true,
+  "valid_run": true,
+  "task_id": "TST-P003",
+  "workload": "code_testing",
+  "split": "pilot",
+  "arm": "configured",
+  "instruction": {
+    "sha256": "67F3D106CA9832E4759168CEC78DB0758126A1D8FEC07D14EEFAE906BB78FA55",
+    "decision_architecture": "risk-value-schedule-budget-allocator-test-critic-marginal-value-stop",
+    "max_candidate_tests": 8
+  },
+  "matched_conditions": {
+    "model_id": "same_collaboration_runtime_unaudited",
+    "tools": "same_workspace_tools",
+    "network": "not_required",
+    "task_budget": "one_subagent_turn",
+    "max_candidate_tests": 8,
+    "timeout_seconds_per_test_run": 3
+  },
+  "provider": {
+    "provider": null,
+    "model_id": null,
+    "model_version": null,
+    "model_calls": null,
+    "input_tokens": null,
+    "output_tokens": null,
+    "total_tokens": null,
+    "cost_amount": null,
+    "cost_currency": null
+  },
+  "agent": {
+    "duration_ms": 128515,
+    "result": "eight risk-scheduled parser tests; repeat stable; low marginal value stop",
+    "error": null
+  },
+  "candidate_tests": {
+    "output_file": "test_candidate.py",
+    "created": true,
+    "declared_test_count": 8,
+    "max_tests": 8
+  },
+  "integrity": {
+    "arms_byte_identical_at_start": true,
+    "source_public_sha256_pre": "B743D5EE952F77A1092F35E33AED9649258EFB0109C7809A70A2D2E6C86165E4",
+    "source_public_sha256_post": "B743D5EE952F77A1092F35E33AED9649258EFB0109C7809A70A2D2E6C86165E4",
+    "private_sha256_pre": "208E92FA3268186F605F32109DB03C2E06F20E5F122BC1FFD28D23E1122B7B2A",
+    "private_sha256_post": "208E92FA3268186F605F32109DB03C2E06F20E5F122BC1FFD28D23E1122B7B2A",
+    "workspace_sha256_pre": "B743D5EE952F77A1092F35E33AED9649258EFB0109C7809A70A2D2E6C86165E4",
+    "workspace_sha256_post_agent": "A390975A6D7AECDECF2E5327630D0A17BC5D9332AF722E74C3EF28276E793DE3",
+    "workspace_sha256_post_evaluator": "A390975A6D7AECDECF2E5327630D0A17BC5D9332AF722E74C3EF28276E793DE3",
+    "workspace_changes": [
+      "created:test_candidate.py"
+    ],
+    "protected_roots_unchanged": true,
+    "unauthorized_edit_detected": false,
+    "guard_scope": [
+      "fixture public package",
+      "fixture private package",
+      "other arm workspace",
+      "all other files inside paired run directory",
+      "assigned files (test_candidate.py creation only)"
+    ],
+    "guard_limitation": "Declared roots are audited; OS-level sandboxing is required to prevent arbitrary external writes.",
+    "leakage_canary_ids": [],
+    "violations": []
+  },
+  "evaluator": {
+    "executed": true,
+    "timed_out": false,
+    "returncode": 0,
+    "duration_ms": 1390,
+    "metrics": {
+      "schema_version": 1,
+      "task_id": "TST-P003",
+      "valid": true,
+      "invalid_reasons": [],
+      "declared_test_count": 8,
+      "max_tests": 8,
+      "timeout_seconds_per_run": 3.0,
+      "baseline_passes": true,
+      "stable": true,
+      "implementation_coupling_findings": [],
+      "faults_exposed": [
+        "TST-P003-F01-value-separator",
+        "TST-P003-F02-comment-lines",
+        "TST-P003-F03-duplicate-overwrite"
+      ],
+      "fault_count": 3,
+      "distinct_faults_exposed": 3,
+      "fault_exposure_rate": 1.0,
+      "runtime_seconds": 1.35011,
+      "runtime_within_budget": true,
+      "flaky": false,
+      "implementation_coupled": false
+    },
+    "leakage_canary_ids": []
+  }
+}

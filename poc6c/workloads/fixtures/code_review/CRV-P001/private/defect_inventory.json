@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "task_id": "CRV-P001",
+  "content_id": "review-access-headers-v1",
+  "surface": "seeded",
+  "location_tolerance_lines": 1,
+  "defects": [
+    {
+      "defect_id": "crv-p001-header-split",
+      "file": "access.py",
+      "line": 6,
+      "category": "input_validation",
+      "severity": "medium",
+      "title": "Whitespace parsing can return an empty credential",
+      "expected_finding": "Split on arbitrary whitespace and require exactly one non-empty credential value.",
+      "evidence": "return header.split(\" \")[1]"
+    },
+    {
+      "defect_id": "crv-p001-token-case",
+      "file": "access.py",
+      "line": 12,
+      "category": "security",
+      "severity": "high",
+      "title": "Opaque bearer credentials are compared case-insensitively",
+      "expected_finding": "Preserve credential case and use a constant-time equality check.",
+      "evidence": "return presented.casefold() == expected.casefold()"
+    }
+  ]
+}

@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "stage": "instrumentation_only",
+  "confirmation_eligible": false,
+  "reason_not_confirmation_eligible": "The cases and candidate evidence were examined during POC 6b design.",
+  "access_mode": "vault_only",
+  "project008_manifest_sha256": "6BBA908F43640349937E94AEC9054E0DB16E9561265057099FBDFFEE8C6A8B3F",
+  "project008_content_commitment_sha256": "F8B2787816BC5F7E84EC3E26A50ED94C6A9CAE735357A3FD11B23F4824F46823",
+  "project008_indexed_content_commitment_sha256": "E7EE682DCE4175752FF38861E49EE5EA6836D7830AE37E1353640638657D084A",
+  "per_case_budget": {
+    "max_search_queries": 4,
+    "max_documents_read": 6
+  },
+  "cases": [
+    {
+      "id": "Q001",
+      "question": "What architecture and operating practices make an agentic AI system reliable enough for production?"
+    },
+    {
+      "id": "Q002",
+      "question": "What separates an impressive AI demo from a production-grade AI engineering system?"
+    },
+    {
+      "id": "Q003",
+      "question": "How is reinforcement learning used with language models and agents, and what failure modes should an engineer expect?"
+    },
+    {
+      "id": "Q004",
+      "question": "How should an engineering team evaluate an AI agent before and after production deployment?"
+    },
+    {
+      "id": "Q005",
+      "question": "How should an agent manage limited context without losing important information or repeatedly processing irrelevant history?"
+    },
+    {
+      "id": "Q006",
+      "question": "When is a multi-agent system justified, and when is one well-designed agent preferable?"
+    },
+    {
+      "id": "Q007",
+      "question": "What problem does the Model Context Protocol solve, and what design and security concerns arise when using MCP tools?"
+    },
+    {
+      "id": "Q008",
+      "question": "Which software architecture principles are most important when building maintainable agent systems?"
+    },
+    {
+      "id": "Q009",
+      "question": "What should be traced and measured to debug an agent that behaves inconsistently?"
+    },
+    {
+      "id": "Q010",
+      "question": "Where should human approval, correction, or escalation be inserted into an autonomous workflow?"
+    }
+  ]
+}

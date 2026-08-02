@@ -1,0 +1,302 @@
+{
+  "uniform": {
+    "budget": 50,
+    "branches": 12,
+    "description": "All branches roughly equal. CONTROL CONDITION \u2014 no policy should win here; any 'winner' is noise.",
+    "oracle_mean": 22.2405,
+    "policies": {
+      "RoundRobin": {
+        "mean": 22.1095,
+        "ci95": 0.14735995319523837,
+        "pct_oracle": 99.41098446527732
+      },
+      "UCB1": {
+        "mean": 21.9525,
+        "ci95": 0.14483262215129436,
+        "pct_oracle": 98.70506508396844
+      },
+      "DiscountedThompson(g=0.9)": {
+        "mean": 21.856,
+        "ci95": 0.14536254065374837,
+        "pct_oracle": 98.27117196106204
+      },
+      "ThompsonSampling": {
+        "mean": 21.57,
+        "ci95": 0.14377960205461512,
+        "pct_oracle": 96.98522964861401
+      },
+      "EpsilonGreedy(e=0.1)": {
+        "mean": 20.793,
+        "ci95": 0.14575127772434499,
+        "pct_oracle": 93.49160315640384
+      },
+      "Greedy(LLM-proxy)": {
+        "mean": 20.495,
+        "ci95": 0.14684042030216768,
+        "pct_oracle": 92.15170522245452
+      }
+    },
+    "winner": "RoundRobin",
+    "runner_up": "UCB1",
+    "worst": "Greedy(LLM-proxy)",
+    "delta": 0.157,
+    "delta_pct": 0.7151805033595262,
+    "delta_ci": [
+      0.1285,
+      0.1845
+    ],
+    "significant": true,
+    "practical": false,
+    "decisive": false,
+    "stakes_pct": 7.877531105147595,
+    "uplift_vs_naive_pct": 7.877531105147595,
+    "tiers": {
+      "RoundRobin": "viable",
+      "UCB1": "viable",
+      "DiscountedThompson(g=0.9)": "viable",
+      "ThompsonSampling": "viable",
+      "EpsilonGreedy(e=0.1)": "weak",
+      "Greedy(LLM-proxy)": "weak"
+    }
+  },
+  "needle": {
+    "budget": 50,
+    "branches": 12,
+    "description": "One rich branch hidden among poor ones. Finding it fast is everything.",
+    "oracle_mean": 27.9825,
+    "policies": {
+      "Greedy(LLM-proxy)": {
+        "mean": 20.3295,
+        "ci95": 0.3332225786276398,
+        "pct_oracle": 72.65076387027607
+      },
+      "EpsilonGreedy(e=0.1)": {
+        "mean": 19.6245,
+        "ci95": 0.2928833881587169,
+        "pct_oracle": 70.1313320825516
+      },
+      "ThompsonSampling": {
+        "mean": 14.545,
+        "ci95": 0.19964767561178517,
+        "pct_oracle": 51.978915393549535
+      },
+      "UCB1": {
+        "mean": 10.8395,
+        "ci95": 0.128511139082315,
+        "pct_oracle": 38.73671044402751
+      },
+      "DiscountedThompson(g=0.9)": {
+        "mean": 10.209,
+        "ci95": 0.14396806638025195,
+        "pct_oracle": 36.48351648351648
+      },
+      "RoundRobin": {
+        "mean": 8.1505,
+        "ci95": 0.09604250872161123,
+        "pct_oracle": 29.12713302957205
+      }
+    },
+    "winner": "Greedy(LLM-proxy)",
+    "runner_up": "EpsilonGreedy(e=0.1)",
+    "worst": "RoundRobin",
+    "delta": 0.705,
+    "delta_pct": 3.5924482152411525,
+    "delta_ci": [
+      0.5734875,
+      0.8305
+    ],
+    "significant": true,
+    "practical": true,
+    "decisive": true,
+    "stakes_pct": 149.4264155573278,
+    "uplift_vs_naive_pct": 0.0,
+    "tiers": {
+      "Greedy(LLM-proxy)": "viable",
+      "EpsilonGreedy(e=0.1)": "viable",
+      "ThompsonSampling": "disqualified",
+      "UCB1": "disqualified",
+      "DiscountedThompson(g=0.9)": "disqualified",
+      "RoundRobin": "disqualified"
+    }
+  },
+  "deceptive": {
+    "budget": 50,
+    "branches": 12,
+    "description": "A dazzling but shallow branch runs dry fast, while the richest branch looks mediocre on a single sample. Punishes committing to first impressions.",
+    "oracle_mean": 17.9515,
+    "policies": {
+      "ThompsonSampling": {
+        "mean": 12.304,
+        "ci95": 0.10173398964714184,
+        "pct_oracle": 68.54023340667912
+      },
+      "EpsilonGreedy(e=0.1)": {
+        "mean": 12.228,
+        "ci95": 0.10204926731378153,
+        "pct_oracle": 68.11687045650781
+      },
+      "Greedy(LLM-proxy)": {
+        "mean": 11.973,
+        "ci95": 0.10466402350238525,
+        "pct_oracle": 66.69637634738045
+      },
+      "UCB1": {
+        "mean": 11.397,
+        "ci95": 0.10262553791974323,
+        "pct_oracle": 63.48773083029274
+      },
+      "DiscountedThompson(g=0.9)": {
+        "mean": 11.107,
+        "ci95": 0.1110799880386712,
+        "pct_oracle": 61.87226694148121
+      },
+      "RoundRobin": {
+        "mean": 10.202,
+        "ci95": 0.10564110041952858,
+        "pct_oracle": 56.83090549536251
+      }
+    },
+    "winner": "ThompsonSampling",
+    "runner_up": "EpsilonGreedy(e=0.1)",
+    "worst": "RoundRobin",
+    "delta": 0.076,
+    "delta_pct": 0.6215243702976775,
+    "delta_ci": [
+      -0.0345,
+      0.187
+    ],
+    "significant": false,
+    "practical": false,
+    "decisive": false,
+    "stakes_pct": 20.603803175847876,
+    "uplift_vs_naive_pct": 2.764553578885822,
+    "tiers": {
+      "ThompsonSampling": "viable",
+      "EpsilonGreedy(e=0.1)": "viable",
+      "Greedy(LLM-proxy)": "viable",
+      "UCB1": "weak",
+      "DiscountedThompson(g=0.9)": "weak",
+      "RoundRobin": "weak"
+    }
+  },
+  "scarce": {
+    "budget": 14,
+    "branches": 12,
+    "description": "Budget barely covers one look per branch. Exploration is a luxury you cannot afford.",
+    "oracle_mean": 9.6605,
+    "policies": {
+      "Greedy(LLM-proxy)": {
+        "mean": 2.942,
+        "ci95": 0.058415304524596555,
+        "pct_oracle": 30.45391025309249
+      },
+      "EpsilonGreedy(e=0.1)": {
+        "mean": 2.8675,
+        "ci95": 0.05767547125938804,
+        "pct_oracle": 29.682728637234096
+      },
+      "ThompsonSampling": {
+        "mean": 2.795,
+        "ci95": 0.073563785895627,
+        "pct_oracle": 28.932249883546397
+      },
+      "UCB1": {
+        "mean": 2.6995,
+        "ci95": 0.050025159050911906,
+        "pct_oracle": 27.943688214895705
+      },
+      "RoundRobin": {
+        "mean": 2.657,
+        "ci95": 0.051148715490696085,
+        "pct_oracle": 27.503752393768433
+      },
+      "DiscountedThompson(g=0.9)": {
+        "mean": 2.6215,
+        "ci95": 0.06829766142026927,
+        "pct_oracle": 27.1362765902386
+      }
+    },
+    "winner": "Greedy(LLM-proxy)",
+    "runner_up": "EpsilonGreedy(e=0.1)",
+    "worst": "DiscountedThompson(g=0.9)",
+    "delta": 0.0745,
+    "delta_pct": 2.598081952920662,
+    "delta_ci": [
+      0.0615,
+      0.088
+    ],
+    "significant": true,
+    "practical": true,
+    "decisive": true,
+    "stakes_pct": 12.225824909403011,
+    "uplift_vs_naive_pct": 0.0,
+    "tiers": {
+      "Greedy(LLM-proxy)": "viable",
+      "EpsilonGreedy(e=0.1)": "viable",
+      "ThompsonSampling": "viable",
+      "UCB1": "weak",
+      "RoundRobin": "weak",
+      "DiscountedThompson(g=0.9)": "weak"
+    }
+  },
+  "rich": {
+    "budget": 200,
+    "branches": 12,
+    "description": "Budget far exceeds what any single branch holds. Everything gets found eventually; only order differs.",
+    "oracle_mean": 56.38,
+    "policies": {
+      "ThompsonSampling": {
+        "mean": 53.525,
+        "ci95": 0.17100922775683478,
+        "pct_oracle": 94.9361475700603
+      },
+      "EpsilonGreedy(e=0.1)": {
+        "mean": 52.673,
+        "ci95": 0.45847409744260675,
+        "pct_oracle": 93.42497339482085
+      },
+      "Greedy(LLM-proxy)": {
+        "mean": 48.177,
+        "ci95": 0.6973376650994718,
+        "pct_oracle": 85.45051436679672
+      },
+      "UCB1": {
+        "mean": 42.9465,
+        "ci95": 0.2183577638801134,
+        "pct_oracle": 76.17328840014189
+      },
+      "DiscountedThompson(g=0.9)": {
+        "mean": 36.181,
+        "ci95": 0.22649066753939598,
+        "pct_oracle": 64.17346576800283
+      },
+      "RoundRobin": {
+        "mean": 29.392,
+        "ci95": 0.18302693686615995,
+        "pct_oracle": 52.13196168854203
+      }
+    },
+    "winner": "ThompsonSampling",
+    "runner_up": "EpsilonGreedy(e=0.1)",
+    "worst": "RoundRobin",
+    "delta": 0.852,
+    "delta_pct": 1.6175270062460843,
+    "delta_ci": [
+      0.402975,
+      1.3265
+    ],
+    "significant": true,
+    "practical": false,
+    "decisive": false,
+    "stakes_pct": 82.10737615677735,
+    "uplift_vs_naive_pct": 11.10073271478091,
+    "tiers": {
+      "ThompsonSampling": "viable",
+      "EpsilonGreedy(e=0.1)": "viable",
+      "Greedy(LLM-proxy)": "weak",
+      "UCB1": "weak",
+      "DiscountedThompson(g=0.9)": "disqualified",
+      "RoundRobin": "disqualified"
+    }
+  }
+}

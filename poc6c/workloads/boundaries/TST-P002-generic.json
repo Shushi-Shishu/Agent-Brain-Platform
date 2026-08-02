@@ -1,0 +1,193 @@
+{
+  "schema": "poc6c-code-testing-boundary-v1",
+  "task_id": "TST-P002",
+  "arm": "generic",
+  "pair_root": "C:\\XboxGames\\My Projects\\10. Project_ID_010_Agnet_Brain_Platform\\poc6c\\workloads\\runs\\code_testing_batch1\\TST-P002",
+  "matched_conditions": {
+    "model_id": "same_collaboration_runtime_unaudited",
+    "tools": "same_workspace_tools",
+    "network": "not_required",
+    "task_budget": "one_subagent_turn",
+    "max_candidate_tests": 8,
+    "timeout_seconds_per_test_run": 3
+  },
+  "source_public_snapshot": {
+    "schema": "poc6c-package-snapshot-v1",
+    "sha256": "C8C45BFC96C1D83377136E97D1C7825C24E08D2D2C2AAA9DB3C4D470F9290FE0",
+    "files": [
+      {
+        "path": "TASK.md",
+        "size_bytes": 611,
+        "sha256": "F58C7C2080A836ABCF3CB1F196353907E62C9EF3CAF09F68A8A1D0EC5181143F"
+      },
+      {
+        "path": "gate.py",
+        "size_bytes": 1065,
+        "sha256": "164A04AF7D4C40A081D5B7185ABE9F4A7D003EB69B82ADEDA45247DA9D3026C5"
+      },
+      {
+        "path": "test_visible.py",
+        "size_bytes": 291,
+        "sha256": "08240740079D526F1414E2EEC88D91B67A38AA9DA29C05452F2F1A385C50B9EB"
+      }
+    ]
+  },
+  "private_snapshot": {
+    "schema": "poc6c-package-snapshot-v1",
+    "sha256": "89C19C9576CAA3F2E1DB2A3B21678A2C7023D2C783DD5D87EB9C2D3ECA283872",
+    "files": [
+      {
+        "path": "canary.txt",
+        "size_bytes": 33,
+        "sha256": "D1730D1E2D24206649F05D1EA2F73A9390186B529609C352977116C3B40D604A"
+      },
+      {
+        "path": "fault_set.py",
+        "size_bytes": 3276,
+        "sha256": "D74D770369C0DE713E4D3E4798FCB2C1AD8BD0644647620B83F050C84D682716"
+      },
+      {
+        "path": "reference_tests.py",
+        "size_bytes": 736,
+        "sha256": "2A07CD12796CEF4677CE31DD747872771B307F4EC74D35C991830A9F44F26DC3"
+      },
+      {
+        "path": "score_tests.py",
+        "size_bytes": 674,
+        "sha256": "54C9091F421CC2D1C408800848F8F33B0EE62638F84916776AE60D288AC866A2"
+      }
+    ]
+  },
+  "arm_start_snapshot": {
+    "schema": "poc6c-package-snapshot-v1",
+    "sha256": "C8C45BFC96C1D83377136E97D1C7825C24E08D2D2C2AAA9DB3C4D470F9290FE0",
+    "files": [
+      {
+        "path": "TASK.md",
+        "size_bytes": 611,
+        "sha256": "F58C7C2080A836ABCF3CB1F196353907E62C9EF3CAF09F68A8A1D0EC5181143F"
+      },
+      {
+        "path": "gate.py",
+        "size_bytes": 1065,
+        "sha256": "164A04AF7D4C40A081D5B7185ABE9F4A7D003EB69B82ADEDA45247DA9D3026C5"
+      },
+      {
+        "path": "test_visible.py",
+        "size_bytes": 291,
+        "sha256": "08240740079D526F1414E2EEC88D91B67A38AA9DA29C05452F2F1A385C50B9EB"
+      }
+    ]
+  },
+  "workspace_pre": {
+    "schema": "poc6c-package-snapshot-v1",
+    "sha256": "C8C45BFC96C1D83377136E97D1C7825C24E08D2D2C2AAA9DB3C4D470F9290FE0",
+    "files": [
+      {
+        "path": "TASK.md",
+        "size_bytes": 611,
+        "sha256": "F58C7C2080A836ABCF3CB1F196353907E62C9EF3CAF09F68A8A1D0EC5181143F"
+      },
+      {
+        "path": "gate.py",
+        "size_bytes": 1065,
+        "sha256": "164A04AF7D4C40A081D5B7185ABE9F4A7D003EB69B82ADEDA45247DA9D3026C5"
+      },
+      {
+        "path": "test_visible.py",
+        "size_bytes": 291,
+        "sha256": "08240740079D526F1414E2EEC88D91B67A38AA9DA29C05452F2F1A385C50B9EB"
+      }
+    ]
+  },
+  "source_public_pre": {
+    "schema": "poc6c-package-snapshot-v1",
+    "sha256": "C8C45BFC96C1D83377136E97D1C7825C24E08D2D2C2AAA9DB3C4D470F9290FE0",
+    "files": [
+      {
+        "path": "TASK.md",
+        "size_bytes": 611,
+        "sha256": "F58C7C2080A836ABCF3CB1F196353907E62C9EF3CAF09F68A8A1D0EC5181143F"
+      },
+      {
+        "path": "gate.py",
+        "size_bytes": 1065,
+        "sha256": "164A04AF7D4C40A081D5B7185ABE9F4A7D003EB69B82ADEDA45247DA9D3026C5"
+      },
+      {
+        "path": "test_visible.py",
+        "size_bytes": 291,
+        "sha256": "08240740079D526F1414E2EEC88D91B67A38AA9DA29C05452F2F1A385C50B9EB"
+      }
+    ]
+  },
+  "private_pre": {
+    "schema": "poc6c-package-snapshot-v1",
+    "sha256": "89C19C9576CAA3F2E1DB2A3B21678A2C7023D2C783DD5D87EB9C2D3ECA283872",
+    "files": [
+      {
+        "path": "canary.txt",
+        "size_bytes": 33,
+        "sha256": "D1730D1E2D24206649F05D1EA2F73A9390186B529609C352977116C3B40D604A"
+      },
+      {
+        "path": "fault_set.py",
+        "size_bytes": 3276,
+        "sha256": "D74D770369C0DE713E4D3E4798FCB2C1AD8BD0644647620B83F050C84D682716"
+      },
+      {
+        "path": "reference_tests.py",
+        "size_bytes": 736,
+        "sha256": "2A07CD12796CEF4677CE31DD747872771B307F4EC74D35C991830A9F44F26DC3"
+      },
+      {
+        "path": "score_tests.py",
+        "size_bytes": 674,
+        "sha256": "54C9091F421CC2D1C408800848F8F33B0EE62638F84916776AE60D288AC866A2"
+      }
+    ]
+  },
+  "other_arm_pre": {
+    "schema": "poc6c-package-snapshot-v1",
+    "sha256": "C8C45BFC96C1D83377136E97D1C7825C24E08D2D2C2AAA9DB3C4D470F9290FE0",
+    "files": [
+      {
+        "path": "TASK.md",
+        "size_bytes": 611,
+        "sha256": "F58C7C2080A836ABCF3CB1F196353907E62C9EF3CAF09F68A8A1D0EC5181143F"
+      },
+      {
+        "path": "gate.py",
+        "size_bytes": 1065,
+        "sha256": "164A04AF7D4C40A081D5B7185ABE9F4A7D003EB69B82ADEDA45247DA9D3026C5"
+      },
+      {
+        "path": "test_visible.py",
+        "size_bytes": 291,
+        "sha256": "08240740079D526F1414E2EEC88D91B67A38AA9DA29C05452F2F1A385C50B9EB"
+      }
+    ]
+  },
+  "outside_assigned_pre": {
+    "schema": "poc6c-package-snapshot-v1",
+    "sha256": "25D63F94FDC926AFDF9AD85DFB0567A31ABE2D47569392780DB24C8E9F03825F",
+    "files": [
+      {
+        "path": "configured/TASK.md",
+        "size_bytes": 611,
+        "sha256": "F58C7C2080A836ABCF3CB1F196353907E62C9EF3CAF09F68A8A1D0EC5181143F"
+      },
+      {
+        "path": "configured/gate.py",
+        "size_bytes": 1065,
+        "sha256": "164A04AF7D4C40A081D5B7185ABE9F4A7D003EB69B82ADEDA45247DA9D3026C5"
+      },
+      {
+        "path": "configured/test_visible.py",
+        "size_bytes": 291,
+        "sha256": "08240740079D526F1414E2EEC88D91B67A38AA9DA29C05452F2F1A385C50B9EB"
+      }
+    ]
+  },
+  "started_monotonic": 211336.296
+}

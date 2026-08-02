@@ -1,0 +1,43 @@
+{
+  "status": "instrumentation_only_no_efficacy_claim",
+  "arms": {
+    "generic": {
+      "case_count": 10,
+      "mean_search_queries": 1.4,
+      "mean_documents_read": 4.2,
+      "mean_citations": 4.8,
+      "mean_declared_gaps": 1.3,
+      "behavior_counts": {
+        "answer": 10
+      },
+      "model_usage": {
+        "model_id": "unknown_if_not_auditable",
+        "input_tokens": null,
+        "output_tokens": null,
+        "provider_cost_usd": null
+      }
+    },
+    "configured": {
+      "case_count": 10,
+      "mean_search_queries": 1.7,
+      "mean_documents_read": 2.5,
+      "mean_citations": 3.5,
+      "mean_declared_gaps": 0.2,
+      "behavior_counts": {
+        "answer": 8,
+        "partial": 2
+      },
+      "model_usage": {
+        "model_id": "unknown_if_not_auditable",
+        "input_tokens": null,
+        "output_tokens": null,
+        "provider_cost_usd": null
+      }
+    }
+  },
+  "limitations": [
+    "Batch 1 was seen during design and is excluded from confirmation.",
+    "Provider token, cost, latency, and model identity are unaudited when reported as null or unknown.",
+    "Collaboration agents share a host filesystem, so hard execution isolation is not proven."
+  ]
+}

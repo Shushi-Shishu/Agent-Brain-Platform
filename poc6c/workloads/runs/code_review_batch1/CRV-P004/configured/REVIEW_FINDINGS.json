@@ -1,0 +1,16 @@
+[
+  {
+    "file": "audit.py",
+    "line": 4,
+    "category": "credential_exposure",
+    "severity": "critical",
+    "explanation": "The returned audit record stores the raw credential value, so any downstream audit sink will persist sensitive authentication material. Omit the credential field or replace its value with a non-secret marker before returning the record."
+  },
+  {
+    "file": "audit.py",
+    "line": 8,
+    "category": "incomplete_redaction",
+    "severity": "high",
+    "explanation": "str.replace performs a case-sensitive match, so a credential appearing with different letter casing remains visible in the audited message. Use a case-insensitive literal replacement while preserving the replacement marker."
+  }
+]

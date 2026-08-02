@@ -1,0 +1,29 @@
+{
+  "pairs": [
+    {
+      "task_id": "DEV-P001",
+      "pair_root": "C:\\XboxGames\\My Projects\\10. Project_ID_010_Agnet_Brain_Platform\\poc6c\\workloads\\runs\\code_development_batch1\\DEV-P001",
+      "start_sha256": "BEDAFAE477CC3A47E156EAA4FA32E093C3918E087B02873DEEC73DD602CBF3A0"
+    },
+    {
+      "task_id": "DEV-P002",
+      "pair_root": "C:\\XboxGames\\My Projects\\10. Project_ID_010_Agnet_Brain_Platform\\poc6c\\workloads\\runs\\code_development_batch1\\DEV-P002",
+      "start_sha256": "67ACCBDDD8770F83D1B5FC315E17DAB4F1BE82D9734C55A534692F278A858757"
+    },
+    {
+      "task_id": "DEV-P003",
+      "pair_root": "C:\\XboxGames\\My Projects\\10. Project_ID_010_Agnet_Brain_Platform\\poc6c\\workloads\\runs\\code_development_batch1\\DEV-P003",
+      "start_sha256": "6AB2E7D357D9DD46AB5BEF03C84753AE0507C2BE3A00CBBC8D9B3CAA90E1BF4F"
+    },
+    {
+      "task_id": "DEV-P004",
+      "pair_root": "C:\\XboxGames\\My Projects\\10. Project_ID_010_Agnet_Brain_Platform\\poc6c\\workloads\\runs\\code_development_batch1\\DEV-P004",
+      "start_sha256": "4A95987A94CFC916579EDEF6864AC48ECD4B38BACAB5140F1351A6B7B496709D"
+    },
+    {
+      "task_id": "DEV-P005",
+      "pair_root": "C:\\XboxGames\\My Projects\\10. Project_ID_010_Agnet_Brain_Platform\\poc6c\\workloads\\runs\\code_development_batch1\\DEV-P005",
+      "start_sha256": "3B250E5C3FB53EC2D6CCCE0610D7F154F5EFEFDB2A1BF659DAD322D9B63B0658"
+    }
+  ]
+}

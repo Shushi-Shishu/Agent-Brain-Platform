@@ -1,0 +1,76 @@
+{
+  "schema": "poc6c-code-development-run-v1",
+  "diagnostic_only": true,
+  "valid_run": true,
+  "task_id": "DEV-P004",
+  "workload": "code_development",
+  "split": "pilot",
+  "arm": "generic",
+  "instruction": {
+    "sha256": "97847D789A8558F423804559A1333AFCE9E73D38746356FA0A241EF0B1505BD4",
+    "decision_architecture": null
+  },
+  "matched_conditions": {
+    "model_id": "same_collaboration_runtime_unaudited",
+    "tools": "same_workspace_tools",
+    "network": "not_required",
+    "task_budget": "one_subagent_turn",
+    "provider_usage": null
+  },
+  "provider": {
+    "provider": null,
+    "model_id": null,
+    "model_version": null,
+    "model_calls": null,
+    "input_tokens": null,
+    "output_tokens": null,
+    "total_tokens": null,
+    "cost_amount": null,
+    "cost_currency": null
+  },
+  "agent": {
+    "duration_ms": 262156,
+    "result": "used csv.reader for quoted and multiline CSV; validated malformed inputs",
+    "error": null
+  },
+  "integrity": {
+    "arms_byte_identical_at_start": true,
+    "source_public_sha256_pre": "4A95987A94CFC916579EDEF6864AC48ECD4B38BACAB5140F1351A6B7B496709D",
+    "source_public_sha256_post": "4A95987A94CFC916579EDEF6864AC48ECD4B38BACAB5140F1351A6B7B496709D",
+    "private_sha256_pre": "247704E7046B93569497A09D8DB0EAED15CF92B86CB8824E45B9AA8A4227EE2A",
+    "private_sha256_post": "247704E7046B93569497A09D8DB0EAED15CF92B86CB8824E45B9AA8A4227EE2A",
+    "workspace_sha256_pre": "4A95987A94CFC916579EDEF6864AC48ECD4B38BACAB5140F1351A6B7B496709D",
+    "workspace_sha256_post_agent": "3631968B5E140F9F6EEF6D8214F16FF0BD36D41FDE8E80DBDDC5A2C0DC7049AA",
+    "workspace_sha256_post_evaluator": "3631968B5E140F9F6EEF6D8214F16FF0BD36D41FDE8E80DBDDC5A2C0DC7049AA",
+    "workspace_changes": [
+      "modified:sales.py"
+    ],
+    "protected_roots_unchanged": true,
+    "unauthorized_edit_detected": false,
+    "guard_scope": [
+      "fixture public package",
+      "fixture private package",
+      "other arm workspace",
+      "all other files inside paired run directory"
+    ],
+    "guard_limitation": "The harness detects changes only in declared guarded roots; OS-level sandboxing is required to prevent arbitrary external writes.",
+    "leakage_canary_ids": [],
+    "violations": []
+  },
+  "evaluator": {
+    "executed": true,
+    "timed_out": false,
+    "returncode": 1,
+    "duration_ms": 328,
+    "total": 3,
+    "passed": 2,
+    "failures": 0,
+    "errors": 1,
+    "skipped": 0,
+    "stdout": "",
+    "stderr": "E..\n======================================================================\nERROR: test_blank_rows_are_ignored (__main__.SalesEvaluatorTests.test_blank_rows_are_ignored)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"C:\\XboxGames\\My Projects\\10. Project_ID_010_Agnet_Brain_Platform\\poc6c\\workloads\\fixtures\\code_development\\DEV-P004\\private\\evaluator_tests.py\", line 24, in test_blank_rows_are_ignored\n    self.assertEqual(summarize_sales(text), {\"West\": 7.0})\n                     ^^^^^^^^^^^^^^^^^^^^^\n  File \"C:\\XboxGames\\My Projects\\10. Project_ID_010_Agnet_Brain_Platform\\poc6c\\workloads\\runs\\code_development_batch1\\DEV-P004\\generic\\sales.py\", line 26, in summarize_sales\n    raise ValueError(\"invalid CSV row\")\nValueError: invalid CSV row\n\n----------------------------------------------------------------------\nRan 3 tests in 0.003s\n\nFAILED (errors=1)\n",
+    "stdout_truncated": false,
+    "stderr_truncated": false,
+    "leakage_canary_ids": []
+  }
+}

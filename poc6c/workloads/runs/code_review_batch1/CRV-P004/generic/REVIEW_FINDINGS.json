@@ -1,0 +1,16 @@
+[
+  {
+    "file": "audit.py",
+    "line": 4,
+    "category": "credential_exposure",
+    "severity": "high",
+    "explanation": "The returned audit record stores the raw credential value, so any log or persistence of this record leaks the secret. Omit the credential field or replace its value with a fixed redaction marker before returning the record."
+  },
+  {
+    "file": "audit.py",
+    "line": 8,
+    "category": "incomplete_redaction",
+    "severity": "high",
+    "explanation": "str.replace is case-sensitive, so a secret such as Token123 remains exposed when the message contains token123. Perform literal case-insensitive replacement while preserving safe handling of regex metacharacters in the secret."
+  }
+]

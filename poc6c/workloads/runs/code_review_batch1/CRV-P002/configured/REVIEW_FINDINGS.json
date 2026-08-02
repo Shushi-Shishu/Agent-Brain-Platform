@@ -1,0 +1,23 @@
+[
+  {
+    "file": "pagination.py",
+    "line": 6,
+    "category": "correctness",
+    "severity": "high",
+    "explanation": "Floor division omits the final partial page (for example, 11 items at size 10 reports 1 page). Return a ceiling division for positive totals while preserving zero total as zero."
+  },
+  {
+    "file": "pagination.py",
+    "line": 10,
+    "category": "input-validation",
+    "severity": "high",
+    "explanation": "page_items accepts page values below 1; page 0 or negative values produce negative slice offsets and can return unrelated tail data instead of enforcing one-based pagination. Reject page < 1 before calculating the offset."
+  },
+  {
+    "file": "pagination.py",
+    "line": 10,
+    "category": "input-validation",
+    "severity": "medium",
+    "explanation": "page_items does not enforce a positive size, so zero silently returns an empty page and negative sizes use Python's reverse-bound slicing semantics. Reject size <= 0 consistently with page_count."
+  }
+]

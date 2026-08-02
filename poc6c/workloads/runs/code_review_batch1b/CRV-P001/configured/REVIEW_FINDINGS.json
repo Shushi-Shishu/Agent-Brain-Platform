@@ -1,0 +1,16 @@
+[
+  {
+    "file": "access.py",
+    "line": 6,
+    "category": "correctness",
+    "severity": "high",
+    "explanation": "Splitting the entire header and taking element 1 accepts malformed values: `Bearer ` returns an empty credential, while `Bearer valid extra` is truncated to `valid` and may authenticate instead of being rejected. Validate that exactly one non-empty bearer credential is present before returning it."
+  },
+  {
+    "file": "access.py",
+    "line": 12,
+    "category": "security",
+    "severity": "high",
+    "explanation": "Case-folding both credentials makes distinct opaque tokens compare equal (for example, `Secret` and `secret`), allowing an incorrectly cased credential to authenticate. Compare the original credential strings case-sensitively."
+  }
+]

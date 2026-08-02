@@ -1,0 +1,29 @@
+{
+  "pairs": [
+    {
+      "task_id": "CRV-P001",
+      "pair_root": "C:\\XboxGames\\My Projects\\10. Project_ID_010_Agnet_Brain_Platform\\poc6c\\workloads\\runs\\code_review_batch1b\\CRV-P001",
+      "start_sha256": "BDFCF2B98120940B906D7D4DD915DDA122F4CFB4ABBB34ACF4A4A7E28DB212A2"
+    },
+    {
+      "task_id": "CRV-P002",
+      "pair_root": "C:\\XboxGames\\My Projects\\10. Project_ID_010_Agnet_Brain_Platform\\poc6c\\workloads\\runs\\code_review_batch1b\\CRV-P002",
+      "start_sha256": "2E49DDC4E2B73B193B3FF74226DF32BC817337DF870DE82BFF78FF52619A72AD"
+    },
+    {
+      "task_id": "CRV-P003",
+      "pair_root": "C:\\XboxGames\\My Projects\\10. Project_ID_010_Agnet_Brain_Platform\\poc6c\\workloads\\runs\\code_review_batch1b\\CRV-P003",
+      "start_sha256": "26A50F7F1EDB78F2B5A4D9A06A496010CD5426D24D9D0F9EEDA8CFBA905E0E53"
+    },
+    {
+      "task_id": "CRV-P004",
+      "pair_root": "C:\\XboxGames\\My Projects\\10. Project_ID_010_Agnet_Brain_Platform\\poc6c\\workloads\\runs\\code_review_batch1b\\CRV-P004",
+      "start_sha256": "F1106B58683876F95EAB5907F702BFAA6EBA6B64104A39CB2062B16E3A2FCBCA"
+    },
+    {
+      "task_id": "CRV-P005",
+      "pair_root": "C:\\XboxGames\\My Projects\\10. Project_ID_010_Agnet_Brain_Platform\\poc6c\\workloads\\runs\\code_review_batch1b\\CRV-P005",
+      "start_sha256": "644E44ECDC0DAC3420BB73B7FE9C0E7C42C29179A976F347EACE16820A8B28F9"
+    }
+  ]
+}

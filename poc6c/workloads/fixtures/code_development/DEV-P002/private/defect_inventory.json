@@ -1,0 +1,7 @@
+{
+  "task_id": "DEV-P002",
+  "defect_id": "invoice-average-discount",
+  "location": "invoice.py:invoice_total",
+  "behavior": "One average discount is applied to the whole invoice instead of applying each line's rate to its own subtotal.",
+  "repair_target": "Sum discounted line values, then apply tax and final rounding."
+}

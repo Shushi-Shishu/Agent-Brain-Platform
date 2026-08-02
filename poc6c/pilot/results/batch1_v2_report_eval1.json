@@ -1,0 +1,349 @@
+{
+  "summary": {
+    "status": "instrumentation_only_no_efficacy_claim",
+    "task_count": 10,
+    "arm_descriptives": {
+      "configured": {
+        "mean_quality": 83.3,
+        "min_quality": 65.0,
+        "max_quality": 93.0,
+        "critical_failures": 0
+      },
+      "generic": {
+        "mean_quality": 77.3,
+        "min_quality": 73.0,
+        "max_quality": 80.0,
+        "critical_failures": 0
+      }
+    },
+    "paired_descriptives": {
+      "mean_quality_delta_configured_minus_generic": 6.0,
+      "median_quality_delta_configured_minus_generic": 7.0,
+      "configured_wins": 8,
+      "ties": 0,
+      "configured_losses": 2
+    }
+  },
+  "rows": [
+    {
+      "task_id": "Q001",
+      "repeat": 1,
+      "arm": "generic",
+      "quality": 78,
+      "critical_failure": false,
+      "components": {
+        "claim_support": 21,
+        "question_coverage": 19,
+        "gap_handling": 11,
+        "unsupported_claim_avoidance": 8,
+        "practical_usefulness": 10,
+        "citation_precision": 9
+      },
+      "notes": "Broad and useful coverage, with direct support for memory separation, durable state, observability, isolation, and gated lifecycle practices. Task contracts, secret handling, regression feedback, comprehensive versioning, rollback, and approval boundaries extend beyond the supplied excerpts."
+    },
+    {
+      "task_id": "Q001",
+      "repeat": 1,
+      "arm": "configured",
+      "quality": 85,
+      "critical_failure": false,
+      "components": {
+        "claim_support": 24,
+        "question_coverage": 15,
+        "gap_handling": 15,
+        "unsupported_claim_avoidance": 13,
+        "practical_usefulness": 9,
+        "citation_precision": 9
+      },
+      "notes": "Concise architecture and operations guidance is closely tied to the harness, stop-condition, and observability excerpts. Coverage is narrower, and tiered memory plus the feedback loop are not directly established by the cited text, but the missing operational areas are clearly bounded."
+    },
+    {
+      "task_id": "Q002",
+      "repeat": 1,
+      "arm": "generic",
+      "quality": 77,
+      "critical_failure": false,
+      "components": {
+        "claim_support": 20,
+        "question_coverage": 19,
+        "gap_handling": 11,
+        "unsupported_claim_avoidance": 8,
+        "practical_usefulness": 10,
+        "citation_precision": 9
+      },
+      "notes": "Strong practical distinction between demonstration and operation, supported on long-session degradation, non-functional quality, production observability, and environment drift. Recovery state, least privilege, bounded dependency failure, replay into tests, and several operational guarantees are not directly supported by the excerpts."
+    },
+    {
+      "task_id": "Q002",
+      "repeat": 1,
+      "arm": "configured",
+      "quality": 65,
+      "critical_failure": false,
+      "components": {
+        "claim_support": 19,
+        "question_coverage": 15,
+        "gap_handling": 5,
+        "unsupported_claim_avoidance": 9,
+        "practical_usefulness": 9,
+        "citation_precision": 8
+      },
+      "notes": "The cited passages support the prototype-to-production gap, managed scaling and security, and production observability. Claims about happy paths, identity, changing environments, edge cases, contracts, deployment controls, and governance are only partly or indirectly supported, and no evidence gaps are declared."
+    },
+    {
+      "task_id": "Q003",
+      "repeat": 1,
+      "arm": "generic",
+      "quality": 78,
+      "critical_failure": false,
+      "components": {
+        "claim_support": 21,
+        "question_coverage": 19,
+        "gap_handling": 12,
+        "unsupported_claim_avoidance": 8,
+        "practical_usefulness": 9,
+        "citation_precision": 9
+      },
+      "notes": "The core account of reward-based generation, preference reward models, reward hacking, negative side effects, and artificial self-play tasks is well supported. Distribution shift, preference bias, diversity loss, collapse, plateauing, and most mitigation recommendations go beyond the supplied excerpts."
+    },
+    {
+      "task_id": "Q003",
+      "repeat": 1,
+      "arm": "configured",
+      "quality": 84,
+      "critical_failure": false,
+      "components": {
+        "claim_support": 24,
+        "question_coverage": 14,
+        "gap_handling": 15,
+        "unsupported_claim_avoidance": 13,
+        "practical_usefulness": 9,
+        "citation_precision": 9
+      },
+      "notes": "The self-play roles, guide-shaped reward, and environmental loophole exploitation are tightly grounded. It gives only a partial account of language-model reinforcement learning and some claimed plateau or synthetic-task behavior is not directly cited, but the missing method comparisons and quantitative trade-offs are explicitly bounded."
+    },
+    {
+      "task_id": "Q004",
+      "repeat": 1,
+      "arm": "generic",
+      "quality": 75,
+      "critical_failure": false,
+      "components": {
+        "claim_support": 19,
+        "question_coverage": 20,
+        "gap_handling": 11,
+        "unsupported_claim_avoidance": 6,
+        "practical_usefulness": 10,
+        "citation_precision": 9
+      },
+      "notes": "Comprehensive pre- and post-deployment framework with direct evidence for acceptance criteria, repeated evaluation, broader quality effects, objective metrics, and semantic signals. Adversarial tasks, isolation, detailed failure attribution, version segmentation, controlled experiments, alerts, replay, and human-review boundaries are not established by the excerpts."
+    },
+    {
+      "task_id": "Q004",
+      "repeat": 1,
+      "arm": "configured",
+      "quality": 90,
+      "critical_failure": false,
+      "components": {
+        "claim_support": 26,
+        "question_coverage": 17,
+        "gap_handling": 15,
+        "unsupported_claim_avoidance": 13,
+        "practical_usefulness": 9,
+        "citation_precision": 10
+      },
+      "notes": "Task-specific classifiers, hand-labeled judge validation, multi-turn launch gates, and continuous-learning feedback are precisely supported. Post-deployment measurement and safety coverage are narrower, but the answer is disciplined and clearly identifies the unresolved problem of safe stateful replay."
+    },
+    {
+      "task_id": "Q005",
+      "repeat": 1,
+      "arm": "configured",
+      "quality": 93,
+      "critical_failure": false,
+      "components": {
+        "claim_support": 28,
+        "question_coverage": 17,
+        "gap_handling": 15,
+        "unsupported_claim_avoidance": 14,
+        "practical_usefulness": 9,
+        "citation_precision": 10
+      },
+      "notes": "The curated working set, progressive loading, specialized retrieval, and functional memory separation closely follow the excerpts. It is somewhat high-level operationally, but it avoids overclaiming and clearly bounds compaction, retention, eviction, and memory-conflict gaps."
+    },
+    {
+      "task_id": "Q005",
+      "repeat": 1,
+      "arm": "generic",
+      "quality": 76,
+      "critical_failure": false,
+      "components": {
+        "claim_support": 20,
+        "question_coverage": 20,
+        "gap_handling": 11,
+        "unsupported_claim_avoidance": 7,
+        "practical_usefulness": 10,
+        "citation_precision": 8
+      },
+      "notes": "Highly actionable and supported on on-demand search, progressive disclosure, functional memory, recovery, and targeted compression. Authority and permission ranking, canonical provenance, avoiding summary chains, premature stopping, and the detailed retrieval-failure taxonomy are not directly supported by the cited passages."
+    },
+    {
+      "task_id": "Q006",
+      "repeat": 1,
+      "arm": "generic",
+      "quality": 79,
+      "critical_failure": false,
+      "components": {
+        "claim_support": 20,
+        "question_coverage": 20,
+        "gap_handling": 12,
+        "unsupported_claim_avoidance": 8,
+        "practical_usefulness": 10,
+        "citation_precision": 9
+      },
+      "notes": "It fully answers both selection conditions and is supported on minimal agents, generator-evaluator separation, avoiding uncoordinated floods, and deterministic coordination. Parallel research, isolated contexts and permissions, handoff costs, validation gates, and several selection criteria are plausible but not directly evidenced."
+    },
+    {
+      "task_id": "Q006",
+      "repeat": 1,
+      "arm": "configured",
+      "quality": 86,
+      "critical_failure": false,
+      "components": {
+        "claim_support": 27,
+        "question_coverage": 18,
+        "gap_handling": 9,
+        "unsupported_claim_avoidance": 13,
+        "practical_usefulness": 9,
+        "citation_precision": 10
+      },
+      "notes": "The recommendation to master one agent first, add agents only at isolated boundaries, expect amplified errors, and coordinate with durable state is directly supported. It is concise and slightly less complete on benefits such as independent criticism or parallelism, and it declares no limits to the qualitative guidance."
+    },
+    {
+      "task_id": "Q007",
+      "repeat": 1,
+      "arm": "configured",
+      "quality": 83,
+      "critical_failure": false,
+      "components": {
+        "claim_support": 22,
+        "question_coverage": 18,
+        "gap_handling": 15,
+        "unsupported_claim_avoidance": 11,
+        "practical_usefulness": 9,
+        "citation_precision": 8
+      },
+      "notes": "The shared integration layer, progressive discovery, restricted visibility, and interface sandboxing are reasonably grounded. Task-oriented schemas, governance, human approval, and some protocol capabilities lack direct excerpt support, while authentication, malicious-server, revocation, audit, exfiltration, and sandbox limitations are carefully declared."
+    },
+    {
+      "task_id": "Q007",
+      "repeat": 1,
+      "arm": "generic",
+      "quality": 80,
+      "critical_failure": false,
+      "components": {
+        "claim_support": 21,
+        "question_coverage": 20,
+        "gap_handling": 12,
+        "unsupported_claim_avoidance": 8,
+        "practical_usefulness": 10,
+        "citation_precision": 9
+      },
+      "notes": "It covers MCP's integration purpose, task-oriented and progressive tool design, secret separation, prompt-content exfiltration, and DLP with relevant excerpts. Discovery, identity governance, bounded results, error and idempotency behavior, audit logging, validation, approval gates, and the general untrusted-tool model are not directly supported by the supplied citations."
+    },
+    {
+      "task_id": "Q008",
+      "repeat": 1,
+      "arm": "generic",
+      "quality": 73,
+      "critical_failure": false,
+      "components": {
+        "claim_support": 18,
+        "question_coverage": 20,
+        "gap_handling": 10,
+        "unsupported_claim_avoidance": 6,
+        "practical_usefulness": 10,
+        "citation_precision": 9
+      },
+      "notes": "Broad, coherent architecture guidance with evidence for minimalist orchestration, memory separation, generator-evaluator roles, task-oriented tools, and maintainability assessment. Many claimed boundaries, replaceability rules, deterministic gates, sandbox and permission practices, versioning, observability, and multi-agent trade-offs are not supported by the excerpts."
+    },
+    {
+      "task_id": "Q008",
+      "repeat": 1,
+      "arm": "configured",
+      "quality": 85,
+      "critical_failure": false,
+      "components": {
+        "claim_support": 27,
+        "question_coverage": 18,
+        "gap_handling": 8,
+        "unsupported_claim_avoidance": 13,
+        "practical_usefulness": 9,
+        "citation_precision": 10
+      },
+      "notes": "The deterministic core and side-effect shell, explicit workflow states, volatile-layer decoupling, and stateless sandbox treatment are precisely supported. Durable recovery and replaceability are modest extrapolations, and the answer does not identify evidence limits, but its focused maintainability guidance remains strongly grounded."
+    },
+    {
+      "task_id": "Q009",
+      "repeat": 1,
+      "arm": "generic",
+      "quality": 80,
+      "critical_failure": false,
+      "components": {
+        "claim_support": 20,
+        "question_coverage": 20,
+        "gap_handling": 13,
+        "unsupported_claim_avoidance": 8,
+        "practical_usefulness": 10,
+        "citation_precision": 9
+      },
+      "notes": "Comprehensive debugging guidance is directly supported for production trace analysis, objective metrics, trajectory metrics, confidence intervals, cost, and tamper-resistant network audit trails. The detailed trace schema, semantic-signal list, version segmentation, failure clustering, replay, and regression conversion are not established by the excerpts."
+    },
+    {
+      "task_id": "Q009",
+      "repeat": 1,
+      "arm": "configured",
+      "quality": 77,
+      "critical_failure": false,
+      "components": {
+        "claim_support": 24,
+        "question_coverage": 18,
+        "gap_handling": 6,
+        "unsupported_claim_avoidance": 11,
+        "practical_usefulness": 9,
+        "citation_precision": 9
+      },
+      "notes": "Execution trees, full-session traces, token and response measures, objective metrics, and semantic signals are closely grounded. Several detailed trace fields and release-version correlation extend beyond the excerpts, and no trace-schema, retention, or threshold limitations are declared."
+    },
+    {
+      "task_id": "Q010",
+      "repeat": 1,
+      "arm": "generic",
+      "quality": 77,
+      "critical_failure": false,
+      "components": {
+        "claim_support": 19,
+        "question_coverage": 20,
+        "gap_handling": 13,
+        "unsupported_claim_avoidance": 6,
+        "practical_usefulness": 10,
+        "citation_precision": 9
+      },
+      "notes": "Strong coverage with evidence for interrupt gates, premerge human review, high-consequence inspection, and iterative human refinement. The extensive risk triggers, escalation rules, automated inner-loop split, review packet contents, rollback planning, and audit-feedback loop are not directly supported by the excerpts."
+    },
+    {
+      "task_id": "Q010",
+      "repeat": 1,
+      "arm": "configured",
+      "quality": 85,
+      "critical_failure": false,
+      "components": {
+        "claim_support": 26,
+        "question_coverage": 19,
+        "gap_handling": 8,
+        "unsupported_claim_avoidance": 13,
+        "practical_usefulness": 9,
+        "citation_precision": 10
+      },
+      "notes": "Risk-proportional friction, evidence checkpoints, confirmation under uncertainty, mid-run interruption, and correction signals are directly supported. Irreversibility and reviewable increments are modest extensions, and no domain-specific threshold or approval-matrix gaps are declared."
+    }
+  ]
+}

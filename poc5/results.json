@@ -1,0 +1,1066 @@
+{
+  "confirmation": {
+    "efficient_adaptive_evidence": [
+      {
+        "budget_fraction": 0.16551388888888888,
+        "mean_pulls": 31.778666666666666,
+        "rule": "TrendMarginal(12+12)",
+        "shape": "deceptive_depleting"
+      }
+    ],
+    "statuses": {
+      "ConfidenceMarginal(24,z=1.28)": {
+        "deceptive_depleting": "disqualified",
+        "depleting_needle": "uncertain",
+        "heterogeneous_depleting": "viable",
+        "stationary_needle": "uncertain",
+        "stationary_uniform": "viable"
+      },
+      "FixedBudget": {
+        "deceptive_depleting": "disqualified",
+        "depleting_needle": "disqualified",
+        "heterogeneous_depleting": "uncertain",
+        "stationary_needle": "viable",
+        "stationary_uniform": "viable"
+      },
+      "FixedHalf": {
+        "deceptive_depleting": "disqualified",
+        "depleting_needle": "viable",
+        "heterogeneous_depleting": "disqualified",
+        "stationary_needle": "disqualified",
+        "stationary_uniform": "disqualified"
+      },
+      "PatienceStop(8)": {
+        "deceptive_depleting": "uncertain",
+        "depleting_needle": "disqualified",
+        "heterogeneous_depleting": "disqualified",
+        "stationary_needle": "disqualified",
+        "stationary_uniform": "disqualified"
+      },
+      "TrendMarginal(12+12)": {
+        "deceptive_depleting": "viable",
+        "depleting_needle": "disqualified",
+        "heterogeneous_depleting": "disqualified",
+        "stationary_needle": "disqualified",
+        "stationary_uniform": "disqualified"
+      },
+      "WindowMarginal(24)": {
+        "deceptive_depleting": "disqualified",
+        "depleting_needle": "disqualified",
+        "heterogeneous_depleting": "disqualified",
+        "stationary_needle": "disqualified",
+        "stationary_uniform": "disqualified"
+      }
+    },
+    "swinging_rules": [
+      "FixedBudget",
+      "FixedHalf",
+      "ConfidenceMarginal(24,z=1.28)",
+      "TrendMarginal(12+12)"
+    ],
+    "workloads": {
+      "deceptive_depleting": {
+        "confirmation_ranking": [
+          "TrendMarginal(12+12)",
+          "PatienceStop(8)",
+          "WindowMarginal(24)",
+          "ConfidenceMarginal(24,z=1.28)",
+          "FixedHalf",
+          "FixedBudget"
+        ],
+        "hindsight_prefix_oracle_mean": 5.025733333333333,
+        "locked_reference": "TrendMarginal(12+12)",
+        "reference_confirmation_mean": 3.0755999999999997,
+        "rules": {
+          "ConfidenceMarginal(24,z=1.28)": {
+            "disqualification_stat": {
+              "ci95": [
+                -2.294578646980053,
+                -2.1191813530199486
+              ],
+              "mean": -2.206880000000001
+            },
+            "mean_findings": 15.058,
+            "mean_pulls": 74.022,
+            "mean_utility": 0.25359999999999894,
+            "relative_to_locked_reference_pct": 8.245545584601345,
+            "status": "disqualified",
+            "utility_vs_fixed_budget": {
+              "difference_ci95": [
+                3.1059130558912527,
+                3.7292869441087566
+              ],
+              "mean_difference": 3.4176000000000046
+            },
+            "viability_stat": {
+              "ci95": [
+                -2.756369361911651,
+                -2.5800706380883502
+              ],
+              "mean": -2.6682200000000007
+            }
+          },
+          "FixedBudget": {
+            "disqualification_stat": {
+              "ci95": [
+                -5.944536624906486,
+                -5.304423375093525
+              ],
+              "mean": -5.6244800000000055
+            },
+            "mean_findings": 35.236,
+            "mean_pulls": 192.0,
+            "mean_utility": -3.1640000000000055,
+            "relative_to_locked_reference_pct": -102.87423592144641,
+            "status": "disqualified",
+            "utility_vs_fixed_budget": {
+              "difference_ci95": [
+                0.0,
+                0.0
+              ],
+              "mean_difference": 0.0
+            },
+            "viability_stat": {
+              "ci95": [
+                -6.405320563230375,
+                -5.766319436769634
+              ],
+              "mean": -6.0858200000000044
+            }
+          },
+          "FixedHalf": {
+            "disqualification_stat": {
+              "ci95": [
+                -4.866614047442213,
+                -4.502345952557792
+              ],
+              "mean": -4.684480000000002
+            },
+            "mean_findings": 16.976,
+            "mean_pulls": 96.0,
+            "mean_utility": -2.224000000000003,
+            "relative_to_locked_reference_pct": -72.31109377032134,
+            "status": "disqualified",
+            "utility_vs_fixed_budget": {
+              "difference_ci95": [
+                0.6849957370978156,
+                1.1950042629021898
+              ],
+              "mean_difference": 0.9400000000000027
+            },
+            "viability_stat": {
+              "ci95": [
+                -5.326357997324886,
+                -4.965282002675119
+              ],
+              "mean": -5.145820000000002
+            }
+          },
+          "PatienceStop(8)": {
+            "disqualification_stat": {
+              "ci95": [
+                -0.014057201429076169,
+                0.12909720142907583
+              ],
+              "mean": 0.05751999999999982
+            },
+            "mean_findings": 8.537333333333333,
+            "mean_pulls": 30.096666666666668,
+            "mean_utility": 2.518,
+            "relative_to_locked_reference_pct": 81.87020418780075,
+            "status": "uncertain",
+            "utility_vs_fixed_budget": {
+              "difference_ci95": [
+                5.352083320292521,
+                6.011916679707489
+              ],
+              "mean_difference": 5.682000000000005
+            },
+            "viability_stat": {
+              "ci95": [
+                -0.47406686174485496,
+                -0.33357313825514495
+              ],
+              "mean": -0.40381999999999996
+            }
+          },
+          "TrendMarginal(12+12)": {
+            "disqualification_stat": {
+              "ci95": [
+                0.5998352670492777,
+                0.6304047329507219
+              ],
+              "mean": 0.6151199999999998
+            },
+            "mean_findings": 9.431333333333333,
+            "mean_pulls": 31.778666666666666,
+            "mean_utility": 3.0755999999999997,
+            "relative_to_locked_reference_pct": 100.0,
+            "status": "viable",
+            "utility_vs_fixed_budget": {
+              "difference_ci95": [
+                5.9201935641602335,
+                6.559006435839778
+              ],
+              "mean_difference": 6.239600000000006
+            },
+            "viability_stat": {
+              "ci95": [
+                0.14995881676231956,
+                0.1576011832376806
+              ],
+              "mean": 0.15378000000000008
+            }
+          },
+          "WindowMarginal(24)": {
+            "disqualification_stat": {
+              "ci95": [
+                -0.4997205650078561,
+                -0.4009727683254778
+              ],
+              "mean": -0.45034666666666695
+            },
+            "mean_findings": 10.390666666666666,
+            "mean_pulls": 41.90266666666667,
+            "mean_utility": 2.0101333333333327,
+            "relative_to_locked_reference_pct": 65.35743703125677,
+            "status": "disqualified",
+            "utility_vs_fixed_budget": {
+              "difference_ci95": [
+                4.860866179399975,
+                5.4874004872667035
+              ],
+              "mean_difference": 5.174133333333339
+            },
+            "viability_stat": {
+              "ci95": [
+                -0.9581603595243594,
+                -0.8652129738089739
+              ],
+              "mean": -0.9116866666666666
+            }
+          }
+        }
+      },
+      "depleting_needle": {
+        "confirmation_ranking": [
+          "FixedHalf",
+          "ConfidenceMarginal(24,z=1.28)",
+          "TrendMarginal(12+12)",
+          "FixedBudget",
+          "WindowMarginal(24)",
+          "PatienceStop(8)"
+        ],
+        "hindsight_prefix_oracle_mean": 31.200533333333336,
+        "locked_reference": "FixedHalf",
+        "reference_confirmation_mean": 26.11533333333334,
+        "rules": {
+          "ConfidenceMarginal(24,z=1.28)": {
+            "disqualification_stat": {
+              "ci95": [
+                3.114698857981082,
+                3.883967808685583
+              ],
+              "mean": 3.4993333333333325
+            },
+            "mean_findings": 48.39,
+            "mean_pulls": 119.992,
+            "mean_utility": 24.391599999999997,
+            "relative_to_locked_reference_pct": 93.39953539427664,
+            "status": "uncertain",
+            "utility_vs_fixed_budget": {
+              "difference_ci95": [
+                6.845319007944357,
+                7.72454765872232
+              ],
+              "mean_difference": 7.284933333333338
+            },
+            "viability_stat": {
+              "ci95": [
+                -0.8066682474195865,
+                -0.029265085913741162
+              ],
+              "mean": -0.4179666666666639
+            }
+          },
+          "FixedBudget": {
+            "disqualification_stat": {
+              "ci95": [
+                -4.064081789882918,
+                -3.5071182101170906
+              ],
+              "mean": -3.7856000000000045
+            },
+            "mean_findings": 55.50666666666667,
+            "mean_pulls": 192.0,
+            "mean_utility": 17.10666666666666,
+            "relative_to_locked_reference_pct": 65.5043014321088,
+            "status": "disqualified",
+            "utility_vs_fixed_budget": {
+              "difference_ci95": [
+                0.0,
+                0.0
+              ],
+              "mean_difference": 0.0
+            },
+            "viability_stat": {
+              "ci95": [
+                -8.020078545892359,
+                -7.385721454107644
+              ],
+              "mean": -7.702900000000001
+            }
+          },
+          "FixedHalf": {
+            "disqualification_stat": {
+              "ci95": [
+                5.165661294538059,
+                5.28047203879527
+              ],
+              "mean": 5.223066666666664
+            },
+            "mean_findings": 45.315333333333335,
+            "mean_pulls": 96.0,
+            "mean_utility": 26.11533333333334,
+            "relative_to_locked_reference_pct": 100.0,
+            "status": "viable",
+            "utility_vs_fixed_budget": {
+              "difference_ci95": [
+                8.678349473066797,
+                9.338983860266543
+              ],
+              "mean_difference": 9.00866666666667
+            },
+            "viability_stat": {
+              "ci95": [
+                1.2914153236345165,
+                1.3201180096988192
+              ],
+              "mean": 1.3057666666666679
+            }
+          },
+          "PatienceStop(8)": {
+            "disqualification_stat": {
+              "ci95": [
+                -9.222841731626339,
+                -7.796358268373659
+              ],
+              "mean": -8.509599999999999
+            },
+            "mean_findings": 23.956666666666667,
+            "mean_pulls": 57.87,
+            "mean_utility": 12.382666666666667,
+            "relative_to_locked_reference_pct": 47.41531156664028,
+            "status": "disqualified",
+            "utility_vs_fixed_budget": {
+              "difference_ci95": [
+                -5.494464917958931,
+                -3.953535082041059
+              ],
+              "mean_difference": -4.723999999999995
+            },
+            "viability_stat": {
+              "ci95": [
+                -13.136164815673574,
+                -11.717635184326419
+              ],
+              "mean": -12.426899999999996
+            }
+          },
+          "TrendMarginal(12+12)": {
+            "disqualification_stat": {
+              "ci95": [
+                -3.961932849685205,
+                -2.675133816981462
+              ],
+              "mean": -3.3185333333333333
+            },
+            "mean_findings": 33.134,
+            "mean_pulls": 77.80133333333333,
+            "mean_utility": 17.573733333333333,
+            "relative_to_locked_reference_pct": 67.29277818905877,
+            "status": "disqualified",
+            "utility_vs_fixed_budget": {
+              "difference_ci95": [
+                -0.2764894140945445,
+                1.2106227474278874
+              ],
+              "mean_difference": 0.46706666666667146
+            },
+            "viability_stat": {
+              "ci95": [
+                -7.872599943873656,
+                -6.599066722793006
+              ],
+              "mean": -7.235833333333331
+            }
+          },
+          "WindowMarginal(24)": {
+            "disqualification_stat": {
+              "ci95": [
+                -6.391569201443219,
+                -5.071364131890115
+              ],
+              "mean": -5.731466666666667
+            },
+            "mean_findings": 30.708,
+            "mean_pulls": 77.736,
+            "mean_utility": 15.160799999999998,
+            "relative_to_locked_reference_pct": 58.053250963673946,
+            "status": "disqualified",
+            "utility_vs_fixed_budget": {
+              "difference_ci95": [
+                -2.696853343956626,
+                -1.194879989376697
+              ],
+              "mean_difference": -1.9458666666666615
+            },
+            "viability_stat": {
+              "ci95": [
+                -10.299343523019234,
+                -8.998189810314093
+              ],
+              "mean": -9.648766666666663
+            }
+          }
+        }
+      },
+      "heterogeneous_depleting": {
+        "confirmation_ranking": [
+          "ConfidenceMarginal(24,z=1.28)",
+          "FixedBudget",
+          "WindowMarginal(24)",
+          "FixedHalf",
+          "PatienceStop(8)",
+          "TrendMarginal(12+12)"
+        ],
+        "hindsight_prefix_oracle_mean": 43.49346666666666,
+        "locked_reference": "ConfidenceMarginal(24,z=1.28)",
+        "reference_confirmation_mean": 38.181733333333334,
+        "rules": {
+          "ConfidenceMarginal(24,z=1.28)": {
+            "disqualification_stat": {
+              "ci95": [
+                7.570136902698533,
+                7.7025564306347984
+              ],
+              "mean": 7.6363466666666655
+            },
+            "mean_findings": 69.79533333333333,
+            "mean_pulls": 158.068,
+            "mean_utility": 38.181733333333334,
+            "relative_to_locked_reference_pct": 100.0,
+            "status": "viable",
+            "utility_vs_fixed_budget": {
+              "difference_ci95": [
+                2.5281186754956653,
+                3.1633479911710105
+              ],
+              "mean_difference": 2.845733333333338
+            },
+            "viability_stat": {
+              "ci95": [
+                1.892534225674635,
+                1.9256391076587014
+              ],
+              "mean": 1.9090866666666682
+            }
+          },
+          "FixedBudget": {
+            "disqualification_stat": {
+              "ci95": [
+                4.5258661908329945,
+                5.055360475833661
+              ],
+              "mean": 4.790613333333328
+            },
+            "mean_findings": 73.736,
+            "mean_pulls": 192.0,
+            "mean_utility": 35.336,
+            "relative_to_locked_reference_pct": 92.54687232638294,
+            "status": "uncertain",
+            "utility_vs_fixed_budget": {
+              "difference_ci95": [
+                0.0,
+                0.0
+              ],
+              "mean_difference": 0.0
+            },
+            "viability_stat": {
+              "ci95": [
+                -1.2405547376554882,
+                -0.6327385956778498
+              ],
+              "mean": -0.936646666666669
+            }
+          },
+          "FixedHalf": {
+            "disqualification_stat": {
+              "ci95": [
+                -4.898308888653084,
+                -4.116464444680256
+              ],
+              "mean": -4.50738666666667
+            },
+            "mean_findings": 45.238,
+            "mean_pulls": 96.0,
+            "mean_utility": 26.038000000000004,
+            "relative_to_locked_reference_pct": 68.19491344901402,
+            "status": "disqualified",
+            "utility_vs_fixed_budget": {
+              "difference_ci95": [
+                -9.714157675763,
+                -8.881842324236993
+              ],
+              "mean_difference": -9.297999999999996
+            },
+            "viability_stat": {
+              "ci95": [
+                -10.651903077100021,
+                -9.817390256233312
+              ],
+              "mean": -10.234646666666666
+            }
+          },
+          "PatienceStop(8)": {
+            "disqualification_stat": {
+              "ci95": [
+                -9.029945072275394,
+                -6.989094927724611
+              ],
+              "mean": -8.009520000000002
+            },
+            "mean_findings": 39.29,
+            "mean_pulls": 83.77066666666667,
+            "mean_utility": 22.535866666666667,
+            "relative_to_locked_reference_pct": 59.02263909792815,
+            "status": "disqualified",
+            "utility_vs_fixed_budget": {
+              "difference_ci95": [
+                -13.846654402594329,
+                -11.75361226407233
+              ],
+              "mean_difference": -12.80013333333333
+            },
+            "viability_stat": {
+              "ci95": [
+                -14.760096522633209,
+                -12.71346347736679
+              ],
+              "mean": -13.73678
+            }
+          },
+          "TrendMarginal(12+12)": {
+            "disqualification_stat": {
+              "ci95": [
+                -9.937186886277228,
+                -7.953053113722774
+              ],
+              "mean": -8.945120000000001
+            },
+            "mean_findings": 38.148,
+            "mean_pulls": 82.73866666666666,
+            "mean_utility": 21.600266666666666,
+            "relative_to_locked_reference_pct": 56.57225270024409,
+            "status": "disqualified",
+            "utility_vs_fixed_budget": {
+              "difference_ci95": [
+                -14.758028141479969,
+                -12.713438525186685
+              ],
+              "mean_difference": -13.735733333333327
+            },
+            "viability_stat": {
+              "ci95": [
+                -15.67208959203146,
+                -13.67267040796854
+              ],
+              "mean": -14.67238
+            }
+          },
+          "WindowMarginal(24)": {
+            "disqualification_stat": {
+              "ci95": [
+                -4.0022615132672605,
+                -2.147711820066075
+              ],
+              "mean": -3.0749866666666676
+            },
+            "mean_findings": 49.336666666666666,
+            "mean_pulls": 109.33133333333333,
+            "mean_utility": 27.470399999999998,
+            "relative_to_locked_reference_pct": 71.94644559527592,
+            "status": "disqualified",
+            "utility_vs_fixed_budget": {
+              "difference_ci95": [
+                -8.831842539900064,
+                -6.899357460099926
+              ],
+              "mean_difference": -7.865599999999995
+            },
+            "viability_stat": {
+              "ci95": [
+                -9.729921026483938,
+                -7.874572306849389
+              ],
+              "mean": -8.802246666666663
+            }
+          }
+        }
+      },
+      "stationary_needle": {
+        "confirmation_ranking": [
+          "FixedBudget",
+          "ConfidenceMarginal(24,z=1.28)",
+          "TrendMarginal(12+12)",
+          "WindowMarginal(24)",
+          "PatienceStop(8)",
+          "FixedHalf"
+        ],
+        "hindsight_prefix_oracle_mean": 74.12866666666666,
+        "locked_reference": "FixedBudget",
+        "reference_confirmation_mean": 74.05066666666669,
+        "rules": {
+          "ConfidenceMarginal(24,z=1.28)": {
+            "disqualification_stat": {
+              "ci95": [
+                6.76731287770445,
+                8.959887122295543
+              ],
+              "mean": 7.863599999999996
+            },
+            "mean_findings": 102.29733333333333,
+            "mean_pulls": 175.966,
+            "mean_utility": 67.10413333333334,
+            "relative_to_locked_reference_pct": 90.61921567215238,
+            "status": "uncertain",
+            "utility_vs_fixed_budget": {
+              "difference_ci95": [
+                -8.015895106739922,
+                -5.877171559926744
+              ],
+              "mean_difference": -6.946533333333333
+            },
+            "viability_stat": {
+              "ci95": [
+                -4.319256281194591,
+                -2.1687437188053993
+              ],
+              "mean": -3.2439999999999953
+            }
+          },
+          "FixedBudget": {
+            "disqualification_stat": {
+              "ci95": [
+                14.70851325141263,
+                14.91175341525403
+              ],
+              "mean": 14.81013333333333
+            },
+            "mean_findings": 112.45066666666666,
+            "mean_pulls": 192.0,
+            "mean_utility": 74.05066666666669,
+            "relative_to_locked_reference_pct": 100.0,
+            "status": "viable",
+            "utility_vs_fixed_budget": {
+              "difference_ci95": [
+                0.0,
+                0.0
+              ],
+              "mean_difference": 0.0
+            },
+            "viability_stat": {
+              "ci95": [
+                3.6771283128531627,
+                3.7279383538135127
+              ],
+              "mean": 3.7025333333333377
+            }
+          },
+          "FixedHalf": {
+            "disqualification_stat": {
+              "ci95": [
+                -33.40072587084805,
+                -32.90567412915196
+              ],
+              "mean": -33.153200000000005
+            },
+            "mean_findings": 45.287333333333336,
+            "mean_pulls": 96.0,
+            "mean_utility": 26.087333333333337,
+            "relative_to_locked_reference_pct": 35.22903237423025,
+            "status": "disqualified",
+            "utility_vs_fixed_budget": {
+              "difference_ci95": [
+                -48.24438462443371,
+                -47.682282042232956
+              ],
+              "mean_difference": -47.96333333333333
+            },
+            "viability_stat": {
+              "ci95": [
+                -44.530287272723335,
+                -43.99131272727664
+              ],
+              "mean": -44.26079999999999
+            }
+          },
+          "PatienceStop(8)": {
+            "disqualification_stat": {
+              "ci95": [
+                -29.00540902565358,
+                -25.29005764101308
+              ],
+              "mean": -27.14773333333333
+            },
+            "mean_findings": 50.415333333333336,
+            "mean_pulls": 91.61266666666667,
+            "mean_utility": 32.092800000000004,
+            "relative_to_locked_reference_pct": 43.33897511613669,
+            "status": "disqualified",
+            "utility_vs_fixed_budget": {
+              "difference_ci95": [
+                -43.797195907276844,
+                -40.11853742605649
+              ],
+              "mean_difference": -41.95786666666667
+            },
+            "viability_stat": {
+              "ci95": [
+                -40.09874119400477,
+                -36.41192547266188
+              ],
+              "mean": -38.255333333333326
+            }
+          },
+          "TrendMarginal(12+12)": {
+            "disqualification_stat": {
+              "ci95": [
+                -18.515188908269916,
+                -14.961877758396756
+              ],
+              "mean": -16.738533333333336
+            },
+            "mean_findings": 66.49933333333334,
+            "mean_pulls": 119.98666666666666,
+            "mean_utility": 42.502,
+            "relative_to_locked_reference_pct": 57.39583708451869,
+            "status": "disqualified",
+            "utility_vs_fixed_budget": {
+              "difference_ci95": [
+                -33.29422938954404,
+                -29.80310394378928
+              ],
+              "mean_difference": -31.548666666666662
+            },
+            "viability_stat": {
+              "ci95": [
+                -29.598968729888245,
+                -26.09329793677841
+              ],
+              "mean": -27.846133333333327
+            }
+          },
+          "WindowMarginal(24)": {
+            "disqualification_stat": {
+              "ci95": [
+                -20.632316534310778,
+                -16.909016799022563
+              ],
+              "mean": -18.77066666666667
+            },
+            "mean_findings": 63.24333333333333,
+            "mean_pulls": 113.86733333333333,
+            "mean_utility": 40.46986666666666,
+            "relative_to_locked_reference_pct": 54.65158990240914,
+            "status": "disqualified",
+            "utility_vs_fixed_budget": {
+              "difference_ci95": [
+                -35.413579053871686,
+                -31.748020946128307
+              ],
+              "mean_difference": -33.580799999999996
+            },
+            "viability_stat": {
+              "ci95": [
+                -31.717779674900402,
+                -28.03875365843292
+              ],
+              "mean": -29.87826666666666
+            }
+          }
+        }
+      },
+      "stationary_uniform": {
+        "confirmation_ranking": [
+          "FixedBudget",
+          "ConfidenceMarginal(24,z=1.28)",
+          "WindowMarginal(24)",
+          "FixedHalf",
+          "PatienceStop(8)",
+          "TrendMarginal(12+12)"
+        ],
+        "hindsight_prefix_oracle_mean": 29.437599999999996,
+        "locked_reference": "FixedBudget",
+        "reference_confirmation_mean": 28.962,
+        "rules": {
+          "ConfidenceMarginal(24,z=1.28)": {
+            "disqualification_stat": {
+              "ci95": [
+                5.39837535575541,
+                5.665091310911252
+              ],
+              "mean": 5.531733333333331
+            },
+            "mean_findings": 66.76733333333334,
+            "mean_pulls": 190.33,
+            "mean_utility": 28.701333333333334,
+            "relative_to_locked_reference_pct": 99.09997007573142,
+            "status": "viable",
+            "utility_vs_fixed_budget": {
+              "difference_ci95": [
+                -0.3705002947770027,
+                -0.1508330385563304
+              ],
+              "mean_difference": -0.26066666666666655
+            },
+            "viability_stat": {
+              "ci95": [
+                1.0748118016326011,
+                1.3000548650340673
+              ],
+              "mean": 1.1874333333333342
+            }
+          },
+          "FixedBudget": {
+            "disqualification_stat": {
+              "ci95": [
+                5.726671364283793,
+                5.858128635716203
+              ],
+              "mean": 5.792399999999998
+            },
+            "mean_findings": 67.362,
+            "mean_pulls": 192.0,
+            "mean_utility": 28.962,
+            "relative_to_locked_reference_pct": 100.0,
+            "status": "viable",
+            "utility_vs_fixed_budget": {
+              "difference_ci95": [
+                0.0,
+                0.0
+              ],
+              "mean_difference": 0.0
+            },
+            "viability_stat": {
+              "ci95": [
+                1.4316678410709498,
+                1.4645321589290523
+              ],
+              "mean": 1.448100000000001
+            }
+          },
+          "FixedHalf": {
+            "disqualification_stat": {
+              "ci95": [
+                -8.960761819760828,
+                -8.566438180239173
+              ],
+              "mean": -8.7636
+            },
+            "mean_findings": 33.606,
+            "mean_pulls": 96.0,
+            "mean_utility": 14.406,
+            "relative_to_locked_reference_pct": 49.74103998342657,
+            "status": "disqualified",
+            "utility_vs_fixed_budget": {
+              "difference_ci95": [
+                -14.794225277395423,
+                -14.317774722604575
+              ],
+              "mean_difference": -14.556
+            },
+            "viability_stat": {
+              "ci95": [
+                -13.334773555850468,
+                -12.881026444149526
+              ],
+              "mean": -13.107899999999997
+            }
+          },
+          "PatienceStop(8)": {
+            "disqualification_stat": {
+              "ci95": [
+                -11.008233000353293,
+                -9.989100332980037
+              ],
+              "mean": -10.498666666666665
+            },
+            "mean_findings": 29.48,
+            "mean_pulls": 84.04533333333333,
+            "mean_utility": 12.670933333333332,
+            "relative_to_locked_reference_pct": 43.75020141334622,
+            "status": "disqualified",
+            "utility_vs_fixed_budget": {
+              "difference_ci95": [
+                -16.80229513549135,
+                -15.779838197841976
+              ],
+              "mean_difference": -16.291066666666662
+            },
+            "viability_stat": {
+              "ci95": [
+                -15.352986592814773,
+                -14.332946740518551
+              ],
+              "mean": -14.842966666666662
+            }
+          },
+          "TrendMarginal(12+12)": {
+            "disqualification_stat": {
+              "ci95": [
+                -15.820727206563777,
+                -15.167539460102887
+              ],
+              "mean": -15.494133333333332
+            },
+            "mean_findings": 17.935333333333332,
+            "mean_pulls": 51.29933333333334,
+            "mean_utility": 7.675466666666666,
+            "relative_to_locked_reference_pct": 26.501853002785257,
+            "status": "disqualified",
+            "utility_vs_fixed_budget": {
+              "difference_ci95": [
+                -21.64134192196808,
+                -20.93172474469858
+              ],
+              "mean_difference": -21.28653333333333
+            },
+            "viability_stat": {
+              "ci95": [
+                -20.1852368697822,
+                -19.49162979688446
+              ],
+              "mean": -19.83843333333333
+            }
+          },
+          "WindowMarginal(24)": {
+            "disqualification_stat": {
+              "ci95": [
+                -5.363578161588062,
+                -4.293488505078603
+              ],
+              "mean": -4.828533333333333
+            },
+            "mean_findings": 42.776666666666664,
+            "mean_pulls": 122.178,
+            "mean_utility": 18.341066666666663,
+            "relative_to_locked_reference_pct": 63.32803903966116,
+            "status": "disqualified",
+            "utility_vs_fixed_budget": {
+              "difference_ci95": [
+                -11.140318054141849,
+                -10.10154861252481
+              ],
+              "mean_difference": -10.62093333333333
+            },
+            "viability_stat": {
+              "ci95": [
+                -9.695402525571383,
+                -8.650264141095276
+              ],
+              "mean": -9.17283333333333
+            }
+          }
+        }
+      }
+    },
+    "zero_cost_sanity_passed": true
+  },
+  "design": {
+    "confirmation_trials_per_shape": 1500,
+    "finding_value": 1.0,
+    "k": 12,
+    "maximum_budget": 192,
+    "preregistration": "PREREGISTRATION.md",
+    "pull_cost": 0.2,
+    "rules": [
+      "FixedBudget",
+      "FixedHalf",
+      "PatienceStop(8)",
+      "WindowMarginal(24)",
+      "ConfidenceMarginal(24,z=1.28)",
+      "TrendMarginal(12+12)"
+    ],
+    "selection_trials_per_shape": 500,
+    "shapes": [
+      "stationary_uniform",
+      "stationary_needle",
+      "depleting_needle",
+      "deceptive_depleting",
+      "heterogeneous_depleting"
+    ],
+    "trajectory_policy": "ThompsonSampling(prior=1.0)"
+  },
+  "selection": {
+    "locked_references": {
+      "deceptive_depleting": "TrendMarginal(12+12)",
+      "depleting_needle": "FixedHalf",
+      "heterogeneous_depleting": "ConfidenceMarginal(24,z=1.28)",
+      "stationary_needle": "FixedBudget",
+      "stationary_uniform": "FixedBudget"
+    },
+    "mean_utilities": {
+      "deceptive_depleting": {
+        "ConfidenceMarginal(24,z=1.28)": 0.2763999999999987,
+        "FixedBudget": -2.7700000000000053,
+        "FixedHalf": -2.0440000000000027,
+        "PatienceStop(8)": 2.4159999999999995,
+        "TrendMarginal(12+12)": 2.9763999999999995,
+        "WindowMarginal(24)": 1.9183999999999997
+      },
+      "depleting_needle": {
+        "ConfidenceMarginal(24,z=1.28)": 24.688,
+        "FixedBudget": 17.267999999999994,
+        "FixedHalf": 26.198000000000008,
+        "PatienceStop(8)": 13.602,
+        "TrendMarginal(12+12)": 17.817199999999996,
+        "WindowMarginal(24)": 16.242399999999996
+      },
+      "heterogeneous_depleting": {
+        "ConfidenceMarginal(24,z=1.28)": 38.5212,
+        "FixedBudget": 35.68000000000001,
+        "FixedHalf": 26.192000000000004,
+        "PatienceStop(8)": 23.2656,
+        "TrendMarginal(12+12)": 21.914,
+        "WindowMarginal(24)": 28.718799999999995
+      },
+      "stationary_needle": {
+        "ConfidenceMarginal(24,z=1.28)": 66.7776,
+        "FixedBudget": 73.992,
+        "FixedHalf": 25.890000000000008,
+        "PatienceStop(8)": 31.6356,
+        "TrendMarginal(12+12)": 40.2564,
+        "WindowMarginal(24)": 38.8968
+      },
+      "stationary_uniform": {
+        "ConfidenceMarginal(24,z=1.28)": 28.519599999999997,
+        "FixedBudget": 28.81,
+        "FixedHalf": 14.364,
+        "PatienceStop(8)": 11.9492,
+        "TrendMarginal(12+12)": 7.111599999999999,
+        "WindowMarginal(24)": 18.812399999999997
+      }
+    }
+  },
+  "verdict": {
+    "conditions": {
+      "all_reference_means_positive": true,
+      "at_least_one_rule_swings": true,
+      "efficient_adaptive_stopper_viable_somewhere": true,
+      "fixed_budget_viable_somewhere": true,
+      "shared_prefix_sanity_passes": true
+    },
+    "passed": true
+  }
+}

@@ -1,0 +1,4269 @@
+{
+  "confirmation": {
+    "historical_mean_findings": {
+      "DiscountedThompson(g=0.9)": 4.406896551724138,
+      "EpsilonGreedy(e=0.1)": 5.144827586206897,
+      "ExploreThenCommit": 4.903448275862069,
+      "RoundRobin": 3.5724137931034483,
+      "ThompsonSampling(prior=1.0)": 4.862068965517241,
+      "UCB1(c=2.0)": 4.448275862068965
+    },
+    "simulation_mean_findings": {
+      "DiscountedThompson(g=0.9)": 11.633333333333333,
+      "EpsilonGreedy(e=0.1)": 18.707666666666668,
+      "ExploreThenCommit": 19.394333333333336,
+      "RoundRobin": 8.929,
+      "ThompsonSampling(prior=1.0)": 15.372666666666667,
+      "UCB1(c=2.0)": 11.810333333333332
+    },
+    "spearman_rank_correlation": 0.942857142857143,
+    "statuses": {
+      "DiscountedThompson(g=0.9)": {
+        "concentrated": "uncertain",
+        "diffuse": "uncertain"
+      },
+      "EpsilonGreedy(e=0.1)": {
+        "concentrated": "viable",
+        "diffuse": "uncertain"
+      },
+      "ExploreThenCommit": {
+        "concentrated": "viable",
+        "diffuse": "uncertain"
+      },
+      "RoundRobin": {
+        "concentrated": "disqualified",
+        "diffuse": "uncertain"
+      },
+      "ThompsonSampling(prior=1.0)": {
+        "concentrated": "uncertain",
+        "diffuse": "viable"
+      },
+      "UCB1(c=2.0)": {
+        "concentrated": "uncertain",
+        "diffuse": "uncertain"
+      }
+    },
+    "strata": {
+      "concentrated": {
+        "confirmation_ranking": [
+          "EpsilonGreedy(e=0.1)",
+          "ExploreThenCommit",
+          "ThompsonSampling(prior=1.0)",
+          "DiscountedThompson(g=0.9)",
+          "UCB1(c=2.0)",
+          "RoundRobin"
+        ],
+        "locked_reference": "EpsilonGreedy(e=0.1)",
+        "policies": {
+          "DiscountedThompson(g=0.9)": {
+            "disqualification_stat": {
+              "ci95": [
+                -0.3994142585342153,
+                0.6494142585342149
+              ],
+              "mean": 0.12499999999999975
+            },
+            "mean_findings": 4.347222222222222,
+            "mean_recall": 0.4407359169675204,
+            "relative_to_locked_reference_pct": 82.36842105263158,
+            "status": "uncertain",
+            "viability_stat": {
+              "ci95": [
+                -1.3158199022880288,
+                -0.01751343104530423
+              ],
+              "mean": -0.6666666666666665
+            }
+          },
+          "EpsilonGreedy(e=0.1)": {
+            "disqualification_stat": {
+              "ci95": [
+                0.8167960302225787,
+                1.294315080888532
+              ],
+              "mean": 1.0555555555555554
+            },
+            "mean_findings": 5.277777777777778,
+            "mean_recall": 0.49954483673592304,
+            "relative_to_locked_reference_pct": 99.99999999999999,
+            "status": "viable",
+            "viability_stat": {
+              "ci95": [
+                0.20419900755564496,
+                0.3235787702221334
+              ],
+              "mean": 0.2638888888888892
+            }
+          },
+          "ExploreThenCommit": {
+            "disqualification_stat": {
+              "ci95": [
+                0.6489414957159291,
+                1.2121696153951818
+              ],
+              "mean": 0.9305555555555554
+            },
+            "mean_findings": 5.152777777777778,
+            "mean_recall": 0.48316292903457086,
+            "relative_to_locked_reference_pct": 97.63157894736841,
+            "status": "viable",
+            "viability_stat": {
+              "ci95": [
+                0.00027939275420940657,
+                0.27749838502356894
+              ],
+              "mean": 0.13888888888888917
+            }
+          },
+          "RoundRobin": {
+            "disqualification_stat": {
+              "ci95": [
+                -1.7249721308235912,
+                -0.330583424731964
+              ],
+              "mean": -1.0277777777777777
+            },
+            "mean_findings": 3.1944444444444446,
+            "mean_recall": 0.34382094001913216,
+            "relative_to_locked_reference_pct": 60.526315789473685,
+            "status": "disqualified",
+            "viability_stat": {
+              "ci95": [
+                -2.6813757610267483,
+                -0.9575131278621407
+              ],
+              "mean": -1.8194444444444444
+            }
+          },
+          "ThompsonSampling(prior=1.0)": {
+            "disqualification_stat": {
+              "ci95": [
+                0.17609587271561206,
+                1.0739041272843874
+              ],
+              "mean": 0.6249999999999998
+            },
+            "mean_findings": 4.847222222222222,
+            "mean_recall": 0.4739687010809738,
+            "relative_to_locked_reference_pct": 91.8421052631579,
+            "status": "uncertain",
+            "viability_stat": {
+              "ci95": [
+                -0.6835756072888505,
+                0.35024227395551766
+              ],
+              "mean": -0.16666666666666638
+            }
+          },
+          "UCB1(c=2.0)": {
+            "disqualification_stat": {
+              "ci95": [
+                -0.425387601016123,
+                0.5920542676827892
+              ],
+              "mean": 0.0833333333333331
+            },
+            "mean_findings": 4.305555555555555,
+            "mean_recall": 0.43469184180215364,
+            "relative_to_locked_reference_pct": 81.57894736842105,
+            "status": "uncertain",
+            "viability_stat": {
+              "ci95": [
+                -1.3425993453676444,
+                -0.07406732129902194
+              ],
+              "mean": -0.7083333333333331
+            }
+          }
+        },
+        "query_count": 72,
+        "reference_mean_findings": 5.277777777777778,
+        "reference_vs_explore_then_commit": {
+          "difference_ci95": [
+            0.009099936470532574,
+            0.2409000635294674
+          ],
+          "mean_difference": 0.125,
+          "raw_uplift_pct": 2.42587601078168
+        }
+      },
+      "diffuse": {
+        "confirmation_ranking": [
+          "EpsilonGreedy(e=0.1)",
+          "ThompsonSampling(prior=1.0)",
+          "ExploreThenCommit",
+          "UCB1(c=2.0)",
+          "DiscountedThompson(g=0.9)",
+          "RoundRobin"
+        ],
+        "locked_reference": "ThompsonSampling(prior=1.0)",
+        "policies": {
+          "DiscountedThompson(g=0.9)": {
+            "disqualification_stat": {
+              "ci95": [
+                0.40014122961826193,
+                0.7286258936694089
+              ],
+              "mean": 0.5643835616438354
+            },
+            "mean_findings": 4.465753424657534,
+            "mean_recall": 0.5145185122747608,
+            "relative_to_locked_reference_pct": 91.57303370786516,
+            "status": "uncertain",
+            "viability_stat": {
+              "ci95": [
+                -0.3502772274926533,
+                0.016030652150188007
+              ],
+              "mean": -0.16712328767123263
+            }
+          },
+          "EpsilonGreedy(e=0.1)": {
+            "disqualification_stat": {
+              "ci95": [
+                0.6276236413143831,
+                1.5970338929321914
+              ],
+              "mean": 1.1123287671232873
+            },
+            "mean_findings": 5.013698630136986,
+            "mean_recall": 0.5174364072395236,
+            "relative_to_locked_reference_pct": 102.80898876404494,
+            "status": "uncertain",
+            "viability_stat": {
+              "ci95": [
+                -0.09151828728112282,
+                0.8531621228975617
+              ],
+              "mean": 0.38082191780821945
+            }
+          },
+          "ExploreThenCommit": {
+            "disqualification_stat": {
+              "ci95": [
+                0.23443567930064813,
+                1.277893087822639
+              ],
+              "mean": 0.7561643835616436
+            },
+            "mean_findings": 4.657534246575342,
+            "mean_recall": 0.47839985874025037,
+            "relative_to_locked_reference_pct": 95.50561797752809,
+            "status": "uncertain",
+            "viability_stat": {
+              "ci95": [
+                -0.4774180269220885,
+                0.5267330954152397
+              ],
+              "mean": 0.02465753424657562
+            }
+          },
+          "RoundRobin": {
+            "disqualification_stat": {
+              "ci95": [
+                -0.2109548111813457,
+                0.29862604405805754
+              ],
+              "mean": 0.04383561643835591
+            },
+            "mean_findings": 3.9452054794520546,
+            "mean_recall": 0.4667866495635589,
+            "relative_to_locked_reference_pct": 80.89887640449437,
+            "status": "uncertain",
+            "viability_stat": {
+              "ci95": [
+                -1.0265432465246784,
+                -0.3487992192287457
+              ],
+              "mean": -0.6876712328767121
+            }
+          },
+          "ThompsonSampling(prior=1.0)": {
+            "disqualification_stat": {
+              "ci95": [
+                0.8151365527169836,
+                1.135548378789865
+              ],
+              "mean": 0.9753424657534243
+            },
+            "mean_findings": 4.876712328767123,
+            "mean_recall": 0.5453478438745544,
+            "relative_to_locked_reference_pct": 100.0,
+            "status": "viable",
+            "viability_stat": {
+              "ci95": [
+                0.20378413817924618,
+                0.28388709469746665
+              ],
+              "mean": 0.2438356164383564
+            }
+          },
+          "UCB1(c=2.0)": {
+            "disqualification_stat": {
+              "ci95": [
+                0.5322747411533924,
+                0.8430677246000318
+              ],
+              "mean": 0.6876712328767121
+            },
+            "mean_findings": 4.589041095890411,
+            "mean_recall": 0.524816736428275,
+            "relative_to_locked_reference_pct": 94.10112359550563,
+            "status": "uncertain",
+            "viability_stat": {
+              "ci95": [
+                -0.2113546579892347,
+                0.12368342511252294
+              ],
+              "mean": -0.04383561643835589
+            }
+          }
+        },
+        "query_count": 73,
+        "reference_mean_findings": 4.876712328767123,
+        "reference_vs_explore_then_commit": {
+          "difference_ci95": [
+            -0.28260808958870254,
+            0.7209642539722642
+          ],
+          "mean_difference": 0.2191780821917808,
+          "raw_uplift_pct": 4.705882352941182
+        }
+      }
+    },
+    "swinging_policies": []
+  },
+  "corpus": {
+    "all_indexed_frontmatter_removed": true,
+    "arm_document_counts": {
+      "AI & SDLC": 491,
+      "Biology": 4,
+      "Business": 30,
+      "Chemistry": 5,
+      "Frontend": 6,
+      "Indian Stocks": 16,
+      "Learning": 102,
+      "Mathematics": 28,
+      "Other": 4,
+      "Physics": 17,
+      "Synthesis": 0,
+      "raw": 254
+    },
+    "document_count": 957,
+    "duplicate_manifest_paths": [],
+    "eligible_query_count": 240,
+    "manifest_note_count": 1030,
+    "missing_manifest_files": [],
+    "split_counts": {
+      "confirmation": {
+        "concentrated": 72,
+        "diffuse": 73
+      },
+      "selection": {
+        "concentrated": 37,
+        "diffuse": 58
+      }
+    }
+  },
+  "design": {
+    "bm25": {
+      "b": 0.75,
+      "k1": 1.5
+    },
+    "budget": 48,
+    "concentration_threshold": 0.7,
+    "expected_manifest_sha256": "6BBA908F43640349937E94AEC9054E0DB16E9561265057099FBDFFEE8C6A8B3F",
+    "k": 12,
+    "observed_manifest_sha256": "6BBA908F43640349937E94AEC9054E0DB16E9561265057099FBDFFEE8C6A8B3F",
+    "policies": [
+      "RoundRobin",
+      "ExploreThenCommit",
+      "EpsilonGreedy(e=0.1)",
+      "UCB1(c=2.0)",
+      "ThompsonSampling(prior=1.0)",
+      "DiscountedThompson(g=0.9)"
+    ],
+    "preregistration": "PREREGISTRATION.md",
+    "tag_frequency": [
+      5,
+      80
+    ],
+    "vault": "C:\\XboxGames\\My Projects\\08. Project_ID_008_Obsidian_Knowledge_Files"
+  },
+  "query_audit": [
+    {
+      "maximum_arm_share": 0.6,
+      "relevant_arm_count": 3,
+      "relevant_count": 5,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 4,
+        "EpsilonGreedy(e=0.1)": 4,
+        "ExploreThenCommit": 4,
+        "RoundRobin": 4,
+        "ThompsonSampling(prior=1.0)": 4,
+        "UCB1(c=2.0)": 4
+      },
+      "split": "selection",
+      "stratum": "diffuse",
+      "tag": "3blue1brown"
+    },
+    {
+      "maximum_arm_share": 0.4,
+      "relevant_arm_count": 3,
+      "relevant_count": 5,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 4,
+        "EpsilonGreedy(e=0.1)": 5,
+        "ExploreThenCommit": 5,
+        "RoundRobin": 4,
+        "ThompsonSampling(prior=1.0)": 4,
+        "UCB1(c=2.0)": 4
+      },
+      "split": "confirmation",
+      "stratum": "diffuse",
+      "tag": "activation-functions"
+    },
+    {
+      "maximum_arm_share": 0.6,
+      "relevant_arm_count": 2,
+      "relevant_count": 5,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 1,
+        "EpsilonGreedy(e=0.1)": 0,
+        "ExploreThenCommit": 0,
+        "RoundRobin": 1,
+        "ThompsonSampling(prior=1.0)": 1,
+        "UCB1(c=2.0)": 1
+      },
+      "split": "selection",
+      "stratum": "diffuse",
+      "tag": "agent-architecture"
+    },
+    {
+      "maximum_arm_share": 0.8,
+      "relevant_arm_count": 2,
+      "relevant_count": 5,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 2,
+        "EpsilonGreedy(e=0.1)": 0,
+        "ExploreThenCommit": 0,
+        "RoundRobin": 1,
+        "ThompsonSampling(prior=1.0)": 0,
+        "UCB1(c=2.0)": 1
+      },
+      "split": "confirmation",
+      "stratum": "concentrated",
+      "tag": "agent-harness"
+    },
+    {
+      "maximum_arm_share": 0.6666666666666666,
+      "relevant_arm_count": 2,
+      "relevant_count": 6,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 0,
+        "EpsilonGreedy(e=0.1)": 0,
+        "ExploreThenCommit": 0,
+        "RoundRobin": 0,
+        "ThompsonSampling(prior=1.0)": 0,
+        "UCB1(c=2.0)": 0
+      },
+      "split": "confirmation",
+      "stratum": "diffuse",
+      "tag": "agent-orchestration"
+    },
+    {
+      "maximum_arm_share": 0.7,
+      "relevant_arm_count": 2,
+      "relevant_count": 20,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 2,
+        "EpsilonGreedy(e=0.1)": 0,
+        "ExploreThenCommit": 0,
+        "RoundRobin": 1,
+        "ThompsonSampling(prior=1.0)": 2,
+        "UCB1(c=2.0)": 2
+      },
+      "split": "confirmation",
+      "stratum": "concentrated",
+      "tag": "agentic-ai"
+    },
+    {
+      "maximum_arm_share": 0.7142857142857143,
+      "relevant_arm_count": 2,
+      "relevant_count": 7,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 0,
+        "EpsilonGreedy(e=0.1)": 0,
+        "ExploreThenCommit": 0,
+        "RoundRobin": 0,
+        "ThompsonSampling(prior=1.0)": 0,
+        "UCB1(c=2.0)": 0
+      },
+      "split": "selection",
+      "stratum": "concentrated",
+      "tag": "agentic-coding"
+    },
+    {
+      "maximum_arm_share": 0.6875,
+      "relevant_arm_count": 2,
+      "relevant_count": 16,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 0,
+        "EpsilonGreedy(e=0.1)": 0,
+        "ExploreThenCommit": 0,
+        "RoundRobin": 1,
+        "ThompsonSampling(prior=1.0)": 1,
+        "UCB1(c=2.0)": 1
+      },
+      "split": "selection",
+      "stratum": "diffuse",
+      "tag": "agentic-development"
+    },
+    {
+      "maximum_arm_share": 0.8181818181818182,
+      "relevant_arm_count": 3,
+      "relevant_count": 11,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 4,
+        "EpsilonGreedy(e=0.1)": 1,
+        "ExploreThenCommit": 1,
+        "RoundRobin": 2,
+        "ThompsonSampling(prior=1.0)": 3,
+        "UCB1(c=2.0)": 2
+      },
+      "split": "selection",
+      "stratum": "concentrated",
+      "tag": "agentic-engineering"
+    },
+    {
+      "maximum_arm_share": 0.8,
+      "relevant_arm_count": 2,
+      "relevant_count": 5,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 5,
+        "EpsilonGreedy(e=0.1)": 5,
+        "ExploreThenCommit": 5,
+        "RoundRobin": 4,
+        "ThompsonSampling(prior=1.0)": 5,
+        "UCB1(c=2.0)": 5
+      },
+      "split": "confirmation",
+      "stratum": "concentrated",
+      "tag": "agentic-os"
+    },
+    {
+      "maximum_arm_share": 0.5,
+      "relevant_arm_count": 3,
+      "relevant_count": 6,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 0,
+        "EpsilonGreedy(e=0.1)": 0,
+        "ExploreThenCommit": 0,
+        "RoundRobin": 1,
+        "ThompsonSampling(prior=1.0)": 1,
+        "UCB1(c=2.0)": 1
+      },
+      "split": "selection",
+      "stratum": "diffuse",
+      "tag": "agents"
+    },
+    {
+      "maximum_arm_share": 0.5714285714285714,
+      "relevant_arm_count": 2,
+      "relevant_count": 7,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 1,
+        "EpsilonGreedy(e=0.1)": 0,
+        "ExploreThenCommit": 0,
+        "RoundRobin": 1,
+        "ThompsonSampling(prior=1.0)": 1,
+        "UCB1(c=2.0)": 1
+      },
+      "split": "selection",
+      "stratum": "diffuse",
+      "tag": "ai"
+    },
+    {
+      "maximum_arm_share": 0.6666666666666666,
+      "relevant_arm_count": 2,
+      "relevant_count": 6,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 1,
+        "EpsilonGreedy(e=0.1)": 2,
+        "ExploreThenCommit": 0,
+        "RoundRobin": 1,
+        "ThompsonSampling(prior=1.0)": 1,
+        "UCB1(c=2.0)": 1
+      },
+      "split": "confirmation",
+      "stratum": "diffuse",
+      "tag": "ai-agent"
+    },
+    {
+      "maximum_arm_share": 0.4782608695652174,
+      "relevant_arm_count": 3,
+      "relevant_count": 23,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 2,
+        "EpsilonGreedy(e=0.1)": 8,
+        "ExploreThenCommit": 2,
+        "RoundRobin": 2,
+        "ThompsonSampling(prior=1.0)": 3,
+        "UCB1(c=2.0)": 2
+      },
+      "split": "selection",
+      "stratum": "diffuse",
+      "tag": "ai-automation"
+    },
+    {
+      "maximum_arm_share": 0.8461538461538461,
+      "relevant_arm_count": 2,
+      "relevant_count": 13,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 0,
+        "EpsilonGreedy(e=0.1)": 0,
+        "ExploreThenCommit": 0,
+        "RoundRobin": 0,
+        "ThompsonSampling(prior=1.0)": 0,
+        "UCB1(c=2.0)": 0
+      },
+      "split": "confirmation",
+      "stratum": "concentrated",
+      "tag": "ai-coding"
+    },
+    {
+      "maximum_arm_share": 0.5,
+      "relevant_arm_count": 2,
+      "relevant_count": 6,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 2,
+        "EpsilonGreedy(e=0.1)": 3,
+        "ExploreThenCommit": 3,
+        "RoundRobin": 2,
+        "ThompsonSampling(prior=1.0)": 2,
+        "UCB1(c=2.0)": 2
+      },
+      "split": "selection",
+      "stratum": "diffuse",
+      "tag": "ai-design"
+    },
+    {
+      "maximum_arm_share": 0.6,
+      "relevant_arm_count": 3,
+      "relevant_count": 10,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 3,
+        "EpsilonGreedy(e=0.1)": 1,
+        "ExploreThenCommit": 1,
+        "RoundRobin": 3,
+        "ThompsonSampling(prior=1.0)": 3,
+        "UCB1(c=2.0)": 2
+      },
+      "split": "confirmation",
+      "stratum": "diffuse",
+      "tag": "ai-development"
+    },
+    {
+      "maximum_arm_share": 0.7674418604651163,
+      "relevant_arm_count": 3,
+      "relevant_count": 43,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 7,
+        "EpsilonGreedy(e=0.1)": 5,
+        "ExploreThenCommit": 0,
+        "RoundRobin": 5,
+        "ThompsonSampling(prior=1.0)": 6,
+        "UCB1(c=2.0)": 9
+      },
+      "split": "selection",
+      "stratum": "concentrated",
+      "tag": "ai-engineering"
+    },
+    {
+      "maximum_arm_share": 0.5555555555555556,
+      "relevant_arm_count": 2,
+      "relevant_count": 9,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 1,
+        "EpsilonGreedy(e=0.1)": 0,
+        "ExploreThenCommit": 0,
+        "RoundRobin": 1,
+        "ThompsonSampling(prior=1.0)": 1,
+        "UCB1(c=2.0)": 1
+      },
+      "split": "selection",
+      "stratum": "diffuse",
+      "tag": "ai-infrastructure"
+    },
+    {
+      "maximum_arm_share": 0.4444444444444444,
+      "relevant_arm_count": 3,
+      "relevant_count": 9,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 0,
+        "EpsilonGreedy(e=0.1)": 0,
+        "ExploreThenCommit": 0,
+        "RoundRobin": 0,
+        "ThompsonSampling(prior=1.0)": 0,
+        "UCB1(c=2.0)": 0
+      },
+      "split": "selection",
+      "stratum": "diffuse",
+      "tag": "ai-productivity"
+    },
+    {
+      "maximum_arm_share": 0.5555555555555556,
+      "relevant_arm_count": 3,
+      "relevant_count": 9,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 4,
+        "EpsilonGreedy(e=0.1)": 6,
+        "ExploreThenCommit": 3,
+        "RoundRobin": 4,
+        "ThompsonSampling(prior=1.0)": 4,
+        "UCB1(c=2.0)": 5
+      },
+      "split": "confirmation",
+      "stratum": "diffuse",
+      "tag": "ai-safety"
+    },
+    {
+      "maximum_arm_share": 0.5,
+      "relevant_arm_count": 4,
+      "relevant_count": 8,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 2,
+        "EpsilonGreedy(e=0.1)": 1,
+        "ExploreThenCommit": 1,
+        "RoundRobin": 2,
+        "ThompsonSampling(prior=1.0)": 3,
+        "UCB1(c=2.0)": 2
+      },
+      "split": "selection",
+      "stratum": "diffuse",
+      "tag": "ai-skills"
+    },
+    {
+      "maximum_arm_share": 0.625,
+      "relevant_arm_count": 3,
+      "relevant_count": 8,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 0,
+        "EpsilonGreedy(e=0.1)": 0,
+        "ExploreThenCommit": 0,
+        "RoundRobin": 0,
+        "ThompsonSampling(prior=1.0)": 0,
+        "UCB1(c=2.0)": 0
+      },
+      "split": "selection",
+      "stratum": "diffuse",
+      "tag": "ai-tools"
+    },
+    {
+      "maximum_arm_share": 0.6666666666666666,
+      "relevant_arm_count": 2,
+      "relevant_count": 6,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 5,
+        "EpsilonGreedy(e=0.1)": 4,
+        "ExploreThenCommit": 4,
+        "RoundRobin": 4,
+        "ThompsonSampling(prior=1.0)": 5,
+        "UCB1(c=2.0)": 5
+      },
+      "split": "confirmation",
+      "stratum": "diffuse",
+      "tag": "ai-trading"
+    },
+    {
+      "maximum_arm_share": 0.6666666666666666,
+      "relevant_arm_count": 2,
+      "relevant_count": 6,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 5,
+        "EpsilonGreedy(e=0.1)": 4,
+        "ExploreThenCommit": 4,
+        "RoundRobin": 4,
+        "ThompsonSampling(prior=1.0)": 5,
+        "UCB1(c=2.0)": 5
+      },
+      "split": "selection",
+      "stratum": "diffuse",
+      "tag": "ai-video-generation"
+    },
+    {
+      "maximum_arm_share": 0.5,
+      "relevant_arm_count": 2,
+      "relevant_count": 8,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 0,
+        "EpsilonGreedy(e=0.1)": 0,
+        "ExploreThenCommit": 0,
+        "RoundRobin": 0,
+        "ThompsonSampling(prior=1.0)": 0,
+        "UCB1(c=2.0)": 0
+      },
+      "split": "confirmation",
+      "stratum": "diffuse",
+      "tag": "ai-workflows"
+    },
+    {
+      "maximum_arm_share": 0.75,
+      "relevant_arm_count": 3,
+      "relevant_count": 8,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 7,
+        "EpsilonGreedy(e=0.1)": 7,
+        "ExploreThenCommit": 7,
+        "RoundRobin": 6,
+        "ThompsonSampling(prior=1.0)": 7,
+        "UCB1(c=2.0)": 7
+      },
+      "split": "selection",
+      "stratum": "concentrated",
+      "tag": "algorithmic-trading"
+    },
+    {
+      "maximum_arm_share": 0.3333333333333333,
+      "relevant_arm_count": 4,
+      "relevant_count": 6,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 3,
+        "EpsilonGreedy(e=0.1)": 1,
+        "ExploreThenCommit": 1,
+        "RoundRobin": 3,
+        "ThompsonSampling(prior=1.0)": 3,
+        "UCB1(c=2.0)": 3
+      },
+      "split": "confirmation",
+      "stratum": "diffuse",
+      "tag": "algorithms"
+    },
+    {
+      "maximum_arm_share": 0.8536585365853658,
+      "relevant_arm_count": 5,
+      "relevant_count": 41,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 14,
+        "EpsilonGreedy(e=0.1)": 23,
+        "ExploreThenCommit": 23,
+        "RoundRobin": 6,
+        "ThompsonSampling(prior=1.0)": 15,
+        "UCB1(c=2.0)": 10
+      },
+      "split": "confirmation",
+      "stratum": "concentrated",
+      "tag": "anthropic"
+    },
+    {
+      "maximum_arm_share": 0.8333333333333334,
+      "relevant_arm_count": 2,
+      "relevant_count": 6,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 0,
+        "EpsilonGreedy(e=0.1)": 0,
+        "ExploreThenCommit": 0,
+        "RoundRobin": 0,
+        "ThompsonSampling(prior=1.0)": 0,
+        "UCB1(c=2.0)": 0
+      },
+      "split": "confirmation",
+      "stratum": "concentrated",
+      "tag": "anthropic-claude"
+    },
+    {
+      "maximum_arm_share": 0.6,
+      "relevant_arm_count": 3,
+      "relevant_count": 5,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 5,
+        "EpsilonGreedy(e=0.1)": 4,
+        "ExploreThenCommit": 4,
+        "RoundRobin": 4,
+        "ThompsonSampling(prior=1.0)": 5,
+        "UCB1(c=2.0)": 5
+      },
+      "split": "selection",
+      "stratum": "diffuse",
+      "tag": "anti-gravity-ide"
+    },
+    {
+      "maximum_arm_share": 0.4,
+      "relevant_arm_count": 3,
+      "relevant_count": 5,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 0,
+        "EpsilonGreedy(e=0.1)": 2,
+        "ExploreThenCommit": 2,
+        "RoundRobin": 0,
+        "ThompsonSampling(prior=1.0)": 0,
+        "UCB1(c=2.0)": 0
+      },
+      "split": "confirmation",
+      "stratum": "diffuse",
+      "tag": "api-integration"
+    },
+    {
+      "maximum_arm_share": 0.5949367088607594,
+      "relevant_arm_count": 5,
+      "relevant_count": 79,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 7,
+        "EpsilonGreedy(e=0.1)": 9,
+        "ExploreThenCommit": 9,
+        "RoundRobin": 6,
+        "ThompsonSampling(prior=1.0)": 8,
+        "UCB1(c=2.0)": 7
+      },
+      "split": "confirmation",
+      "stratum": "diffuse",
+      "tag": "automation"
+    },
+    {
+      "maximum_arm_share": 0.8571428571428571,
+      "relevant_arm_count": 3,
+      "relevant_count": 21,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 3,
+        "EpsilonGreedy(e=0.1)": 6,
+        "ExploreThenCommit": 6,
+        "RoundRobin": 3,
+        "ThompsonSampling(prior=1.0)": 3,
+        "UCB1(c=2.0)": 3
+      },
+      "split": "selection",
+      "stratum": "concentrated",
+      "tag": "autonomous-agents"
+    },
+    {
+      "maximum_arm_share": 0.8571428571428571,
+      "relevant_arm_count": 2,
+      "relevant_count": 7,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 2,
+        "EpsilonGreedy(e=0.1)": 0,
+        "ExploreThenCommit": 0,
+        "RoundRobin": 2,
+        "ThompsonSampling(prior=1.0)": 1,
+        "UCB1(c=2.0)": 2
+      },
+      "split": "selection",
+      "stratum": "concentrated",
+      "tag": "aws"
+    },
+    {
+      "maximum_arm_share": 0.5714285714285714,
+      "relevant_arm_count": 2,
+      "relevant_count": 7,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 5,
+        "EpsilonGreedy(e=0.1)": 5,
+        "ExploreThenCommit": 5,
+        "RoundRobin": 4,
+        "ThompsonSampling(prior=1.0)": 5,
+        "UCB1(c=2.0)": 5
+      },
+      "split": "confirmation",
+      "stratum": "diffuse",
+      "tag": "backpropagation"
+    },
+    {
+      "maximum_arm_share": 0.5,
+      "relevant_arm_count": 3,
+      "relevant_count": 8,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 8,
+        "EpsilonGreedy(e=0.1)": 8,
+        "ExploreThenCommit": 8,
+        "RoundRobin": 8,
+        "ThompsonSampling(prior=1.0)": 8,
+        "UCB1(c=2.0)": 8
+      },
+      "split": "confirmation",
+      "stratum": "diffuse",
+      "tag": "bayesian-networks"
+    },
+    {
+      "maximum_arm_share": 0.6,
+      "relevant_arm_count": 3,
+      "relevant_count": 5,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 2,
+        "EpsilonGreedy(e=0.1)": 0,
+        "ExploreThenCommit": 0,
+        "RoundRobin": 2,
+        "ThompsonSampling(prior=1.0)": 2,
+        "UCB1(c=2.0)": 2
+      },
+      "split": "selection",
+      "stratum": "diffuse",
+      "tag": "benchmarking"
+    },
+    {
+      "maximum_arm_share": 0.5555555555555556,
+      "relevant_arm_count": 2,
+      "relevant_count": 9,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 1,
+        "EpsilonGreedy(e=0.1)": 4,
+        "ExploreThenCommit": 4,
+        "RoundRobin": 1,
+        "ThompsonSampling(prior=1.0)": 2,
+        "UCB1(c=2.0)": 1
+      },
+      "split": "confirmation",
+      "stratum": "diffuse",
+      "tag": "business-automation"
+    },
+    {
+      "maximum_arm_share": 0.7142857142857143,
+      "relevant_arm_count": 2,
+      "relevant_count": 7,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 7,
+        "EpsilonGreedy(e=0.1)": 7,
+        "ExploreThenCommit": 7,
+        "RoundRobin": 5,
+        "ThompsonSampling(prior=1.0)": 7,
+        "UCB1(c=2.0)": 7
+      },
+      "split": "confirmation",
+      "stratum": "concentrated",
+      "tag": "calculus"
+    },
+    {
+      "maximum_arm_share": 0.75,
+      "relevant_arm_count": 4,
+      "relevant_count": 12,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 7,
+        "EpsilonGreedy(e=0.1)": 9,
+        "ExploreThenCommit": 9,
+        "RoundRobin": 6,
+        "ThompsonSampling(prior=1.0)": 9,
+        "UCB1(c=2.0)": 7
+      },
+      "split": "selection",
+      "stratum": "concentrated",
+      "tag": "chatgpt"
+    },
+    {
+      "maximum_arm_share": 0.5625,
+      "relevant_arm_count": 4,
+      "relevant_count": 16,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 1,
+        "EpsilonGreedy(e=0.1)": 1,
+        "ExploreThenCommit": 1,
+        "RoundRobin": 2,
+        "ThompsonSampling(prior=1.0)": 1,
+        "UCB1(c=2.0)": 2
+      },
+      "split": "selection",
+      "stratum": "diffuse",
+      "tag": "claude"
+    },
+    {
+      "maximum_arm_share": 0.47058823529411764,
+      "relevant_arm_count": 4,
+      "relevant_count": 17,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 8,
+        "EpsilonGreedy(e=0.1)": 5,
+        "ExploreThenCommit": 5,
+        "RoundRobin": 6,
+        "ThompsonSampling(prior=1.0)": 8,
+        "UCB1(c=2.0)": 7
+      },
+      "split": "selection",
+      "stratum": "diffuse",
+      "tag": "claude-ai"
+    },
+    {
+      "maximum_arm_share": 0.6363636363636364,
+      "relevant_arm_count": 3,
+      "relevant_count": 11,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 8,
+        "EpsilonGreedy(e=0.1)": 9,
+        "ExploreThenCommit": 9,
+        "RoundRobin": 7,
+        "ThompsonSampling(prior=1.0)": 9,
+        "UCB1(c=2.0)": 9
+      },
+      "split": "confirmation",
+      "stratum": "diffuse",
+      "tag": "claude-design"
+    },
+    {
+      "maximum_arm_share": 0.8461538461538461,
+      "relevant_arm_count": 3,
+      "relevant_count": 13,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 8,
+        "EpsilonGreedy(e=0.1)": 11,
+        "ExploreThenCommit": 11,
+        "RoundRobin": 5,
+        "ThompsonSampling(prior=1.0)": 11,
+        "UCB1(c=2.0)": 7
+      },
+      "split": "selection",
+      "stratum": "concentrated",
+      "tag": "claude-fable-5"
+    },
+    {
+      "maximum_arm_share": 0.5555555555555556,
+      "relevant_arm_count": 3,
+      "relevant_count": 9,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 5,
+        "EpsilonGreedy(e=0.1)": 1,
+        "ExploreThenCommit": 1,
+        "RoundRobin": 5,
+        "ThompsonSampling(prior=1.0)": 5,
+        "UCB1(c=2.0)": 5
+      },
+      "split": "confirmation",
+      "stratum": "diffuse",
+      "tag": "claude-skills"
+    },
+    {
+      "maximum_arm_share": 0.7142857142857143,
+      "relevant_arm_count": 3,
+      "relevant_count": 7,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 3,
+        "EpsilonGreedy(e=0.1)": 0,
+        "ExploreThenCommit": 0,
+        "RoundRobin": 3,
+        "ThompsonSampling(prior=1.0)": 1,
+        "UCB1(c=2.0)": 3
+      },
+      "split": "confirmation",
+      "stratum": "concentrated",
+      "tag": "cloud-code"
+    },
+    {
+      "maximum_arm_share": 0.6,
+      "relevant_arm_count": 2,
+      "relevant_count": 5,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 2,
+        "EpsilonGreedy(e=0.1)": 2,
+        "ExploreThenCommit": 2,
+        "RoundRobin": 2,
+        "ThompsonSampling(prior=1.0)": 2,
+        "UCB1(c=2.0)": 2
+      },
+      "split": "confirmation",
+      "stratum": "diffuse",
+      "tag": "cloud-infrastructure"
+    },
+    {
+      "maximum_arm_share": 0.5,
+      "relevant_arm_count": 2,
+      "relevant_count": 6,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 4,
+        "EpsilonGreedy(e=0.1)": 5,
+        "ExploreThenCommit": 3,
+        "RoundRobin": 3,
+        "ThompsonSampling(prior=1.0)": 5,
+        "UCB1(c=2.0)": 5
+      },
+      "split": "confirmation",
+      "stratum": "diffuse",
+      "tag": "cloud-native"
+    },
+    {
+      "maximum_arm_share": 0.7777777777777778,
+      "relevant_arm_count": 3,
+      "relevant_count": 18,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 3,
+        "EpsilonGreedy(e=0.1)": 1,
+        "ExploreThenCommit": 1,
+        "RoundRobin": 3,
+        "ThompsonSampling(prior=1.0)": 3,
+        "UCB1(c=2.0)": 3
+      },
+      "split": "selection",
+      "stratum": "concentrated",
+      "tag": "code-generation"
+    },
+    {
+      "maximum_arm_share": 0.9411764705882353,
+      "relevant_arm_count": 2,
+      "relevant_count": 17,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 7,
+        "EpsilonGreedy(e=0.1)": 8,
+        "ExploreThenCommit": 8,
+        "RoundRobin": 5,
+        "ThompsonSampling(prior=1.0)": 7,
+        "UCB1(c=2.0)": 7
+      },
+      "split": "confirmation",
+      "stratum": "concentrated",
+      "tag": "code-review"
+    },
+    {
+      "maximum_arm_share": 0.8620689655172413,
+      "relevant_arm_count": 2,
+      "relevant_count": 29,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 2,
+        "EpsilonGreedy(e=0.1)": 0,
+        "ExploreThenCommit": 0,
+        "RoundRobin": 2,
+        "ThompsonSampling(prior=1.0)": 3,
+        "UCB1(c=2.0)": 2
+      },
+      "split": "confirmation",
+      "stratum": "concentrated",
+      "tag": "coding-agents"
+    },
+    {
+      "maximum_arm_share": 0.7777777777777778,
+      "relevant_arm_count": 2,
+      "relevant_count": 9,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 3,
+        "EpsilonGreedy(e=0.1)": 3,
+        "ExploreThenCommit": 3,
+        "RoundRobin": 3,
+        "ThompsonSampling(prior=1.0)": 3,
+        "UCB1(c=2.0)": 3
+      },
+      "split": "confirmation",
+      "stratum": "concentrated",
+      "tag": "computer-architecture"
+    },
+    {
+      "maximum_arm_share": 0.5,
+      "relevant_arm_count": 4,
+      "relevant_count": 12,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 4,
+        "EpsilonGreedy(e=0.1)": 1,
+        "ExploreThenCommit": 1,
+        "RoundRobin": 3,
+        "ThompsonSampling(prior=1.0)": 2,
+        "UCB1(c=2.0)": 3
+      },
+      "split": "selection",
+      "stratum": "diffuse",
+      "tag": "computer-science"
+    },
+    {
+      "maximum_arm_share": 0.6,
+      "relevant_arm_count": 2,
+      "relevant_count": 5,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 1,
+        "EpsilonGreedy(e=0.1)": 2,
+        "ExploreThenCommit": 3,
+        "RoundRobin": 1,
+        "ThompsonSampling(prior=1.0)": 1,
+        "UCB1(c=2.0)": 1
+      },
+      "split": "confirmation",
+      "stratum": "diffuse",
+      "tag": "computer-vision"
+    },
+    {
+      "maximum_arm_share": 0.8333333333333334,
+      "relevant_arm_count": 2,
+      "relevant_count": 6,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 4,
+        "EpsilonGreedy(e=0.1)": 5,
+        "ExploreThenCommit": 5,
+        "RoundRobin": 4,
+        "ThompsonSampling(prior=1.0)": 6,
+        "UCB1(c=2.0)": 5
+      },
+      "split": "confirmation",
+      "stratum": "concentrated",
+      "tag": "concurrency"
+    },
+    {
+      "maximum_arm_share": 0.5,
+      "relevant_arm_count": 4,
+      "relevant_count": 16,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 10,
+        "EpsilonGreedy(e=0.1)": 11,
+        "ExploreThenCommit": 7,
+        "RoundRobin": 7,
+        "ThompsonSampling(prior=1.0)": 11,
+        "UCB1(c=2.0)": 10
+      },
+      "split": "confirmation",
+      "stratum": "diffuse",
+      "tag": "content-creation"
+    },
+    {
+      "maximum_arm_share": 0.6,
+      "relevant_arm_count": 2,
+      "relevant_count": 5,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 4,
+        "EpsilonGreedy(e=0.1)": 2,
+        "ExploreThenCommit": 2,
+        "RoundRobin": 4,
+        "ThompsonSampling(prior=1.0)": 4,
+        "UCB1(c=2.0)": 4
+      },
+      "split": "confirmation",
+      "stratum": "diffuse",
+      "tag": "content-strategy"
+    },
+    {
+      "maximum_arm_share": 0.8461538461538461,
+      "relevant_arm_count": 2,
+      "relevant_count": 13,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 5,
+        "EpsilonGreedy(e=0.1)": 0,
+        "ExploreThenCommit": 0,
+        "RoundRobin": 4,
+        "ThompsonSampling(prior=1.0)": 5,
+        "UCB1(c=2.0)": 5
+      },
+      "split": "confirmation",
+      "stratum": "concentrated",
+      "tag": "context-engineering"
+    },
+    {
+      "maximum_arm_share": 0.6842105263157895,
+      "relevant_arm_count": 2,
+      "relevant_count": 19,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 0,
+        "EpsilonGreedy(e=0.1)": 0,
+        "ExploreThenCommit": 0,
+        "RoundRobin": 0,
+        "ThompsonSampling(prior=1.0)": 0,
+        "UCB1(c=2.0)": 0
+      },
+      "split": "selection",
+      "stratum": "diffuse",
+      "tag": "context-management"
+    },
+    {
+      "maximum_arm_share": 0.7857142857142857,
+      "relevant_arm_count": 2,
+      "relevant_count": 14,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 3,
+        "EpsilonGreedy(e=0.1)": 0,
+        "ExploreThenCommit": 0,
+        "RoundRobin": 1,
+        "ThompsonSampling(prior=1.0)": 0,
+        "UCB1(c=2.0)": 3
+      },
+      "split": "confirmation",
+      "stratum": "concentrated",
+      "tag": "context-window"
+    },
+    {
+      "maximum_arm_share": 0.8,
+      "relevant_arm_count": 2,
+      "relevant_count": 5,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 2,
+        "EpsilonGreedy(e=0.1)": 2,
+        "ExploreThenCommit": 2,
+        "RoundRobin": 1,
+        "ThompsonSampling(prior=1.0)": 2,
+        "UCB1(c=2.0)": 1
+      },
+      "split": "confirmation",
+      "stratum": "concentrated",
+      "tag": "cost-optimization"
+    },
+    {
+      "maximum_arm_share": 0.8888888888888888,
+      "relevant_arm_count": 2,
+      "relevant_count": 9,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 5,
+        "EpsilonGreedy(e=0.1)": 8,
+        "ExploreThenCommit": 7,
+        "RoundRobin": 4,
+        "ThompsonSampling(prior=1.0)": 5,
+        "UCB1(c=2.0)": 5
+      },
+      "split": "selection",
+      "stratum": "concentrated",
+      "tag": "cursor"
+    },
+    {
+      "maximum_arm_share": 0.5,
+      "relevant_arm_count": 3,
+      "relevant_count": 10,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 3,
+        "EpsilonGreedy(e=0.1)": 2,
+        "ExploreThenCommit": 2,
+        "RoundRobin": 3,
+        "ThompsonSampling(prior=1.0)": 3,
+        "UCB1(c=2.0)": 3
+      },
+      "split": "selection",
+      "stratum": "diffuse",
+      "tag": "data-science"
+    },
+    {
+      "maximum_arm_share": 0.6,
+      "relevant_arm_count": 3,
+      "relevant_count": 5,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 3,
+        "EpsilonGreedy(e=0.1)": 2,
+        "ExploreThenCommit": 2,
+        "RoundRobin": 3,
+        "ThompsonSampling(prior=1.0)": 3,
+        "UCB1(c=2.0)": 3
+      },
+      "split": "confirmation",
+      "stratum": "diffuse",
+      "tag": "data-structures"
+    },
+    {
+      "maximum_arm_share": 0.3333333333333333,
+      "relevant_arm_count": 4,
+      "relevant_count": 6,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 3,
+        "EpsilonGreedy(e=0.1)": 1,
+        "ExploreThenCommit": 1,
+        "RoundRobin": 3,
+        "ThompsonSampling(prior=1.0)": 3,
+        "UCB1(c=2.0)": 3
+      },
+      "split": "selection",
+      "stratum": "diffuse",
+      "tag": "decision-making"
+    },
+    {
+      "maximum_arm_share": 0.5576923076923077,
+      "relevant_arm_count": 3,
+      "relevant_count": 52,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 2,
+        "EpsilonGreedy(e=0.1)": 9,
+        "ExploreThenCommit": 7,
+        "RoundRobin": 2,
+        "ThompsonSampling(prior=1.0)": 2,
+        "UCB1(c=2.0)": 2
+      },
+      "split": "confirmation",
+      "stratum": "diffuse",
+      "tag": "deep-learning"
+    },
+    {
+      "maximum_arm_share": 0.7142857142857143,
+      "relevant_arm_count": 3,
+      "relevant_count": 7,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 3,
+        "EpsilonGreedy(e=0.1)": 4,
+        "ExploreThenCommit": 4,
+        "RoundRobin": 2,
+        "ThompsonSampling(prior=1.0)": 2,
+        "UCB1(c=2.0)": 2
+      },
+      "split": "selection",
+      "stratum": "concentrated",
+      "tag": "deep-research"
+    },
+    {
+      "maximum_arm_share": 0.6,
+      "relevant_arm_count": 3,
+      "relevant_count": 5,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 4,
+        "EpsilonGreedy(e=0.1)": 2,
+        "ExploreThenCommit": 2,
+        "RoundRobin": 3,
+        "ThompsonSampling(prior=1.0)": 4,
+        "UCB1(c=2.0)": 4
+      },
+      "split": "confirmation",
+      "stratum": "diffuse",
+      "tag": "deepmind"
+    },
+    {
+      "maximum_arm_share": 0.7777777777777778,
+      "relevant_arm_count": 3,
+      "relevant_count": 18,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 6,
+        "EpsilonGreedy(e=0.1)": 2,
+        "ExploreThenCommit": 0,
+        "RoundRobin": 6,
+        "ThompsonSampling(prior=1.0)": 8,
+        "UCB1(c=2.0)": 6
+      },
+      "split": "confirmation",
+      "stratum": "concentrated",
+      "tag": "design-systems"
+    },
+    {
+      "maximum_arm_share": 0.7142857142857143,
+      "relevant_arm_count": 2,
+      "relevant_count": 7,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 0,
+        "EpsilonGreedy(e=0.1)": 0,
+        "ExploreThenCommit": 0,
+        "RoundRobin": 0,
+        "ThompsonSampling(prior=1.0)": 0,
+        "UCB1(c=2.0)": 0
+      },
+      "split": "selection",
+      "stratum": "concentrated",
+      "tag": "dev-tools"
+    },
+    {
+      "maximum_arm_share": 0.8518518518518519,
+      "relevant_arm_count": 3,
+      "relevant_count": 27,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 8,
+        "EpsilonGreedy(e=0.1)": 9,
+        "ExploreThenCommit": 9,
+        "RoundRobin": 5,
+        "ThompsonSampling(prior=1.0)": 8,
+        "UCB1(c=2.0)": 8
+      },
+      "split": "confirmation",
+      "stratum": "concentrated",
+      "tag": "developer-experience"
+    },
+    {
+      "maximum_arm_share": 0.7407407407407407,
+      "relevant_arm_count": 2,
+      "relevant_count": 27,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 4,
+        "EpsilonGreedy(e=0.1)": 5,
+        "ExploreThenCommit": 5,
+        "RoundRobin": 3,
+        "ThompsonSampling(prior=1.0)": 5,
+        "UCB1(c=2.0)": 4
+      },
+      "split": "selection",
+      "stratum": "concentrated",
+      "tag": "developer-productivity"
+    },
+    {
+      "maximum_arm_share": 0.8297872340425532,
+      "relevant_arm_count": 2,
+      "relevant_count": 47,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 0,
+        "EpsilonGreedy(e=0.1)": 8,
+        "ExploreThenCommit": 8,
+        "RoundRobin": 0,
+        "ThompsonSampling(prior=1.0)": 0,
+        "UCB1(c=2.0)": 0
+      },
+      "split": "confirmation",
+      "stratum": "concentrated",
+      "tag": "developer-tools"
+    },
+    {
+      "maximum_arm_share": 0.7931034482758621,
+      "relevant_arm_count": 2,
+      "relevant_count": 29,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 13,
+        "EpsilonGreedy(e=0.1)": 16,
+        "ExploreThenCommit": 16,
+        "RoundRobin": 5,
+        "ThompsonSampling(prior=1.0)": 16,
+        "UCB1(c=2.0)": 13
+      },
+      "split": "selection",
+      "stratum": "concentrated",
+      "tag": "devops"
+    },
+    {
+      "maximum_arm_share": 0.7,
+      "relevant_arm_count": 2,
+      "relevant_count": 10,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 5,
+        "EpsilonGreedy(e=0.1)": 6,
+        "ExploreThenCommit": 7,
+        "RoundRobin": 5,
+        "ThompsonSampling(prior=1.0)": 5,
+        "UCB1(c=2.0)": 5
+      },
+      "split": "selection",
+      "stratum": "concentrated",
+      "tag": "distributed-systems"
+    },
+    {
+      "maximum_arm_share": 0.5714285714285714,
+      "relevant_arm_count": 2,
+      "relevant_count": 7,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 5,
+        "EpsilonGreedy(e=0.1)": 6,
+        "ExploreThenCommit": 7,
+        "RoundRobin": 3,
+        "ThompsonSampling(prior=1.0)": 5,
+        "UCB1(c=2.0)": 5
+      },
+      "split": "confirmation",
+      "stratum": "diffuse",
+      "tag": "docker"
+    },
+    {
+      "maximum_arm_share": 0.8571428571428571,
+      "relevant_arm_count": 2,
+      "relevant_count": 7,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 4,
+        "EpsilonGreedy(e=0.1)": 7,
+        "ExploreThenCommit": 7,
+        "RoundRobin": 3,
+        "ThompsonSampling(prior=1.0)": 6,
+        "UCB1(c=2.0)": 5
+      },
+      "split": "confirmation",
+      "stratum": "concentrated",
+      "tag": "durable-execution"
+    },
+    {
+      "maximum_arm_share": 0.8333333333333334,
+      "relevant_arm_count": 2,
+      "relevant_count": 6,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 1,
+        "EpsilonGreedy(e=0.1)": 3,
+        "ExploreThenCommit": 0,
+        "RoundRobin": 1,
+        "ThompsonSampling(prior=1.0)": 2,
+        "UCB1(c=2.0)": 1
+      },
+      "split": "confirmation",
+      "stratum": "concentrated",
+      "tag": "edge-computing"
+    },
+    {
+      "maximum_arm_share": 0.4,
+      "relevant_arm_count": 3,
+      "relevant_count": 5,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 4,
+        "EpsilonGreedy(e=0.1)": 3,
+        "ExploreThenCommit": 3,
+        "RoundRobin": 4,
+        "ThompsonSampling(prior=1.0)": 4,
+        "UCB1(c=2.0)": 4
+      },
+      "split": "confirmation",
+      "stratum": "diffuse",
+      "tag": "embeddings"
+    },
+    {
+      "maximum_arm_share": 0.7619047619047619,
+      "relevant_arm_count": 2,
+      "relevant_count": 21,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 4,
+        "EpsilonGreedy(e=0.1)": 8,
+        "ExploreThenCommit": 9,
+        "RoundRobin": 3,
+        "ThompsonSampling(prior=1.0)": 6,
+        "UCB1(c=2.0)": 4
+      },
+      "split": "selection",
+      "stratum": "concentrated",
+      "tag": "enterprise-ai"
+    },
+    {
+      "maximum_arm_share": 0.2,
+      "relevant_arm_count": 5,
+      "relevant_count": 5,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 5,
+        "EpsilonGreedy(e=0.1)": 3,
+        "ExploreThenCommit": 2,
+        "RoundRobin": 5,
+        "ThompsonSampling(prior=1.0)": 5,
+        "UCB1(c=2.0)": 5
+      },
+      "split": "confirmation",
+      "stratum": "diffuse",
+      "tag": "entropy"
+    },
+    {
+      "maximum_arm_share": 0.6,
+      "relevant_arm_count": 3,
+      "relevant_count": 5,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 1,
+        "EpsilonGreedy(e=0.1)": 3,
+        "ExploreThenCommit": 3,
+        "RoundRobin": 1,
+        "ThompsonSampling(prior=1.0)": 3,
+        "UCB1(c=2.0)": 3
+      },
+      "split": "selection",
+      "stratum": "diffuse",
+      "tag": "ethics"
+    },
+    {
+      "maximum_arm_share": 0.8333333333333334,
+      "relevant_arm_count": 2,
+      "relevant_count": 6,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 2,
+        "EpsilonGreedy(e=0.1)": 1,
+        "ExploreThenCommit": 0,
+        "RoundRobin": 2,
+        "ThompsonSampling(prior=1.0)": 2,
+        "UCB1(c=2.0)": 2
+      },
+      "split": "confirmation",
+      "stratum": "concentrated",
+      "tag": "evals"
+    },
+    {
+      "maximum_arm_share": 0.7777777777777778,
+      "relevant_arm_count": 3,
+      "relevant_count": 9,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 4,
+        "EpsilonGreedy(e=0.1)": 2,
+        "ExploreThenCommit": 1,
+        "RoundRobin": 3,
+        "ThompsonSampling(prior=1.0)": 3,
+        "UCB1(c=2.0)": 3
+      },
+      "split": "confirmation",
+      "stratum": "concentrated",
+      "tag": "evaluation"
+    },
+    {
+      "maximum_arm_share": 0.75,
+      "relevant_arm_count": 3,
+      "relevant_count": 8,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 3,
+        "EpsilonGreedy(e=0.1)": 1,
+        "ExploreThenCommit": 1,
+        "RoundRobin": 2,
+        "ThompsonSampling(prior=1.0)": 1,
+        "UCB1(c=2.0)": 2
+      },
+      "split": "confirmation",
+      "stratum": "concentrated",
+      "tag": "fable-5"
+    },
+    {
+      "maximum_arm_share": 0.8571428571428571,
+      "relevant_arm_count": 2,
+      "relevant_count": 7,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 7,
+        "EpsilonGreedy(e=0.1)": 7,
+        "ExploreThenCommit": 7,
+        "RoundRobin": 5,
+        "ThompsonSampling(prior=1.0)": 7,
+        "UCB1(c=2.0)": 7
+      },
+      "split": "selection",
+      "stratum": "concentrated",
+      "tag": "factor-graphs"
+    },
+    {
+      "maximum_arm_share": 0.5,
+      "relevant_arm_count": 3,
+      "relevant_count": 8,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 6,
+        "EpsilonGreedy(e=0.1)": 7,
+        "ExploreThenCommit": 7,
+        "RoundRobin": 6,
+        "ThompsonSampling(prior=1.0)": 6,
+        "UCB1(c=2.0)": 6
+      },
+      "split": "selection",
+      "stratum": "diffuse",
+      "tag": "fine-tuning"
+    },
+    {
+      "maximum_arm_share": 0.5,
+      "relevant_arm_count": 3,
+      "relevant_count": 6,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 6,
+        "EpsilonGreedy(e=0.1)": 6,
+        "ExploreThenCommit": 6,
+        "RoundRobin": 6,
+        "ThompsonSampling(prior=1.0)": 6,
+        "UCB1(c=2.0)": 6
+      },
+      "split": "confirmation",
+      "stratum": "diffuse",
+      "tag": "first-order-logic"
+    },
+    {
+      "maximum_arm_share": 0.5,
+      "relevant_arm_count": 4,
+      "relevant_count": 6,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 6,
+        "EpsilonGreedy(e=0.1)": 6,
+        "ExploreThenCommit": 6,
+        "RoundRobin": 6,
+        "ThompsonSampling(prior=1.0)": 6,
+        "UCB1(c=2.0)": 6
+      },
+      "split": "selection",
+      "stratum": "diffuse",
+      "tag": "foundation-models"
+    },
+    {
+      "maximum_arm_share": 0.6666666666666666,
+      "relevant_arm_count": 2,
+      "relevant_count": 15,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 0,
+        "EpsilonGreedy(e=0.1)": 0,
+        "ExploreThenCommit": 0,
+        "RoundRobin": 1,
+        "ThompsonSampling(prior=1.0)": 1,
+        "UCB1(c=2.0)": 1
+      },
+      "split": "confirmation",
+      "stratum": "diffuse",
+      "tag": "frontend-development"
+    },
+    {
+      "maximum_arm_share": 0.4,
+      "relevant_arm_count": 4,
+      "relevant_count": 5,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 5,
+        "EpsilonGreedy(e=0.1)": 4,
+        "ExploreThenCommit": 4,
+        "RoundRobin": 5,
+        "ThompsonSampling(prior=1.0)": 5,
+        "UCB1(c=2.0)": 5
+      },
+      "split": "selection",
+      "stratum": "diffuse",
+      "tag": "game-theory"
+    },
+    {
+      "maximum_arm_share": 0.8333333333333334,
+      "relevant_arm_count": 2,
+      "relevant_count": 6,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 2,
+        "EpsilonGreedy(e=0.1)": 5,
+        "ExploreThenCommit": 5,
+        "RoundRobin": 2,
+        "ThompsonSampling(prior=1.0)": 2,
+        "UCB1(c=2.0)": 2
+      },
+      "split": "confirmation",
+      "stratum": "concentrated",
+      "tag": "gemini"
+    },
+    {
+      "maximum_arm_share": 0.625,
+      "relevant_arm_count": 3,
+      "relevant_count": 8,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 7,
+        "EpsilonGreedy(e=0.1)": 6,
+        "ExploreThenCommit": 6,
+        "RoundRobin": 7,
+        "ThompsonSampling(prior=1.0)": 8,
+        "UCB1(c=2.0)": 7
+      },
+      "split": "selection",
+      "stratum": "diffuse",
+      "tag": "gemma-4"
+    },
+    {
+      "maximum_arm_share": 0.45454545454545453,
+      "relevant_arm_count": 3,
+      "relevant_count": 22,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 3,
+        "EpsilonGreedy(e=0.1)": 3,
+        "ExploreThenCommit": 0,
+        "RoundRobin": 4,
+        "ThompsonSampling(prior=1.0)": 6,
+        "UCB1(c=2.0)": 6
+      },
+      "split": "confirmation",
+      "stratum": "diffuse",
+      "tag": "generative-ai"
+    },
+    {
+      "maximum_arm_share": 0.9090909090909091,
+      "relevant_arm_count": 2,
+      "relevant_count": 11,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 9,
+        "EpsilonGreedy(e=0.1)": 11,
+        "ExploreThenCommit": 11,
+        "RoundRobin": 5,
+        "ThompsonSampling(prior=1.0)": 11,
+        "UCB1(c=2.0)": 9
+      },
+      "split": "selection",
+      "stratum": "concentrated",
+      "tag": "generative-ui"
+    },
+    {
+      "maximum_arm_share": 0.8,
+      "relevant_arm_count": 2,
+      "relevant_count": 5,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 4,
+        "EpsilonGreedy(e=0.1)": 5,
+        "ExploreThenCommit": 5,
+        "RoundRobin": 3,
+        "ThompsonSampling(prior=1.0)": 5,
+        "UCB1(c=2.0)": 4
+      },
+      "split": "confirmation",
+      "stratum": "concentrated",
+      "tag": "google-cloud"
+    },
+    {
+      "maximum_arm_share": 0.625,
+      "relevant_arm_count": 3,
+      "relevant_count": 8,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 8,
+        "EpsilonGreedy(e=0.1)": 8,
+        "ExploreThenCommit": 6,
+        "RoundRobin": 6,
+        "ThompsonSampling(prior=1.0)": 8,
+        "UCB1(c=2.0)": 8
+      },
+      "split": "confirmation",
+      "stratum": "diffuse",
+      "tag": "google-deepmind"
+    },
+    {
+      "maximum_arm_share": 0.8,
+      "relevant_arm_count": 2,
+      "relevant_count": 10,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 8,
+        "EpsilonGreedy(e=0.1)": 8,
+        "ExploreThenCommit": 8,
+        "RoundRobin": 5,
+        "ThompsonSampling(prior=1.0)": 8,
+        "UCB1(c=2.0)": 8
+      },
+      "split": "confirmation",
+      "stratum": "concentrated",
+      "tag": "gradient-descent"
+    },
+    {
+      "maximum_arm_share": 0.8,
+      "relevant_arm_count": 2,
+      "relevant_count": 5,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 0,
+        "EpsilonGreedy(e=0.1)": 0,
+        "ExploreThenCommit": 0,
+        "RoundRobin": 0,
+        "ThompsonSampling(prior=1.0)": 0,
+        "UCB1(c=2.0)": 0
+      },
+      "split": "confirmation",
+      "stratum": "concentrated",
+      "tag": "guardrails"
+    },
+    {
+      "maximum_arm_share": 0.8,
+      "relevant_arm_count": 2,
+      "relevant_count": 5,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 3,
+        "EpsilonGreedy(e=0.1)": 4,
+        "ExploreThenCommit": 4,
+        "RoundRobin": 3,
+        "ThompsonSampling(prior=1.0)": 4,
+        "UCB1(c=2.0)": 3
+      },
+      "split": "confirmation",
+      "stratum": "concentrated",
+      "tag": "harness-engineering"
+    },
+    {
+      "maximum_arm_share": 0.8666666666666667,
+      "relevant_arm_count": 3,
+      "relevant_count": 15,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 10,
+        "EpsilonGreedy(e=0.1)": 15,
+        "ExploreThenCommit": 15,
+        "RoundRobin": 5,
+        "ThompsonSampling(prior=1.0)": 13,
+        "UCB1(c=2.0)": 10
+      },
+      "split": "confirmation",
+      "stratum": "concentrated",
+      "tag": "hermes-agent"
+    },
+    {
+      "maximum_arm_share": 0.8,
+      "relevant_arm_count": 2,
+      "relevant_count": 5,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 1,
+        "EpsilonGreedy(e=0.1)": 1,
+        "ExploreThenCommit": 1,
+        "RoundRobin": 1,
+        "ThompsonSampling(prior=1.0)": 1,
+        "UCB1(c=2.0)": 1
+      },
+      "split": "confirmation",
+      "stratum": "concentrated",
+      "tag": "hostinger"
+    },
+    {
+      "maximum_arm_share": 0.8888888888888888,
+      "relevant_arm_count": 2,
+      "relevant_count": 18,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 0,
+        "EpsilonGreedy(e=0.1)": 0,
+        "ExploreThenCommit": 0,
+        "RoundRobin": 0,
+        "ThompsonSampling(prior=1.0)": 0,
+        "UCB1(c=2.0)": 0
+      },
+      "split": "confirmation",
+      "stratum": "concentrated",
+      "tag": "human-in-the-loop"
+    },
+    {
+      "maximum_arm_share": 0.5,
+      "relevant_arm_count": 2,
+      "relevant_count": 8,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 4,
+        "EpsilonGreedy(e=0.1)": 3,
+        "ExploreThenCommit": 3,
+        "RoundRobin": 3,
+        "ThompsonSampling(prior=1.0)": 5,
+        "UCB1(c=2.0)": 4
+      },
+      "split": "confirmation",
+      "stratum": "diffuse",
+      "tag": "inference-optimization"
+    },
+    {
+      "maximum_arm_share": 0.8333333333333334,
+      "relevant_arm_count": 2,
+      "relevant_count": 6,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 6,
+        "EpsilonGreedy(e=0.1)": 6,
+        "ExploreThenCommit": 6,
+        "RoundRobin": 5,
+        "ThompsonSampling(prior=1.0)": 6,
+        "UCB1(c=2.0)": 6
+      },
+      "split": "selection",
+      "stratum": "concentrated",
+      "tag": "inference-rules"
+    },
+    {
+      "maximum_arm_share": 0.3333333333333333,
+      "relevant_arm_count": 4,
+      "relevant_count": 6,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 6,
+        "EpsilonGreedy(e=0.1)": 4,
+        "ExploreThenCommit": 3,
+        "RoundRobin": 6,
+        "ThompsonSampling(prior=1.0)": 6,
+        "UCB1(c=2.0)": 6
+      },
+      "split": "selection",
+      "stratum": "diffuse",
+      "tag": "information-theory"
+    },
+    {
+      "maximum_arm_share": 0.5,
+      "relevant_arm_count": 2,
+      "relevant_count": 10,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 4,
+        "EpsilonGreedy(e=0.1)": 4,
+        "ExploreThenCommit": 4,
+        "RoundRobin": 3,
+        "ThompsonSampling(prior=1.0)": 4,
+        "UCB1(c=2.0)": 3
+      },
+      "split": "confirmation",
+      "stratum": "diffuse",
+      "tag": "infrastructure-as-code"
+    },
+    {
+      "maximum_arm_share": 0.5555555555555556,
+      "relevant_arm_count": 2,
+      "relevant_count": 9,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 3,
+        "EpsilonGreedy(e=0.1)": 5,
+        "ExploreThenCommit": 5,
+        "RoundRobin": 3,
+        "ThompsonSampling(prior=1.0)": 4,
+        "UCB1(c=2.0)": 3
+      },
+      "split": "confirmation",
+      "stratum": "diffuse",
+      "tag": "knowledge-graphs"
+    },
+    {
+      "maximum_arm_share": 0.631578947368421,
+      "relevant_arm_count": 4,
+      "relevant_count": 19,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 4,
+        "EpsilonGreedy(e=0.1)": 4,
+        "ExploreThenCommit": 5,
+        "RoundRobin": 3,
+        "ThompsonSampling(prior=1.0)": 4,
+        "UCB1(c=2.0)": 4
+      },
+      "split": "selection",
+      "stratum": "diffuse",
+      "tag": "knowledge-management"
+    },
+    {
+      "maximum_arm_share": 0.5714285714285714,
+      "relevant_arm_count": 3,
+      "relevant_count": 7,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 7,
+        "EpsilonGreedy(e=0.1)": 7,
+        "ExploreThenCommit": 7,
+        "RoundRobin": 6,
+        "ThompsonSampling(prior=1.0)": 7,
+        "UCB1(c=2.0)": 7
+      },
+      "split": "confirmation",
+      "stratum": "diffuse",
+      "tag": "knowledge-representation"
+    },
+    {
+      "maximum_arm_share": 0.6,
+      "relevant_arm_count": 2,
+      "relevant_count": 5,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 5,
+        "EpsilonGreedy(e=0.1)": 5,
+        "ExploreThenCommit": 5,
+        "RoundRobin": 5,
+        "ThompsonSampling(prior=1.0)": 5,
+        "UCB1(c=2.0)": 5
+      },
+      "split": "confirmation",
+      "stratum": "diffuse",
+      "tag": "kubernetes"
+    },
+    {
+      "maximum_arm_share": 0.6666666666666666,
+      "relevant_arm_count": 2,
+      "relevant_count": 12,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 2,
+        "EpsilonGreedy(e=0.1)": 3,
+        "ExploreThenCommit": 3,
+        "RoundRobin": 1,
+        "ThompsonSampling(prior=1.0)": 2,
+        "UCB1(c=2.0)": 2
+      },
+      "split": "confirmation",
+      "stratum": "diffuse",
+      "tag": "language-modeling"
+    },
+    {
+      "maximum_arm_share": 0.5,
+      "relevant_arm_count": 5,
+      "relevant_count": 10,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 4,
+        "EpsilonGreedy(e=0.1)": 8,
+        "ExploreThenCommit": 6,
+        "RoundRobin": 4,
+        "ThompsonSampling(prior=1.0)": 4,
+        "UCB1(c=2.0)": 5
+      },
+      "split": "confirmation",
+      "stratum": "diffuse",
+      "tag": "language-models"
+    },
+    {
+      "maximum_arm_share": 0.375,
+      "relevant_arm_count": 4,
+      "relevant_count": 24,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 7,
+        "EpsilonGreedy(e=0.1)": 10,
+        "ExploreThenCommit": 10,
+        "RoundRobin": 6,
+        "ThompsonSampling(prior=1.0)": 9,
+        "UCB1(c=2.0)": 8
+      },
+      "split": "confirmation",
+      "stratum": "diffuse",
+      "tag": "large-language-models"
+    },
+    {
+      "maximum_arm_share": 0.5555555555555556,
+      "relevant_arm_count": 3,
+      "relevant_count": 9,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 6,
+        "EpsilonGreedy(e=0.1)": 4,
+        "ExploreThenCommit": 4,
+        "RoundRobin": 5,
+        "ThompsonSampling(prior=1.0)": 6,
+        "UCB1(c=2.0)": 6
+      },
+      "split": "selection",
+      "stratum": "diffuse",
+      "tag": "lead-generation"
+    },
+    {
+      "maximum_arm_share": 0.8,
+      "relevant_arm_count": 2,
+      "relevant_count": 5,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 3,
+        "EpsilonGreedy(e=0.1)": 4,
+        "ExploreThenCommit": 4,
+        "RoundRobin": 2,
+        "ThompsonSampling(prior=1.0)": 3,
+        "UCB1(c=2.0)": 3
+      },
+      "split": "confirmation",
+      "stratum": "concentrated",
+      "tag": "leadership"
+    },
+    {
+      "maximum_arm_share": 0.6,
+      "relevant_arm_count": 4,
+      "relevant_count": 10,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 7,
+        "EpsilonGreedy(e=0.1)": 7,
+        "ExploreThenCommit": 7,
+        "RoundRobin": 6,
+        "ThompsonSampling(prior=1.0)": 8,
+        "UCB1(c=2.0)": 7
+      },
+      "split": "selection",
+      "stratum": "diffuse",
+      "tag": "linear-algebra"
+    },
+    {
+      "maximum_arm_share": 0.6,
+      "relevant_arm_count": 3,
+      "relevant_count": 5,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 4,
+        "EpsilonGreedy(e=0.1)": 4,
+        "ExploreThenCommit": 4,
+        "RoundRobin": 4,
+        "ThompsonSampling(prior=1.0)": 4,
+        "UCB1(c=2.0)": 4
+      },
+      "split": "selection",
+      "stratum": "diffuse",
+      "tag": "linguistics"
+    },
+    {
+      "maximum_arm_share": 0.4666666666666667,
+      "relevant_arm_count": 3,
+      "relevant_count": 15,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 3,
+        "EpsilonGreedy(e=0.1)": 3,
+        "ExploreThenCommit": 0,
+        "RoundRobin": 2,
+        "ThompsonSampling(prior=1.0)": 3,
+        "UCB1(c=2.0)": 2
+      },
+      "split": "confirmation",
+      "stratum": "diffuse",
+      "tag": "llm"
+    },
+    {
+      "maximum_arm_share": 0.7142857142857143,
+      "relevant_arm_count": 2,
+      "relevant_count": 7,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 2,
+        "EpsilonGreedy(e=0.1)": 0,
+        "ExploreThenCommit": 0,
+        "RoundRobin": 2,
+        "ThompsonSampling(prior=1.0)": 2,
+        "UCB1(c=2.0)": 2
+      },
+      "split": "confirmation",
+      "stratum": "concentrated",
+      "tag": "llm-architecture"
+    },
+    {
+      "maximum_arm_share": 0.6666666666666666,
+      "relevant_arm_count": 3,
+      "relevant_count": 6,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 3,
+        "EpsilonGreedy(e=0.1)": 6,
+        "ExploreThenCommit": 6,
+        "RoundRobin": 3,
+        "ThompsonSampling(prior=1.0)": 3,
+        "UCB1(c=2.0)": 3
+      },
+      "split": "confirmation",
+      "stratum": "diffuse",
+      "tag": "llm-as-a-judge"
+    },
+    {
+      "maximum_arm_share": 0.4444444444444444,
+      "relevant_arm_count": 3,
+      "relevant_count": 9,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 4,
+        "EpsilonGreedy(e=0.1)": 4,
+        "ExploreThenCommit": 4,
+        "RoundRobin": 3,
+        "ThompsonSampling(prior=1.0)": 4,
+        "UCB1(c=2.0)": 4
+      },
+      "split": "confirmation",
+      "stratum": "diffuse",
+      "tag": "llm-evaluation"
+    },
+    {
+      "maximum_arm_share": 0.875,
+      "relevant_arm_count": 2,
+      "relevant_count": 8,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 2,
+        "EpsilonGreedy(e=0.1)": 3,
+        "ExploreThenCommit": 3,
+        "RoundRobin": 2,
+        "ThompsonSampling(prior=1.0)": 2,
+        "UCB1(c=2.0)": 2
+      },
+      "split": "confirmation",
+      "stratum": "concentrated",
+      "tag": "llm-ops"
+    },
+    {
+      "maximum_arm_share": 0.8181818181818182,
+      "relevant_arm_count": 2,
+      "relevant_count": 11,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 3,
+        "EpsilonGreedy(e=0.1)": 7,
+        "ExploreThenCommit": 7,
+        "RoundRobin": 3,
+        "ThompsonSampling(prior=1.0)": 3,
+        "UCB1(c=2.0)": 3
+      },
+      "split": "selection",
+      "stratum": "concentrated",
+      "tag": "llm-orchestration"
+    },
+    {
+      "maximum_arm_share": 0.6666666666666666,
+      "relevant_arm_count": 2,
+      "relevant_count": 6,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 2,
+        "EpsilonGreedy(e=0.1)": 2,
+        "ExploreThenCommit": 2,
+        "RoundRobin": 2,
+        "ThompsonSampling(prior=1.0)": 1,
+        "UCB1(c=2.0)": 2
+      },
+      "split": "selection",
+      "stratum": "diffuse",
+      "tag": "llm-training"
+    },
+    {
+      "maximum_arm_share": 0.6,
+      "relevant_arm_count": 2,
+      "relevant_count": 5,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 0,
+        "EpsilonGreedy(e=0.1)": 0,
+        "ExploreThenCommit": 0,
+        "RoundRobin": 0,
+        "ThompsonSampling(prior=1.0)": 0,
+        "UCB1(c=2.0)": 0
+      },
+      "split": "confirmation",
+      "stratum": "diffuse",
+      "tag": "llms"
+    },
+    {
+      "maximum_arm_share": 0.7777777777777778,
+      "relevant_arm_count": 3,
+      "relevant_count": 9,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 5,
+        "EpsilonGreedy(e=0.1)": 7,
+        "ExploreThenCommit": 7,
+        "RoundRobin": 5,
+        "ThompsonSampling(prior=1.0)": 7,
+        "UCB1(c=2.0)": 7
+      },
+      "split": "confirmation",
+      "stratum": "concentrated",
+      "tag": "local-ai"
+    },
+    {
+      "maximum_arm_share": 0.75,
+      "relevant_arm_count": 2,
+      "relevant_count": 8,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 1,
+        "EpsilonGreedy(e=0.1)": 0,
+        "ExploreThenCommit": 0,
+        "RoundRobin": 1,
+        "ThompsonSampling(prior=1.0)": 2,
+        "UCB1(c=2.0)": 1
+      },
+      "split": "selection",
+      "stratum": "concentrated",
+      "tag": "local-llm"
+    },
+    {
+      "maximum_arm_share": 0.5,
+      "relevant_arm_count": 3,
+      "relevant_count": 6,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 2,
+        "EpsilonGreedy(e=0.1)": 0,
+        "ExploreThenCommit": 0,
+        "RoundRobin": 2,
+        "ThompsonSampling(prior=1.0)": 2,
+        "UCB1(c=2.0)": 2
+      },
+      "split": "confirmation",
+      "stratum": "diffuse",
+      "tag": "logic"
+    },
+    {
+      "maximum_arm_share": 0.875,
+      "relevant_arm_count": 2,
+      "relevant_count": 16,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 11,
+        "EpsilonGreedy(e=0.1)": 15,
+        "ExploreThenCommit": 15,
+        "RoundRobin": 6,
+        "ThompsonSampling(prior=1.0)": 14,
+        "UCB1(c=2.0)": 11
+      },
+      "split": "confirmation",
+      "stratum": "concentrated",
+      "tag": "loop-engineering"
+    },
+    {
+      "maximum_arm_share": 0.5714285714285714,
+      "relevant_arm_count": 3,
+      "relevant_count": 7,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 6,
+        "EpsilonGreedy(e=0.1)": 6,
+        "ExploreThenCommit": 6,
+        "RoundRobin": 5,
+        "ThompsonSampling(prior=1.0)": 6,
+        "UCB1(c=2.0)": 6
+      },
+      "split": "confirmation",
+      "stratum": "diffuse",
+      "tag": "marketing-automation"
+    },
+    {
+      "maximum_arm_share": 0.4642857142857143,
+      "relevant_arm_count": 4,
+      "relevant_count": 28,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 15,
+        "EpsilonGreedy(e=0.1)": 21,
+        "ExploreThenCommit": 22,
+        "RoundRobin": 9,
+        "ThompsonSampling(prior=1.0)": 20,
+        "UCB1(c=2.0)": 13
+      },
+      "split": "selection",
+      "stratum": "diffuse",
+      "tag": "mathematics"
+    },
+    {
+      "maximum_arm_share": 0.8064516129032258,
+      "relevant_arm_count": 3,
+      "relevant_count": 31,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 5,
+        "EpsilonGreedy(e=0.1)": 11,
+        "ExploreThenCommit": 12,
+        "RoundRobin": 5,
+        "ThompsonSampling(prior=1.0)": 6,
+        "UCB1(c=2.0)": 6
+      },
+      "split": "selection",
+      "stratum": "concentrated",
+      "tag": "mcp"
+    },
+    {
+      "maximum_arm_share": 0.9285714285714286,
+      "relevant_arm_count": 2,
+      "relevant_count": 14,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 11,
+        "EpsilonGreedy(e=0.1)": 12,
+        "ExploreThenCommit": 13,
+        "RoundRobin": 5,
+        "ThompsonSampling(prior=1.0)": 12,
+        "UCB1(c=2.0)": 11
+      },
+      "split": "confirmation",
+      "stratum": "concentrated",
+      "tag": "mcp-apps"
+    },
+    {
+      "maximum_arm_share": 0.7,
+      "relevant_arm_count": 3,
+      "relevant_count": 10,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 3,
+        "EpsilonGreedy(e=0.1)": 2,
+        "ExploreThenCommit": 2,
+        "RoundRobin": 3,
+        "ThompsonSampling(prior=1.0)": 3,
+        "UCB1(c=2.0)": 3
+      },
+      "split": "confirmation",
+      "stratum": "concentrated",
+      "tag": "mcp-server"
+    },
+    {
+      "maximum_arm_share": 0.75,
+      "relevant_arm_count": 3,
+      "relevant_count": 20,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 5,
+        "EpsilonGreedy(e=0.1)": 0,
+        "ExploreThenCommit": 0,
+        "RoundRobin": 3,
+        "ThompsonSampling(prior=1.0)": 6,
+        "UCB1(c=2.0)": 6
+      },
+      "split": "selection",
+      "stratum": "concentrated",
+      "tag": "mcp-servers"
+    },
+    {
+      "maximum_arm_share": 0.8,
+      "relevant_arm_count": 2,
+      "relevant_count": 5,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 3,
+        "EpsilonGreedy(e=0.1)": 4,
+        "ExploreThenCommit": 4,
+        "RoundRobin": 2,
+        "ThompsonSampling(prior=1.0)": 3,
+        "UCB1(c=2.0)": 3
+      },
+      "split": "confirmation",
+      "stratum": "concentrated",
+      "tag": "memory-systems"
+    },
+    {
+      "maximum_arm_share": 0.6666666666666666,
+      "relevant_arm_count": 2,
+      "relevant_count": 6,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 6,
+        "EpsilonGreedy(e=0.1)": 2,
+        "ExploreThenCommit": 2,
+        "RoundRobin": 5,
+        "ThompsonSampling(prior=1.0)": 6,
+        "UCB1(c=2.0)": 6
+      },
+      "split": "selection",
+      "stratum": "diffuse",
+      "tag": "microservices"
+    },
+    {
+      "maximum_arm_share": 0.6,
+      "relevant_arm_count": 3,
+      "relevant_count": 5,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 4,
+        "EpsilonGreedy(e=0.1)": 4,
+        "ExploreThenCommit": 4,
+        "RoundRobin": 4,
+        "ThompsonSampling(prior=1.0)": 5,
+        "UCB1(c=2.0)": 4
+      },
+      "split": "confirmation",
+      "stratum": "diffuse",
+      "tag": "mixture-of-experts"
+    },
+    {
+      "maximum_arm_share": 0.8484848484848485,
+      "relevant_arm_count": 3,
+      "relevant_count": 33,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 4,
+        "EpsilonGreedy(e=0.1)": 0,
+        "ExploreThenCommit": 0,
+        "RoundRobin": 3,
+        "ThompsonSampling(prior=1.0)": 2,
+        "UCB1(c=2.0)": 3
+      },
+      "split": "confirmation",
+      "stratum": "concentrated",
+      "tag": "model-context-protocol"
+    },
+    {
+      "maximum_arm_share": 0.6923076923076923,
+      "relevant_arm_count": 2,
+      "relevant_count": 13,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 5,
+        "EpsilonGreedy(e=0.1)": 9,
+        "ExploreThenCommit": 9,
+        "RoundRobin": 4,
+        "ThompsonSampling(prior=1.0)": 6,
+        "UCB1(c=2.0)": 5
+      },
+      "split": "confirmation",
+      "stratum": "diffuse",
+      "tag": "model-training"
+    },
+    {
+      "maximum_arm_share": 0.8387096774193549,
+      "relevant_arm_count": 2,
+      "relevant_count": 31,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 4,
+        "EpsilonGreedy(e=0.1)": 5,
+        "ExploreThenCommit": 5,
+        "RoundRobin": 4,
+        "ThompsonSampling(prior=1.0)": 5,
+        "UCB1(c=2.0)": 4
+      },
+      "split": "confirmation",
+      "stratum": "concentrated",
+      "tag": "multi-agent-systems"
+    },
+    {
+      "maximum_arm_share": 0.5,
+      "relevant_arm_count": 3,
+      "relevant_count": 6,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 5,
+        "EpsilonGreedy(e=0.1)": 4,
+        "ExploreThenCommit": 4,
+        "RoundRobin": 6,
+        "ThompsonSampling(prior=1.0)": 6,
+        "UCB1(c=2.0)": 6
+      },
+      "split": "selection",
+      "stratum": "diffuse",
+      "tag": "multimodal-ai"
+    },
+    {
+      "maximum_arm_share": 0.75,
+      "relevant_arm_count": 2,
+      "relevant_count": 8,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 7,
+        "EpsilonGreedy(e=0.1)": 7,
+        "ExploreThenCommit": 7,
+        "RoundRobin": 5,
+        "ThompsonSampling(prior=1.0)": 7,
+        "UCB1(c=2.0)": 7
+      },
+      "split": "confirmation",
+      "stratum": "concentrated",
+      "tag": "n8n"
+    },
+    {
+      "maximum_arm_share": 0.7333333333333333,
+      "relevant_arm_count": 4,
+      "relevant_count": 15,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 12,
+        "EpsilonGreedy(e=0.1)": 13,
+        "ExploreThenCommit": 13,
+        "RoundRobin": 7,
+        "ThompsonSampling(prior=1.0)": 13,
+        "UCB1(c=2.0)": 12
+      },
+      "split": "confirmation",
+      "stratum": "concentrated",
+      "tag": "natural-language-processing"
+    },
+    {
+      "maximum_arm_share": 0.41509433962264153,
+      "relevant_arm_count": 5,
+      "relevant_count": 53,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 17,
+        "EpsilonGreedy(e=0.1)": 20,
+        "ExploreThenCommit": 22,
+        "RoundRobin": 12,
+        "ThompsonSampling(prior=1.0)": 22,
+        "UCB1(c=2.0)": 17
+      },
+      "split": "confirmation",
+      "stratum": "diffuse",
+      "tag": "neural-networks"
+    },
+    {
+      "maximum_arm_share": 0.5,
+      "relevant_arm_count": 3,
+      "relevant_count": 6,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 6,
+        "EpsilonGreedy(e=0.1)": 5,
+        "ExploreThenCommit": 5,
+        "RoundRobin": 6,
+        "ThompsonSampling(prior=1.0)": 6,
+        "UCB1(c=2.0)": 6
+      },
+      "split": "selection",
+      "stratum": "diffuse",
+      "tag": "neuroscience"
+    },
+    {
+      "maximum_arm_share": 0.8,
+      "relevant_arm_count": 2,
+      "relevant_count": 15,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 4,
+        "EpsilonGreedy(e=0.1)": 12,
+        "ExploreThenCommit": 12,
+        "RoundRobin": 4,
+        "ThompsonSampling(prior=1.0)": 6,
+        "UCB1(c=2.0)": 4
+      },
+      "split": "selection",
+      "stratum": "concentrated",
+      "tag": "nlp"
+    },
+    {
+      "maximum_arm_share": 0.6923076923076923,
+      "relevant_arm_count": 3,
+      "relevant_count": 13,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 2,
+        "EpsilonGreedy(e=0.1)": 1,
+        "ExploreThenCommit": 1,
+        "RoundRobin": 2,
+        "ThompsonSampling(prior=1.0)": 1,
+        "UCB1(c=2.0)": 2
+      },
+      "split": "confirmation",
+      "stratum": "diffuse",
+      "tag": "no-code"
+    },
+    {
+      "maximum_arm_share": 0.75,
+      "relevant_arm_count": 3,
+      "relevant_count": 8,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 3,
+        "EpsilonGreedy(e=0.1)": 1,
+        "ExploreThenCommit": 1,
+        "RoundRobin": 3,
+        "ThompsonSampling(prior=1.0)": 3,
+        "UCB1(c=2.0)": 3
+      },
+      "split": "confirmation",
+      "stratum": "concentrated",
+      "tag": "number-theory"
+    },
+    {
+      "maximum_arm_share": 0.6818181818181818,
+      "relevant_arm_count": 2,
+      "relevant_count": 22,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 2,
+        "EpsilonGreedy(e=0.1)": 12,
+        "ExploreThenCommit": 12,
+        "RoundRobin": 2,
+        "ThompsonSampling(prior=1.0)": 4,
+        "UCB1(c=2.0)": 2
+      },
+      "split": "confirmation",
+      "stratum": "diffuse",
+      "tag": "observability"
+    },
+    {
+      "maximum_arm_share": 0.7333333333333333,
+      "relevant_arm_count": 2,
+      "relevant_count": 15,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 10,
+        "EpsilonGreedy(e=0.1)": 15,
+        "ExploreThenCommit": 15,
+        "RoundRobin": 7,
+        "ThompsonSampling(prior=1.0)": 13,
+        "UCB1(c=2.0)": 11
+      },
+      "split": "confirmation",
+      "stratum": "concentrated",
+      "tag": "obsidian"
+    },
+    {
+      "maximum_arm_share": 0.8,
+      "relevant_arm_count": 2,
+      "relevant_count": 5,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 5,
+        "EpsilonGreedy(e=0.1)": 5,
+        "ExploreThenCommit": 4,
+        "RoundRobin": 5,
+        "ThompsonSampling(prior=1.0)": 5,
+        "UCB1(c=2.0)": 5
+      },
+      "split": "confirmation",
+      "stratum": "concentrated",
+      "tag": "ollama"
+    },
+    {
+      "maximum_arm_share": 0.5,
+      "relevant_arm_count": 2,
+      "relevant_count": 6,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 6,
+        "EpsilonGreedy(e=0.1)": 6,
+        "ExploreThenCommit": 6,
+        "RoundRobin": 5,
+        "ThompsonSampling(prior=1.0)": 6,
+        "UCB1(c=2.0)": 6
+      },
+      "split": "confirmation",
+      "stratum": "diffuse",
+      "tag": "on-device-ai"
+    },
+    {
+      "maximum_arm_share": 0.8571428571428571,
+      "relevant_arm_count": 2,
+      "relevant_count": 7,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 7,
+        "EpsilonGreedy(e=0.1)": 7,
+        "ExploreThenCommit": 7,
+        "RoundRobin": 5,
+        "ThompsonSampling(prior=1.0)": 7,
+        "UCB1(c=2.0)": 7
+      },
+      "split": "confirmation",
+      "stratum": "concentrated",
+      "tag": "ontology"
+    },
+    {
+      "maximum_arm_share": 0.5714285714285714,
+      "relevant_arm_count": 3,
+      "relevant_count": 7,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 7,
+        "EpsilonGreedy(e=0.1)": 7,
+        "ExploreThenCommit": 5,
+        "RoundRobin": 5,
+        "ThompsonSampling(prior=1.0)": 7,
+        "UCB1(c=2.0)": 7
+      },
+      "split": "confirmation",
+      "stratum": "diffuse",
+      "tag": "open-claw"
+    },
+    {
+      "maximum_arm_share": 0.8571428571428571,
+      "relevant_arm_count": 2,
+      "relevant_count": 7,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 3,
+        "EpsilonGreedy(e=0.1)": 6,
+        "ExploreThenCommit": 6,
+        "RoundRobin": 3,
+        "ThompsonSampling(prior=1.0)": 3,
+        "UCB1(c=2.0)": 3
+      },
+      "split": "confirmation",
+      "stratum": "concentrated",
+      "tag": "open-router"
+    },
+    {
+      "maximum_arm_share": 0.8461538461538461,
+      "relevant_arm_count": 4,
+      "relevant_count": 39,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 3,
+        "EpsilonGreedy(e=0.1)": 11,
+        "ExploreThenCommit": 11,
+        "RoundRobin": 4,
+        "ThompsonSampling(prior=1.0)": 7,
+        "UCB1(c=2.0)": 4
+      },
+      "split": "confirmation",
+      "stratum": "concentrated",
+      "tag": "open-source"
+    },
+    {
+      "maximum_arm_share": 0.9166666666666666,
+      "relevant_arm_count": 2,
+      "relevant_count": 12,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 1,
+        "EpsilonGreedy(e=0.1)": 0,
+        "ExploreThenCommit": 0,
+        "RoundRobin": 1,
+        "ThompsonSampling(prior=1.0)": 1,
+        "UCB1(c=2.0)": 1
+      },
+      "split": "selection",
+      "stratum": "concentrated",
+      "tag": "open-source-ai"
+    },
+    {
+      "maximum_arm_share": 0.5,
+      "relevant_arm_count": 2,
+      "relevant_count": 6,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 4,
+        "EpsilonGreedy(e=0.1)": 3,
+        "ExploreThenCommit": 3,
+        "RoundRobin": 3,
+        "ThompsonSampling(prior=1.0)": 4,
+        "UCB1(c=2.0)": 4
+      },
+      "split": "confirmation",
+      "stratum": "diffuse",
+      "tag": "open-source-models"
+    },
+    {
+      "maximum_arm_share": 0.8181818181818182,
+      "relevant_arm_count": 3,
+      "relevant_count": 11,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 7,
+        "EpsilonGreedy(e=0.1)": 10,
+        "ExploreThenCommit": 10,
+        "RoundRobin": 6,
+        "ThompsonSampling(prior=1.0)": 9,
+        "UCB1(c=2.0)": 8
+      },
+      "split": "selection",
+      "stratum": "concentrated",
+      "tag": "openai"
+    },
+    {
+      "maximum_arm_share": 0.8333333333333334,
+      "relevant_arm_count": 2,
+      "relevant_count": 6,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 0,
+        "EpsilonGreedy(e=0.1)": 0,
+        "ExploreThenCommit": 0,
+        "RoundRobin": 0,
+        "ThompsonSampling(prior=1.0)": 0,
+        "UCB1(c=2.0)": 0
+      },
+      "split": "selection",
+      "stratum": "concentrated",
+      "tag": "openpyxl"
+    },
+    {
+      "maximum_arm_share": 0.5384615384615384,
+      "relevant_arm_count": 3,
+      "relevant_count": 13,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 2,
+        "EpsilonGreedy(e=0.1)": 0,
+        "ExploreThenCommit": 0,
+        "RoundRobin": 1,
+        "ThompsonSampling(prior=1.0)": 2,
+        "UCB1(c=2.0)": 2
+      },
+      "split": "selection",
+      "stratum": "diffuse",
+      "tag": "optimization"
+    },
+    {
+      "maximum_arm_share": 0.625,
+      "relevant_arm_count": 2,
+      "relevant_count": 8,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 2,
+        "EpsilonGreedy(e=0.1)": 3,
+        "ExploreThenCommit": 3,
+        "RoundRobin": 2,
+        "ThompsonSampling(prior=1.0)": 3,
+        "UCB1(c=2.0)": 2
+      },
+      "split": "selection",
+      "stratum": "diffuse",
+      "tag": "orchestration"
+    },
+    {
+      "maximum_arm_share": 0.8888888888888888,
+      "relevant_arm_count": 2,
+      "relevant_count": 18,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 14,
+        "EpsilonGreedy(e=0.1)": 17,
+        "ExploreThenCommit": 17,
+        "RoundRobin": 5,
+        "ThompsonSampling(prior=1.0)": 17,
+        "UCB1(c=2.0)": 12
+      },
+      "split": "confirmation",
+      "stratum": "concentrated",
+      "tag": "parallel-computing"
+    },
+    {
+      "maximum_arm_share": 0.6,
+      "relevant_arm_count": 2,
+      "relevant_count": 5,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 3,
+        "EpsilonGreedy(e=0.1)": 1,
+        "ExploreThenCommit": 1,
+        "RoundRobin": 3,
+        "ThompsonSampling(prior=1.0)": 3,
+        "UCB1(c=2.0)": 3
+      },
+      "split": "confirmation",
+      "stratum": "diffuse",
+      "tag": "passive-income"
+    },
+    {
+      "maximum_arm_share": 0.6666666666666666,
+      "relevant_arm_count": 3,
+      "relevant_count": 6,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 3,
+        "EpsilonGreedy(e=0.1)": 0,
+        "ExploreThenCommit": 0,
+        "RoundRobin": 3,
+        "ThompsonSampling(prior=1.0)": 3,
+        "UCB1(c=2.0)": 3
+      },
+      "split": "confirmation",
+      "stratum": "diffuse",
+      "tag": "personal-development"
+    },
+    {
+      "maximum_arm_share": 0.5,
+      "relevant_arm_count": 3,
+      "relevant_count": 6,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 3,
+        "EpsilonGreedy(e=0.1)": 4,
+        "ExploreThenCommit": 2,
+        "RoundRobin": 3,
+        "ThompsonSampling(prior=1.0)": 3,
+        "UCB1(c=2.0)": 3
+      },
+      "split": "selection",
+      "stratum": "diffuse",
+      "tag": "personal-finance"
+    },
+    {
+      "maximum_arm_share": 0.8,
+      "relevant_arm_count": 2,
+      "relevant_count": 5,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 2,
+        "EpsilonGreedy(e=0.1)": 4,
+        "ExploreThenCommit": 4,
+        "RoundRobin": 2,
+        "ThompsonSampling(prior=1.0)": 2,
+        "UCB1(c=2.0)": 2
+      },
+      "split": "selection",
+      "stratum": "concentrated",
+      "tag": "philosophy"
+    },
+    {
+      "maximum_arm_share": 0.5,
+      "relevant_arm_count": 4,
+      "relevant_count": 12,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 6,
+        "EpsilonGreedy(e=0.1)": 7,
+        "ExploreThenCommit": 7,
+        "RoundRobin": 6,
+        "ThompsonSampling(prior=1.0)": 6,
+        "UCB1(c=2.0)": 6
+      },
+      "split": "selection",
+      "stratum": "diffuse",
+      "tag": "physics"
+    },
+    {
+      "maximum_arm_share": 0.5714285714285714,
+      "relevant_arm_count": 3,
+      "relevant_count": 7,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 3,
+        "EpsilonGreedy(e=0.1)": 3,
+        "ExploreThenCommit": 3,
+        "RoundRobin": 3,
+        "ThompsonSampling(prior=1.0)": 3,
+        "UCB1(c=2.0)": 3
+      },
+      "split": "selection",
+      "stratum": "diffuse",
+      "tag": "platform-engineering"
+    },
+    {
+      "maximum_arm_share": 0.3333333333333333,
+      "relevant_arm_count": 4,
+      "relevant_count": 6,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 6,
+        "EpsilonGreedy(e=0.1)": 6,
+        "ExploreThenCommit": 6,
+        "RoundRobin": 6,
+        "ThompsonSampling(prior=1.0)": 6,
+        "UCB1(c=2.0)": 6
+      },
+      "split": "confirmation",
+      "stratum": "diffuse",
+      "tag": "post-training"
+    },
+    {
+      "maximum_arm_share": 0.7142857142857143,
+      "relevant_arm_count": 3,
+      "relevant_count": 7,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 5,
+        "EpsilonGreedy(e=0.1)": 7,
+        "ExploreThenCommit": 7,
+        "RoundRobin": 4,
+        "ThompsonSampling(prior=1.0)": 7,
+        "UCB1(c=2.0)": 5
+      },
+      "split": "selection",
+      "stratum": "concentrated",
+      "tag": "presentation-design"
+    },
+    {
+      "maximum_arm_share": 0.6,
+      "relevant_arm_count": 2,
+      "relevant_count": 5,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 3,
+        "EpsilonGreedy(e=0.1)": 5,
+        "ExploreThenCommit": 5,
+        "RoundRobin": 3,
+        "ThompsonSampling(prior=1.0)": 4,
+        "UCB1(c=2.0)": 4
+      },
+      "split": "selection",
+      "stratum": "diffuse",
+      "tag": "probabilistic-inference"
+    },
+    {
+      "maximum_arm_share": 0.8125,
+      "relevant_arm_count": 3,
+      "relevant_count": 16,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 4,
+        "EpsilonGreedy(e=0.1)": 1,
+        "ExploreThenCommit": 0,
+        "RoundRobin": 4,
+        "ThompsonSampling(prior=1.0)": 4,
+        "UCB1(c=2.0)": 5
+      },
+      "split": "selection",
+      "stratum": "concentrated",
+      "tag": "product-design"
+    },
+    {
+      "maximum_arm_share": 0.6666666666666666,
+      "relevant_arm_count": 3,
+      "relevant_count": 9,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 3,
+        "EpsilonGreedy(e=0.1)": 0,
+        "ExploreThenCommit": 0,
+        "RoundRobin": 1,
+        "ThompsonSampling(prior=1.0)": 2,
+        "UCB1(c=2.0)": 2
+      },
+      "split": "selection",
+      "stratum": "diffuse",
+      "tag": "product-management"
+    },
+    {
+      "maximum_arm_share": 0.625,
+      "relevant_arm_count": 6,
+      "relevant_count": 40,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 4,
+        "EpsilonGreedy(e=0.1)": 6,
+        "ExploreThenCommit": 5,
+        "RoundRobin": 5,
+        "ThompsonSampling(prior=1.0)": 3,
+        "UCB1(c=2.0)": 4
+      },
+      "split": "confirmation",
+      "stratum": "diffuse",
+      "tag": "productivity"
+    },
+    {
+      "maximum_arm_share": 0.6,
+      "relevant_arm_count": 2,
+      "relevant_count": 5,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 0,
+        "EpsilonGreedy(e=0.1)": 2,
+        "ExploreThenCommit": 2,
+        "RoundRobin": 0,
+        "ThompsonSampling(prior=1.0)": 0,
+        "UCB1(c=2.0)": 0
+      },
+      "split": "selection",
+      "stratum": "diffuse",
+      "tag": "productivity-hacks"
+    },
+    {
+      "maximum_arm_share": 0.6666666666666666,
+      "relevant_arm_count": 2,
+      "relevant_count": 6,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 0,
+        "EpsilonGreedy(e=0.1)": 0,
+        "ExploreThenCommit": 0,
+        "RoundRobin": 1,
+        "ThompsonSampling(prior=1.0)": 0,
+        "UCB1(c=2.0)": 1
+      },
+      "split": "selection",
+      "stratum": "diffuse",
+      "tag": "productivity-tools"
+    },
+    {
+      "maximum_arm_share": 0.8333333333333334,
+      "relevant_arm_count": 2,
+      "relevant_count": 6,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 3,
+        "EpsilonGreedy(e=0.1)": 1,
+        "ExploreThenCommit": 1,
+        "RoundRobin": 3,
+        "ThompsonSampling(prior=1.0)": 3,
+        "UCB1(c=2.0)": 3
+      },
+      "split": "confirmation",
+      "stratum": "concentrated",
+      "tag": "prompt-injection"
+    },
+    {
+      "maximum_arm_share": 0.45454545454545453,
+      "relevant_arm_count": 3,
+      "relevant_count": 11,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 11,
+        "EpsilonGreedy(e=0.1)": 11,
+        "ExploreThenCommit": 11,
+        "RoundRobin": 10,
+        "ThompsonSampling(prior=1.0)": 11,
+        "UCB1(c=2.0)": 11
+      },
+      "split": "confirmation",
+      "stratum": "diffuse",
+      "tag": "propositional-logic"
+    },
+    {
+      "maximum_arm_share": 0.8,
+      "relevant_arm_count": 2,
+      "relevant_count": 5,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 2,
+        "EpsilonGreedy(e=0.1)": 3,
+        "ExploreThenCommit": 3,
+        "RoundRobin": 2,
+        "ThompsonSampling(prior=1.0)": 2,
+        "UCB1(c=2.0)": 2
+      },
+      "split": "confirmation",
+      "stratum": "concentrated",
+      "tag": "prototyping"
+    },
+    {
+      "maximum_arm_share": 0.5263157894736842,
+      "relevant_arm_count": 3,
+      "relevant_count": 19,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 9,
+        "EpsilonGreedy(e=0.1)": 10,
+        "ExploreThenCommit": 8,
+        "RoundRobin": 9,
+        "ThompsonSampling(prior=1.0)": 10,
+        "UCB1(c=2.0)": 9
+      },
+      "split": "confirmation",
+      "stratum": "diffuse",
+      "tag": "python"
+    },
+    {
+      "maximum_arm_share": 0.625,
+      "relevant_arm_count": 3,
+      "relevant_count": 16,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 11,
+        "EpsilonGreedy(e=0.1)": 13,
+        "ExploreThenCommit": 13,
+        "RoundRobin": 7,
+        "ThompsonSampling(prior=1.0)": 13,
+        "UCB1(c=2.0)": 11
+      },
+      "split": "confirmation",
+      "stratum": "diffuse",
+      "tag": "pytorch"
+    },
+    {
+      "maximum_arm_share": 0.6666666666666666,
+      "relevant_arm_count": 3,
+      "relevant_count": 9,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 9,
+        "EpsilonGreedy(e=0.1)": 9,
+        "ExploreThenCommit": 9,
+        "RoundRobin": 7,
+        "ThompsonSampling(prior=1.0)": 9,
+        "UCB1(c=2.0)": 9
+      },
+      "split": "selection",
+      "stratum": "diffuse",
+      "tag": "quantum-computing"
+    },
+    {
+      "maximum_arm_share": 0.5,
+      "relevant_arm_count": 4,
+      "relevant_count": 12,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 11,
+        "EpsilonGreedy(e=0.1)": 11,
+        "ExploreThenCommit": 11,
+        "RoundRobin": 9,
+        "ThompsonSampling(prior=1.0)": 11,
+        "UCB1(c=2.0)": 11
+      },
+      "split": "selection",
+      "stratum": "diffuse",
+      "tag": "quantum-mechanics"
+    },
+    {
+      "maximum_arm_share": 0.7857142857142857,
+      "relevant_arm_count": 2,
+      "relevant_count": 14,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 7,
+        "EpsilonGreedy(e=0.1)": 12,
+        "ExploreThenCommit": 12,
+        "RoundRobin": 6,
+        "ThompsonSampling(prior=1.0)": 9,
+        "UCB1(c=2.0)": 6
+      },
+      "split": "confirmation",
+      "stratum": "concentrated",
+      "tag": "rag"
+    },
+    {
+      "maximum_arm_share": 0.625,
+      "relevant_arm_count": 3,
+      "relevant_count": 8,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 0,
+        "EpsilonGreedy(e=0.1)": 0,
+        "ExploreThenCommit": 0,
+        "RoundRobin": 1,
+        "ThompsonSampling(prior=1.0)": 1,
+        "UCB1(c=2.0)": 1
+      },
+      "split": "confirmation",
+      "stratum": "diffuse",
+      "tag": "rapid-prototyping"
+    },
+    {
+      "maximum_arm_share": 0.6666666666666666,
+      "relevant_arm_count": 2,
+      "relevant_count": 6,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 3,
+        "EpsilonGreedy(e=0.1)": 3,
+        "ExploreThenCommit": 3,
+        "RoundRobin": 3,
+        "ThompsonSampling(prior=1.0)": 3,
+        "UCB1(c=2.0)": 3
+      },
+      "split": "confirmation",
+      "stratum": "diffuse",
+      "tag": "react"
+    },
+    {
+      "maximum_arm_share": 0.8,
+      "relevant_arm_count": 2,
+      "relevant_count": 5,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 1,
+        "EpsilonGreedy(e=0.1)": 1,
+        "ExploreThenCommit": 1,
+        "RoundRobin": 1,
+        "ThompsonSampling(prior=1.0)": 2,
+        "UCB1(c=2.0)": 1
+      },
+      "split": "confirmation",
+      "stratum": "concentrated",
+      "tag": "reasoning-models"
+    },
+    {
+      "maximum_arm_share": 0.8,
+      "relevant_arm_count": 2,
+      "relevant_count": 5,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 5,
+        "EpsilonGreedy(e=0.1)": 5,
+        "ExploreThenCommit": 5,
+        "RoundRobin": 4,
+        "ThompsonSampling(prior=1.0)": 5,
+        "UCB1(c=2.0)": 5
+      },
+      "split": "confirmation",
+      "stratum": "concentrated",
+      "tag": "recursive-language-models"
+    },
+    {
+      "maximum_arm_share": 0.627906976744186,
+      "relevant_arm_count": 4,
+      "relevant_count": 43,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 24,
+        "EpsilonGreedy(e=0.1)": 32,
+        "ExploreThenCommit": 33,
+        "RoundRobin": 11,
+        "ThompsonSampling(prior=1.0)": 34,
+        "UCB1(c=2.0)": 19
+      },
+      "split": "selection",
+      "stratum": "diffuse",
+      "tag": "reinforcement-learning"
+    },
+    {
+      "maximum_arm_share": 0.5,
+      "relevant_arm_count": 3,
+      "relevant_count": 6,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 4,
+        "EpsilonGreedy(e=0.1)": 4,
+        "ExploreThenCommit": 4,
+        "RoundRobin": 4,
+        "ThompsonSampling(prior=1.0)": 4,
+        "UCB1(c=2.0)": 4
+      },
+      "split": "selection",
+      "stratum": "diffuse",
+      "tag": "research-automation"
+    },
+    {
+      "maximum_arm_share": 0.4,
+      "relevant_arm_count": 3,
+      "relevant_count": 5,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 3,
+        "EpsilonGreedy(e=0.1)": 1,
+        "ExploreThenCommit": 1,
+        "RoundRobin": 3,
+        "ThompsonSampling(prior=1.0)": 3,
+        "UCB1(c=2.0)": 3
+      },
+      "split": "confirmation",
+      "stratum": "diffuse",
+      "tag": "retrieval-augmented-generation"
+    },
+    {
+      "maximum_arm_share": 0.8333333333333334,
+      "relevant_arm_count": 2,
+      "relevant_count": 6,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 6,
+        "EpsilonGreedy(e=0.1)": 6,
+        "ExploreThenCommit": 6,
+        "RoundRobin": 5,
+        "ThompsonSampling(prior=1.0)": 6,
+        "UCB1(c=2.0)": 6
+      },
+      "split": "confirmation",
+      "stratum": "concentrated",
+      "tag": "reward-hacking"
+    },
+    {
+      "maximum_arm_share": 0.5714285714285714,
+      "relevant_arm_count": 3,
+      "relevant_count": 7,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 6,
+        "EpsilonGreedy(e=0.1)": 6,
+        "ExploreThenCommit": 6,
+        "RoundRobin": 6,
+        "ThompsonSampling(prior=1.0)": 6,
+        "UCB1(c=2.0)": 6
+      },
+      "split": "selection",
+      "stratum": "diffuse",
+      "tag": "risk-management"
+    },
+    {
+      "maximum_arm_share": 0.4,
+      "relevant_arm_count": 3,
+      "relevant_count": 5,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 3,
+        "EpsilonGreedy(e=0.1)": 4,
+        "ExploreThenCommit": 4,
+        "RoundRobin": 4,
+        "ThompsonSampling(prior=1.0)": 4,
+        "UCB1(c=2.0)": 4
+      },
+      "split": "confirmation",
+      "stratum": "diffuse",
+      "tag": "rlhf"
+    },
+    {
+      "maximum_arm_share": 0.8571428571428571,
+      "relevant_arm_count": 2,
+      "relevant_count": 7,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 4,
+        "EpsilonGreedy(e=0.1)": 5,
+        "ExploreThenCommit": 5,
+        "RoundRobin": 3,
+        "ThompsonSampling(prior=1.0)": 5,
+        "UCB1(c=2.0)": 3
+      },
+      "split": "confirmation",
+      "stratum": "concentrated",
+      "tag": "robotics"
+    },
+    {
+      "maximum_arm_share": 0.42857142857142855,
+      "relevant_arm_count": 4,
+      "relevant_count": 7,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 5,
+        "EpsilonGreedy(e=0.1)": 5,
+        "ExploreThenCommit": 5,
+        "RoundRobin": 5,
+        "ThompsonSampling(prior=1.0)": 5,
+        "UCB1(c=2.0)": 5
+      },
+      "split": "confirmation",
+      "stratum": "diffuse",
+      "tag": "scaling-laws"
+    },
+    {
+      "maximum_arm_share": 0.4,
+      "relevant_arm_count": 3,
+      "relevant_count": 5,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 5,
+        "EpsilonGreedy(e=0.1)": 5,
+        "ExploreThenCommit": 2,
+        "RoundRobin": 5,
+        "ThompsonSampling(prior=1.0)": 5,
+        "UCB1(c=2.0)": 5
+      },
+      "split": "selection",
+      "stratum": "diffuse",
+      "tag": "search-algorithms"
+    },
+    {
+      "maximum_arm_share": 0.8461538461538461,
+      "relevant_arm_count": 2,
+      "relevant_count": 13,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 6,
+        "EpsilonGreedy(e=0.1)": 9,
+        "ExploreThenCommit": 9,
+        "RoundRobin": 4,
+        "ThompsonSampling(prior=1.0)": 8,
+        "UCB1(c=2.0)": 6
+      },
+      "split": "confirmation",
+      "stratum": "concentrated",
+      "tag": "second-brain"
+    },
+    {
+      "maximum_arm_share": 0.7777777777777778,
+      "relevant_arm_count": 2,
+      "relevant_count": 9,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 2,
+        "EpsilonGreedy(e=0.1)": 2,
+        "ExploreThenCommit": 2,
+        "RoundRobin": 2,
+        "ThompsonSampling(prior=1.0)": 2,
+        "UCB1(c=2.0)": 2
+      },
+      "split": "confirmation",
+      "stratum": "concentrated",
+      "tag": "security"
+    },
+    {
+      "maximum_arm_share": 0.8571428571428571,
+      "relevant_arm_count": 2,
+      "relevant_count": 7,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 3,
+        "EpsilonGreedy(e=0.1)": 5,
+        "ExploreThenCommit": 5,
+        "RoundRobin": 3,
+        "ThompsonSampling(prior=1.0)": 4,
+        "UCB1(c=2.0)": 4
+      },
+      "split": "selection",
+      "stratum": "concentrated",
+      "tag": "self-hosting"
+    },
+    {
+      "maximum_arm_share": 0.4,
+      "relevant_arm_count": 3,
+      "relevant_count": 5,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 3,
+        "EpsilonGreedy(e=0.1)": 1,
+        "ExploreThenCommit": 1,
+        "RoundRobin": 3,
+        "ThompsonSampling(prior=1.0)": 3,
+        "UCB1(c=2.0)": 3
+      },
+      "split": "selection",
+      "stratum": "diffuse",
+      "tag": "self-improvement"
+    },
+    {
+      "maximum_arm_share": 0.8571428571428571,
+      "relevant_arm_count": 2,
+      "relevant_count": 7,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 4,
+        "EpsilonGreedy(e=0.1)": 6,
+        "ExploreThenCommit": 6,
+        "RoundRobin": 3,
+        "ThompsonSampling(prior=1.0)": 5,
+        "UCB1(c=2.0)": 5
+      },
+      "split": "selection",
+      "stratum": "concentrated",
+      "tag": "semantic-search"
+    },
+    {
+      "maximum_arm_share": 0.5,
+      "relevant_arm_count": 2,
+      "relevant_count": 6,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 5,
+        "EpsilonGreedy(e=0.1)": 5,
+        "ExploreThenCommit": 5,
+        "RoundRobin": 4,
+        "ThompsonSampling(prior=1.0)": 5,
+        "UCB1(c=2.0)": 5
+      },
+      "split": "selection",
+      "stratum": "diffuse",
+      "tag": "set-theory"
+    },
+    {
+      "maximum_arm_share": 0.7777777777777778,
+      "relevant_arm_count": 3,
+      "relevant_count": 27,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 4,
+        "EpsilonGreedy(e=0.1)": 8,
+        "ExploreThenCommit": 7,
+        "RoundRobin": 3,
+        "ThompsonSampling(prior=1.0)": 5,
+        "UCB1(c=2.0)": 5
+      },
+      "split": "confirmation",
+      "stratum": "concentrated",
+      "tag": "software-architecture"
+    },
+    {
+      "maximum_arm_share": 0.6,
+      "relevant_arm_count": 3,
+      "relevant_count": 5,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 3,
+        "EpsilonGreedy(e=0.1)": 2,
+        "ExploreThenCommit": 1,
+        "RoundRobin": 3,
+        "ThompsonSampling(prior=1.0)": 3,
+        "UCB1(c=2.0)": 3
+      },
+      "split": "confirmation",
+      "stratum": "diffuse",
+      "tag": "software-delivery"
+    },
+    {
+      "maximum_arm_share": 0.8,
+      "relevant_arm_count": 2,
+      "relevant_count": 5,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 1,
+        "EpsilonGreedy(e=0.1)": 3,
+        "ExploreThenCommit": 3,
+        "RoundRobin": 1,
+        "ThompsonSampling(prior=1.0)": 1,
+        "UCB1(c=2.0)": 1
+      },
+      "split": "confirmation",
+      "stratum": "concentrated",
+      "tag": "software-design"
+    },
+    {
+      "maximum_arm_share": 0.7619047619047619,
+      "relevant_arm_count": 3,
+      "relevant_count": 42,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 4,
+        "EpsilonGreedy(e=0.1)": 9,
+        "ExploreThenCommit": 9,
+        "RoundRobin": 4,
+        "ThompsonSampling(prior=1.0)": 6,
+        "UCB1(c=2.0)": 6
+      },
+      "split": "selection",
+      "stratum": "concentrated",
+      "tag": "software-development"
+    },
+    {
+      "maximum_arm_share": 0.8,
+      "relevant_arm_count": 2,
+      "relevant_count": 5,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 2,
+        "EpsilonGreedy(e=0.1)": 4,
+        "ExploreThenCommit": 4,
+        "RoundRobin": 2,
+        "ThompsonSampling(prior=1.0)": 2,
+        "UCB1(c=2.0)": 2
+      },
+      "split": "confirmation",
+      "stratum": "concentrated",
+      "tag": "software-factory"
+    },
+    {
+      "maximum_arm_share": 0.875,
+      "relevant_arm_count": 2,
+      "relevant_count": 8,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 1,
+        "EpsilonGreedy(e=0.1)": 1,
+        "ExploreThenCommit": 1,
+        "RoundRobin": 1,
+        "ThompsonSampling(prior=1.0)": 1,
+        "UCB1(c=2.0)": 1
+      },
+      "split": "confirmation",
+      "stratum": "concentrated",
+      "tag": "stanford"
+    },
+    {
+      "maximum_arm_share": 0.7894736842105263,
+      "relevant_arm_count": 3,
+      "relevant_count": 19,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 5,
+        "EpsilonGreedy(e=0.1)": 15,
+        "ExploreThenCommit": 15,
+        "RoundRobin": 3,
+        "ThompsonSampling(prior=1.0)": 5,
+        "UCB1(c=2.0)": 6
+      },
+      "split": "confirmation",
+      "stratum": "concentrated",
+      "tag": "stanford-cs221"
+    },
+    {
+      "maximum_arm_share": 0.8461538461538461,
+      "relevant_arm_count": 3,
+      "relevant_count": 13,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 8,
+        "EpsilonGreedy(e=0.1)": 10,
+        "ExploreThenCommit": 10,
+        "RoundRobin": 6,
+        "ThompsonSampling(prior=1.0)": 9,
+        "UCB1(c=2.0)": 8
+      },
+      "split": "confirmation",
+      "stratum": "concentrated",
+      "tag": "sub-agents"
+    },
+    {
+      "maximum_arm_share": 0.7142857142857143,
+      "relevant_arm_count": 2,
+      "relevant_count": 14,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 3,
+        "EpsilonGreedy(e=0.1)": 6,
+        "ExploreThenCommit": 6,
+        "RoundRobin": 3,
+        "ThompsonSampling(prior=1.0)": 4,
+        "UCB1(c=2.0)": 3
+      },
+      "split": "selection",
+      "stratum": "concentrated",
+      "tag": "system-design"
+    },
+    {
+      "maximum_arm_share": 0.6,
+      "relevant_arm_count": 2,
+      "relevant_count": 5,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 3,
+        "EpsilonGreedy(e=0.1)": 4,
+        "ExploreThenCommit": 4,
+        "RoundRobin": 3,
+        "ThompsonSampling(prior=1.0)": 3,
+        "UCB1(c=2.0)": 3
+      },
+      "split": "selection",
+      "stratum": "diffuse",
+      "tag": "systems-thinking"
+    },
+    {
+      "maximum_arm_share": 0.8,
+      "relevant_arm_count": 2,
+      "relevant_count": 5,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 0,
+        "EpsilonGreedy(e=0.1)": 0,
+        "ExploreThenCommit": 0,
+        "RoundRobin": 0,
+        "ThompsonSampling(prior=1.0)": 0,
+        "UCB1(c=2.0)": 0
+      },
+      "split": "confirmation",
+      "stratum": "concentrated",
+      "tag": "tech-trends"
+    },
+    {
+      "maximum_arm_share": 0.75,
+      "relevant_arm_count": 2,
+      "relevant_count": 16,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 5,
+        "EpsilonGreedy(e=0.1)": 7,
+        "ExploreThenCommit": 7,
+        "RoundRobin": 3,
+        "ThompsonSampling(prior=1.0)": 7,
+        "UCB1(c=2.0)": 6
+      },
+      "split": "selection",
+      "stratum": "concentrated",
+      "tag": "technical-debt"
+    },
+    {
+      "maximum_arm_share": 0.4,
+      "relevant_arm_count": 3,
+      "relevant_count": 5,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 5,
+        "EpsilonGreedy(e=0.1)": 5,
+        "ExploreThenCommit": 5,
+        "RoundRobin": 5,
+        "ThompsonSampling(prior=1.0)": 5,
+        "UCB1(c=2.0)": 5
+      },
+      "split": "confirmation",
+      "stratum": "diffuse",
+      "tag": "thermodynamics"
+    },
+    {
+      "maximum_arm_share": 0.875,
+      "relevant_arm_count": 2,
+      "relevant_count": 8,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 4,
+        "EpsilonGreedy(e=0.1)": 1,
+        "ExploreThenCommit": 0,
+        "RoundRobin": 2,
+        "ThompsonSampling(prior=1.0)": 3,
+        "UCB1(c=2.0)": 2
+      },
+      "split": "confirmation",
+      "stratum": "concentrated",
+      "tag": "token-efficiency"
+    },
+    {
+      "maximum_arm_share": 0.6,
+      "relevant_arm_count": 2,
+      "relevant_count": 5,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 1,
+        "EpsilonGreedy(e=0.1)": 0,
+        "ExploreThenCommit": 0,
+        "RoundRobin": 1,
+        "ThompsonSampling(prior=1.0)": 1,
+        "UCB1(c=2.0)": 1
+      },
+      "split": "selection",
+      "stratum": "diffuse",
+      "tag": "token-management"
+    },
+    {
+      "maximum_arm_share": 0.6666666666666666,
+      "relevant_arm_count": 2,
+      "relevant_count": 15,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 5,
+        "EpsilonGreedy(e=0.1)": 5,
+        "ExploreThenCommit": 5,
+        "RoundRobin": 3,
+        "ThompsonSampling(prior=1.0)": 5,
+        "UCB1(c=2.0)": 5
+      },
+      "split": "confirmation",
+      "stratum": "diffuse",
+      "tag": "token-optimization"
+    },
+    {
+      "maximum_arm_share": 0.5,
+      "relevant_arm_count": 3,
+      "relevant_count": 8,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 4,
+        "EpsilonGreedy(e=0.1)": 5,
+        "ExploreThenCommit": 5,
+        "RoundRobin": 4,
+        "ThompsonSampling(prior=1.0)": 4,
+        "UCB1(c=2.0)": 4
+      },
+      "split": "confirmation",
+      "stratum": "diffuse",
+      "tag": "tokenization"
+    },
+    {
+      "maximum_arm_share": 0.625,
+      "relevant_arm_count": 3,
+      "relevant_count": 8,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 4,
+        "EpsilonGreedy(e=0.1)": 5,
+        "ExploreThenCommit": 5,
+        "RoundRobin": 4,
+        "ThompsonSampling(prior=1.0)": 4,
+        "UCB1(c=2.0)": 4
+      },
+      "split": "selection",
+      "stratum": "diffuse",
+      "tag": "tool-calling"
+    },
+    {
+      "maximum_arm_share": 0.7777777777777778,
+      "relevant_arm_count": 2,
+      "relevant_count": 9,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 2,
+        "EpsilonGreedy(e=0.1)": 0,
+        "ExploreThenCommit": 0,
+        "RoundRobin": 2,
+        "ThompsonSampling(prior=1.0)": 2,
+        "UCB1(c=2.0)": 2
+      },
+      "split": "confirmation",
+      "stratum": "concentrated",
+      "tag": "tool-use"
+    },
+    {
+      "maximum_arm_share": 0.6666666666666666,
+      "relevant_arm_count": 3,
+      "relevant_count": 6,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 3,
+        "EpsilonGreedy(e=0.1)": 4,
+        "ExploreThenCommit": 1,
+        "RoundRobin": 3,
+        "ThompsonSampling(prior=1.0)": 5,
+        "UCB1(c=2.0)": 3
+      },
+      "split": "confirmation",
+      "stratum": "diffuse",
+      "tag": "transformer-architecture"
+    },
+    {
+      "maximum_arm_share": 0.45454545454545453,
+      "relevant_arm_count": 4,
+      "relevant_count": 22,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 12,
+        "EpsilonGreedy(e=0.1)": 11,
+        "ExploreThenCommit": 15,
+        "RoundRobin": 9,
+        "ThompsonSampling(prior=1.0)": 13,
+        "UCB1(c=2.0)": 12
+      },
+      "split": "confirmation",
+      "stratum": "diffuse",
+      "tag": "transformers"
+    },
+    {
+      "maximum_arm_share": 0.9285714285714286,
+      "relevant_arm_count": 2,
+      "relevant_count": 14,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 4,
+        "EpsilonGreedy(e=0.1)": 13,
+        "ExploreThenCommit": 13,
+        "RoundRobin": 4,
+        "ThompsonSampling(prior=1.0)": 12,
+        "UCB1(c=2.0)": 6
+      },
+      "split": "selection",
+      "stratum": "concentrated",
+      "tag": "typescript"
+    },
+    {
+      "maximum_arm_share": 0.625,
+      "relevant_arm_count": 2,
+      "relevant_count": 8,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 2,
+        "EpsilonGreedy(e=0.1)": 4,
+        "ExploreThenCommit": 3,
+        "RoundRobin": 2,
+        "ThompsonSampling(prior=1.0)": 3,
+        "UCB1(c=2.0)": 2
+      },
+      "split": "selection",
+      "stratum": "diffuse",
+      "tag": "user-experience"
+    },
+    {
+      "maximum_arm_share": 0.9,
+      "relevant_arm_count": 2,
+      "relevant_count": 10,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 4,
+        "EpsilonGreedy(e=0.1)": 8,
+        "ExploreThenCommit": 8,
+        "RoundRobin": 2,
+        "ThompsonSampling(prior=1.0)": 4,
+        "UCB1(c=2.0)": 4
+      },
+      "split": "selection",
+      "stratum": "concentrated",
+      "tag": "vector-databases"
+    },
+    {
+      "maximum_arm_share": 0.8095238095238095,
+      "relevant_arm_count": 4,
+      "relevant_count": 21,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 9,
+        "EpsilonGreedy(e=0.1)": 18,
+        "ExploreThenCommit": 18,
+        "RoundRobin": 8,
+        "ThompsonSampling(prior=1.0)": 17,
+        "UCB1(c=2.0)": 13
+      },
+      "split": "confirmation",
+      "stratum": "concentrated",
+      "tag": "vibe-coding"
+    },
+    {
+      "maximum_arm_share": 0.6666666666666666,
+      "relevant_arm_count": 3,
+      "relevant_count": 6,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 6,
+        "EpsilonGreedy(e=0.1)": 5,
+        "ExploreThenCommit": 5,
+        "RoundRobin": 5,
+        "ThompsonSampling(prior=1.0)": 6,
+        "UCB1(c=2.0)": 6
+      },
+      "split": "confirmation",
+      "stratum": "diffuse",
+      "tag": "wave-particle-duality"
+    },
+    {
+      "maximum_arm_share": 0.625,
+      "relevant_arm_count": 4,
+      "relevant_count": 16,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 5,
+        "EpsilonGreedy(e=0.1)": 8,
+        "ExploreThenCommit": 8,
+        "RoundRobin": 4,
+        "ThompsonSampling(prior=1.0)": 5,
+        "UCB1(c=2.0)": 4
+      },
+      "split": "confirmation",
+      "stratum": "diffuse",
+      "tag": "web-design"
+    },
+    {
+      "maximum_arm_share": 0.5714285714285714,
+      "relevant_arm_count": 3,
+      "relevant_count": 21,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 5,
+        "EpsilonGreedy(e=0.1)": 7,
+        "ExploreThenCommit": 7,
+        "RoundRobin": 5,
+        "ThompsonSampling(prior=1.0)": 5,
+        "UCB1(c=2.0)": 5
+      },
+      "split": "selection",
+      "stratum": "diffuse",
+      "tag": "web-development"
+    },
+    {
+      "maximum_arm_share": 0.7,
+      "relevant_arm_count": 3,
+      "relevant_count": 10,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 3,
+        "EpsilonGreedy(e=0.1)": 6,
+        "ExploreThenCommit": 6,
+        "RoundRobin": 3,
+        "ThompsonSampling(prior=1.0)": 4,
+        "UCB1(c=2.0)": 3
+      },
+      "split": "confirmation",
+      "stratum": "concentrated",
+      "tag": "web-scraping"
+    },
+    {
+      "maximum_arm_share": 0.5531914893617021,
+      "relevant_arm_count": 3,
+      "relevant_count": 47,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 6,
+        "EpsilonGreedy(e=0.1)": 14,
+        "ExploreThenCommit": 13,
+        "RoundRobin": 6,
+        "ThompsonSampling(prior=1.0)": 8,
+        "UCB1(c=2.0)": 8
+      },
+      "split": "confirmation",
+      "stratum": "diffuse",
+      "tag": "workflow-automation"
+    },
+    {
+      "maximum_arm_share": 0.5,
+      "relevant_arm_count": 4,
+      "relevant_count": 22,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 2,
+        "EpsilonGreedy(e=0.1)": 0,
+        "ExploreThenCommit": 0,
+        "RoundRobin": 2,
+        "ThompsonSampling(prior=1.0)": 2,
+        "UCB1(c=2.0)": 2
+      },
+      "split": "selection",
+      "stratum": "diffuse",
+      "tag": "workflow-optimization"
+    },
+    {
+      "maximum_arm_share": 0.8333333333333334,
+      "relevant_arm_count": 2,
+      "relevant_count": 6,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 5,
+        "EpsilonGreedy(e=0.1)": 5,
+        "ExploreThenCommit": 5,
+        "RoundRobin": 5,
+        "ThompsonSampling(prior=1.0)": 5,
+        "UCB1(c=2.0)": 5
+      },
+      "split": "confirmation",
+      "stratum": "concentrated",
+      "tag": "world-models"
+    },
+    {
+      "maximum_arm_share": 0.7142857142857143,
+      "relevant_arm_count": 2,
+      "relevant_count": 7,
+      "scores": {
+        "DiscountedThompson(g=0.9)": 6,
+        "EpsilonGreedy(e=0.1)": 7,
+        "ExploreThenCommit": 7,
+        "RoundRobin": 5,
+        "ThompsonSampling(prior=1.0)": 6,
+        "UCB1(c=2.0)": 6
+      },
+      "split": "confirmation",
+      "stratum": "concentrated",
+      "tag": "y-combinator"
+    }
+  ],
+  "selection": {
+    "locked_references": {
+      "concentrated": "EpsilonGreedy(e=0.1)",
+      "diffuse": "ThompsonSampling(prior=1.0)"
+    },
+    "mean_findings": {
+      "concentrated": {
+        "DiscountedThompson(g=0.9)": 4.351351351351352,
+        "EpsilonGreedy(e=0.1)": 5.864864864864865,
+        "ExploreThenCommit": 5.756756756756757,
+        "RoundRobin": 3.3513513513513513,
+        "ThompsonSampling(prior=1.0)": 5.243243243243243,
+        "UCB1(c=2.0)": 4.594594594594595
+      },
+      "diffuse": {
+        "DiscountedThompson(g=0.9)": 4.068965517241379,
+        "EpsilonGreedy(e=0.1)": 4.0344827586206895,
+        "ExploreThenCommit": 3.8620689655172415,
+        "RoundRobin": 3.5344827586206895,
+        "ThompsonSampling(prior=1.0)": 4.4655172413793105,
+        "UCB1(c=2.0)": 4.0344827586206895
+      }
+    }
+  },
+  "verdict": {
+    "conditions": {
+      "regime_dependence_transfers": false,
+      "simple_baseline_credible": true,
+      "simulation_ranking_transfers": true,
+      "snapshot_and_benchmark_integrity": true,
+      "usable_relevance_signal": true
+    },
+    "passed": false
+  }
+}

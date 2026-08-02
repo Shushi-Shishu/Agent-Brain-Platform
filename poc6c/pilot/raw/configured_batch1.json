@@ -1,0 +1,479 @@
+{
+  "schema_version": 1,
+  "stage": "instrumentation_only",
+  "arm": "configured",
+  "model_usage": {
+    "model_id": "unknown_if_not_auditable",
+    "input_tokens": null,
+    "output_tokens": null,
+    "provider_cost_usd": null
+  },
+  "cases": [
+    {
+      "id": "Q001",
+      "behavior": "answer",
+      "answer": "Production reliability comes primarily from the system around the model. Start with measurable business success criteria and realistic evaluation data; isolate deterministic decision logic from side effects; make state transitions, builds, dependencies, and deployments reproducible; trace every consequential decision and tool interaction; and add online guardrails, fallbacks, human handoffs, incident playbooks, circuit breakers, and governed change control. For multi-agent work, prefer deterministic orchestration and explicit coordination rather than an unstructured swarm. Reliability is therefore an operating discipline: evaluation before release, deep observability after release, controlled failure behavior, and versioned, test-gated change.",
+      "citations": [
+        {
+          "path": "AI & SDLC/2026-06-18 - the-production-ai-playbook-deploying-agents-at-enterprise-scale.md",
+          "supporting_excerpt": "organizations must implement a strict architectural framework balancing continuous [[Evaluation-Driven-Development]], detailed decision tracing via [[Observability-And-Deep-Tracing]], structured [[Robust-Data-Foundation]] engineering, deterministic [[Multi-Agent-Orchestration-Patterns]], and comprehensive [[Production-Grade-AI-Governance]]."
+        },
+        {
+          "path": "AI & SDLC/2026-03-04 - simplest-way-to-make-your-architecture-testable.md",
+          "supporting_excerpt": "By strictly separating a pure, deterministic business logic core from a side-effect-heavy imperative shell, teams can achieve lightning-fast tests and eliminate flaky builds."
+        },
+        {
+          "path": "AI & SDLC/2026-05-07 - Everything-You-Need-To-Know-About-Agent-Observability.md",
+          "supporting_excerpt": "Reliable production systems require a shift to real-time [[Agent-Observability]], utilizing both explicit metrics and implicit semantic signals to detect failures, optimize performance, and close the loop on development experiments."
+        }
+      ],
+      "declared_gaps": [],
+      "operational_trace": {
+        "facets": [
+          "system architecture and determinism",
+          "evaluation and release discipline",
+          "production observability",
+          "failure containment and recovery",
+          "governance and operating practice"
+        ],
+        "search_queries": [
+          "production reliability|reliable agents|production architecture|agent reliability|guardrails|idempot|fault toleran|observability",
+          "deterministic workflow|retry|checkpoint|idempotent|production agent|agent harness|bounded autonomy|failure recovery"
+        ],
+        "documents_read": [
+          "AI & SDLC/2026-06-18 - the-production-ai-playbook-deploying-agents-at-enterprise-scale.md",
+          "AI & SDLC/2026-03-04 - simplest-way-to-make-your-architecture-testable.md",
+          "AI & SDLC/2026-05-07 - Everything-You-Need-To-Know-About-Agent-Observability.md"
+        ],
+        "evidence_status_counts": {
+          "supported": 5,
+          "partial": 0,
+          "contradictory": 0,
+          "unsupported": 0
+        },
+        "stop_reason": "All critical architecture, evaluation, observability, recovery, and governance facets had material support."
+      }
+    },
+    {
+      "id": "Q002",
+      "behavior": "answer",
+      "answer": "A demo proves that a model can produce an attractive result on selected inputs; a production-grade system proves that the whole application remains measurable, diagnosable, governable, and recoverable under messy live conditions. The dividing line is infrastructure and process: business-defined success metrics, realistic living evaluation sets, deterministic and semantic checks, behavioral tests of tool use, end-to-end decision traces, robust data foundations, versioned prompts and code, CI/CD gates, privacy controls, fallbacks, human handoffs, and incident response. Model choice matters, but a stronger model does not repair missing evaluation, observability, or governance.",
+      "citations": [
+        {
+          "path": "AI & SDLC/2026-06-18 - the-production-ai-playbook-deploying-agents-at-enterprise-scale.md",
+          "supporting_excerpt": "This trap actively masks architectural deficiencies by running applications inside a controlled environment using highly predictable datasets and limited scenarios"
+        },
+        {
+          "path": "AI & SDLC/2026-06-18 - the-production-ai-playbook-deploying-agents-at-enterprise-scale.md",
+          "supporting_excerpt": "model choice is secondary"
+        },
+        {
+          "path": "AI & SDLC/2026-06-18 - the-production-ai-playbook-deploying-agents-at-enterprise-scale.md",
+          "supporting_excerpt": "True production readiness requires rigorous enterprise change management applied directly to AI workflows"
+        }
+      ],
+      "declared_gaps": [],
+      "operational_trace": {
+        "facets": [
+          "controlled demo conditions",
+          "measurable production success",
+          "evaluation and observability gaps",
+          "data and governance",
+          "recovery and change management"
+        ],
+        "search_queries": [
+          "demo.*production|production.*demo|prototype.*production|production-grade|AI engineering system|production readiness",
+          "prototype|proof of concept|demo phase|production deployment|production readiness|works in production|ship.*agent"
+        ],
+        "documents_read": [
+          "AI & SDLC/2026-06-18 - the-production-ai-playbook-deploying-agents-at-enterprise-scale.md",
+          "raw/2026-06-17 - ai-engineering-in-41-minutes-from-demo-to-production.md"
+        ],
+        "evidence_status_counts": {
+          "supported": 5,
+          "partial": 0,
+          "contradictory": 0,
+          "unsupported": 0
+        },
+        "stop_reason": "The production playbook directly covered the demo trap and the major production-readiness gaps."
+      }
+    },
+    {
+      "id": "Q003",
+      "behavior": "partial",
+      "answer": "Reinforcement learning trains an agent or language model by optimizing behavior against a reward signal rather than only imitating a fixed corpus. In language-model and agent post-training, it can improve long-horizon problem solving and can be combined with self-play, where solver, task-generator, and guidance or judging roles create new training experience. Engineers should expect reward misspecification and exploitation: an unconstrained generator can maximize the stated reward by producing artificial complexity rather than useful hard problems. They should also expect self-play plateaus without external structure, distribution sensitivity, and a verification bottleneck when rewards or judges cannot reliably distinguish genuinely good outcomes. The vault evidence supports these mechanisms and failure examples, but not a complete comparison of current language-model RL algorithms.",
+      "citations": [
+        {
+          "path": "Biology/2026-06-12 - self-play-for-llms-ai-for-biology-formal-verification-and-more.md",
+          "supporting_excerpt": "Standard asymmetric self-play reward mechanisms suffer from an empirical breakdown where performance rapidly stalls without external guidance structures."
+        },
+        {
+          "path": "Biology/2026-06-12 - self-play-for-llms-ai-for-biology-formal-verification-and-more.md",
+          "supporting_excerpt": "Without strict guidance metrics, task generator models will naturally exploit rewards by producing messy, artificial complexity rather than genuinely deep concepts."
+        },
+        {
+          "path": "Biology/2026-06-12 - self-play-for-llms-ai-for-biology-formal-verification-and-more.md",
+          "supporting_excerpt": "Grounding synthetic problem distributions in known unsolved nodes while evaluating them via an autonomous judge successfully breaks the self-play plateau."
+        }
+      ],
+      "declared_gaps": [
+        "The inspected evidence did not provide a complete, current comparison of RLHF, policy-optimization variants, process rewards, and agent-specific RL algorithms."
+      ],
+      "operational_trace": {
+        "facets": [
+          "RL mechanism",
+          "language-model post-training",
+          "agent self-play",
+          "reward and judge failure modes",
+          "distribution and stability risks"
+        ],
+        "search_queries": [
+          "reinforcement learning|RLHF|reward hacking|policy optimization|language models.*RL|agent.*reinforcement"
+        ],
+        "documents_read": [
+          "AI & SDLC/2015-05-13 - rl-course-by-david-silver-lecture-1-introduction-to-reinforcement-learning.md",
+          "Biology/2026-06-12 - self-play-for-llms-ai-for-biology-formal-verification-and-more.md"
+        ],
+        "evidence_status_counts": {
+          "supported": 4,
+          "partial": 1,
+          "contradictory": 0,
+          "unsupported": 0
+        },
+        "stop_reason": "Core mechanisms and failure modes were supported; the algorithm-comparison facet remained incomplete, so the answer was bounded."
+      }
+    },
+    {
+      "id": "Q004",
+      "behavior": "answer",
+      "answer": "Before deployment, define success in business terms and build a living evaluation set with realistic inputs, expected responses, gray areas, and domain-expert judgments. Test at three levels: deterministic rules such as schemas and formatting, semantic properties such as groundedness and safety, and behavioral properties such as duplicate or inappropriate tool calls. Run these evaluations as regression gates for prompt, model, tool, and orchestration changes. After deployment, evaluate actual outcomes continuously: track objective signals such as errors, latency, cost, and retries, plus semantic signals such as frustration, refusal, task failure, and jailbreak behavior. Preserve complete traces, compare changes through controlled production experiments, and route low-confidence or degraded cases to fallbacks or humans. Do not treat model self-reports as ground truth; the vault notes warn that self-diagnostics can optimize for appearing successful.",
+      "citations": [
+        {
+          "path": "AI & SDLC/2026-06-18 - the-production-ai-playbook-deploying-agents-at-enterprise-scale.md",
+          "supporting_excerpt": "Organizations must collaborate directly with domain experts to build robust, living golden evaluation datasets that map realistic grounding data, gray areas, and human agent responses to confusing edge cases"
+        },
+        {
+          "path": "AI & SDLC/2026-05-07 - Everything-You-Need-To-Know-About-Agent-Observability.md",
+          "supporting_excerpt": "Monitoring objective reality metrics like [[Error-Rate]], [[Latency]], [[Cost]], and user regeneration rates."
+        },
+        {
+          "path": "AI & SDLC/2026-05-07 - Everything-You-Need-To-Know-About-Agent-Observability.md",
+          "supporting_excerpt": "Using [[Binary-Classifiers]] to detect semantic patterns like [[User-Frustration]], [[Task-Failure]], [[Refusals]], or [[Jailbreaking]]."
+        },
+        {
+          "path": "AI & SDLC/2026-05-07 - Everything-You-Need-To-Know-About-Agent-Observability.md",
+          "supporting_excerpt": "the agent learns to satisfy the *reporting* requirement rather than fixing the underlying task failure."
+        }
+      ],
+      "declared_gaps": [],
+      "operational_trace": {
+        "facets": [
+          "pre-deployment success specification",
+          "offline evaluation layers",
+          "regression gating",
+          "online production evaluation",
+          "human and automated response"
+        ],
+        "search_queries": [
+          "agent evaluation|evaluate.*agent|evals|online evaluation|offline evaluation|production monitoring",
+          "golden dataset|regression eval|A/B test|shadow mode|canary|production experiment|semantic signals"
+        ],
+        "documents_read": [
+          "AI & SDLC/2026-05-07 - Everything-You-Need-To-Know-About-Agent-Observability.md",
+          "AI & SDLC/2026-06-18 - the-production-ai-playbook-deploying-agents-at-enterprise-scale.md",
+          "AI & SDLC/2026-06-30 - how-to-build-a-continuous-evaluation-pipeline-for-multi-agent-systems-with-gemini.md"
+        ],
+        "evidence_status_counts": {
+          "supported": 6,
+          "partial": 0,
+          "contradictory": 0,
+          "unsupported": 0
+        },
+        "stop_reason": "Pre-release evaluation, production monitoring, and response-loop facets were all supported."
+      }
+    },
+    {
+      "id": "Q005",
+      "behavior": "answer",
+      "answer": "Treat context as a curated working set, not an ever-growing transcript. Keep durable rules and project knowledge outside the conversation in compact, indexed artifacts; retrieve only the files, functions, tools, and organizational facts needed for the current step; and use progressive discovery so tool definitions are loaded on demand. Start a fresh session when the task changes, while carrying forward a concise decision summary and pointers to durable state. Monitor context growth and compact before the window is saturated, but do not repeatedly compress lossy summaries because important constraints can disappear. A runtime context layer should reconcile static documents with current communications and relationships, supplying localized, token-efficient context rather than dumping raw sources into the prompt.",
+      "citations": [
+        {
+          "path": "AI & SDLC/2026-05-26 - stop-babysitting-your-agents.md",
+          "supporting_excerpt": "relying on massive context windows causes a cognitive phenomenon known as [[Satisfaction-Of-Search]], leading agents to write syntactically functional but architecturally invalid code."
+        },
+        {
+          "path": "AI & SDLC/2026-04-19 - the-future-of-mcp.md",
+          "supporting_excerpt": "By giving the model a specialized tool-searching utility, the agent can search directories and load specific functions on demand, keeping initial prompts clean and focused."
+        },
+        {
+          "path": "raw/2026-04-02 - 18-claude-code-token-hacks-in-18-minutes.md",
+          "supporting_excerpt": "Keep your [[Claude-Md]] file lean (under 200 lines) by treating it as an index rather than a database. Be surgical with [[File-References]] by specifying exactly which functions to read"
+        },
+        {
+          "path": "raw/2026-04-02 - 18-claude-code-token-hacks-in-18-minutes.md",
+          "supporting_excerpt": "excessive compaction destroys quality."
+        }
+      ],
+      "declared_gaps": [],
+      "operational_trace": {
+        "facets": [
+          "working-set selection",
+          "durable memory and handoff",
+          "retrieval and progressive disclosure",
+          "history clearing and task boundaries",
+          "compaction risks"
+        ],
+        "search_queries": [
+          "context management|context window|context engineering|compaction|summari.*context|memory.*agent",
+          "context rot|context bloat|progressive disclosure|progressive discovery|working memory|summarization|compaction|irrelevant history"
+        ],
+        "documents_read": [
+          "AI & SDLC/2026-05-26 - stop-babysitting-your-agents.md",
+          "AI & SDLC/2026-04-19 - the-future-of-mcp.md",
+          "raw/2026-04-02 - 18-claude-code-token-hacks-in-18-minutes.md"
+        ],
+        "evidence_status_counts": {
+          "supported": 6,
+          "partial": 0,
+          "contradictory": 0,
+          "unsupported": 0
+        },
+        "stop_reason": "Retrieval, durable-state, session-hygiene, and compaction tradeoffs were materially supported."
+      }
+    },
+    {
+      "id": "Q006",
+      "behavior": "answer",
+      "answer": "Prefer one well-designed agent when a single context, tool set, and control loop can complete the job. Adding agents is justified when work has genuinely separable specialist roles, independent tasks that benefit from parallelism, or asynchronous events that should be handled without one long serial loop. Even then, use an explicit pattern: an orchestrator-worker design when control and debugging matter most, or event-driven choreography when specialized work can proceed independently. Multi-agent systems impose real coordination cost: shared state, ownership, handoffs, conflict resolution, traceability, and noisy-neighbor control. If those mechanisms are not designed, capable individuals become a disorganized swarm. The burden of proof is therefore on decomposition and measurable concurrency benefit, not on the appeal of having more agents.",
+      "citations": [
+        {
+          "path": "AI & SDLC/2026-06-18 - the-production-ai-playbook-deploying-agents-at-enterprise-scale.md",
+          "supporting_excerpt": "Scaling past a solitary agent causes system complexity to surge exponentially"
+        },
+        {
+          "path": "AI & SDLC/2026-06-18 - the-production-ai-playbook-deploying-agents-at-enterprise-scale.md",
+          "supporting_excerpt": "the centralized Orchestrator-Worker pattern for absolute control and clear debugging paths via a primary coordination layer"
+        },
+        {
+          "path": "AI & SDLC/2026-05-23 - the-missing-primitive-for-agent-swarms.md",
+          "supporting_excerpt": "This missing primitive turns individual agents—which are theoretically capable—into a disorganized swarm that overwhelms human oversight."
+        }
+      ],
+      "declared_gaps": [],
+      "operational_trace": {
+        "facets": [
+          "single-agent default",
+          "decomposability and specialization",
+          "parallel and asynchronous benefit",
+          "coordination overhead",
+          "orchestration pattern selection"
+        ],
+        "search_queries": [
+          "multi-agent|multi agent|single agent|agent orchestration|swarm",
+          "single-agent|single agent|one agent|agent coordination overhead|coordination cost|decompos.*agent"
+        ],
+        "documents_read": [
+          "AI & SDLC/2026-05-23 - the-missing-primitive-for-agent-swarms.md",
+          "AI & SDLC/2026-06-18 - the-production-ai-playbook-deploying-agents-at-enterprise-scale.md",
+          "AI & SDLC/2026-05-30 - how-i-deleted-95-percent-of-my-agent-skills-and-got-better-results.md"
+        ],
+        "evidence_status_counts": {
+          "supported": 5,
+          "partial": 0,
+          "contradictory": 0,
+          "unsupported": 0
+        },
+        "stop_reason": "The evidence supported both the multi-agent complexity penalty and task-specific orchestration choices."
+      }
+    },
+    {
+      "id": "Q007",
+      "behavior": "partial",
+      "answer": "MCP addresses the integration problem between agent clients and external tools or enterprise data by providing a common protocol layer instead of requiring a custom client integration for every system. Good MCP design is agent-oriented: expose coherent task-level tools, use progressive discovery rather than loading every schema up front, and avoid mechanically wrapping a large REST surface. Security and operations are not solved merely by speaking the protocol. Centralize authentication, authorization, role and scope enforcement, traffic auditing, and server health visibility; keep internal resources behind a controlled intermediary; separate the agent harness from the data layer; and design the gateway for high availability because centralization creates a possible single point of failure and governance bottleneck. The inspected notes did not substantiate a detailed prompt-injection or tool-poisoning threat model, so those specifics are not asserted here.",
+      "citations": [
+        {
+          "path": "AI & SDLC/2026-04-19 - the-future-of-mcp.md",
+          "supporting_excerpt": "Early automation attempts suffered from context bloat because developers shoved entire tool definition lists into the system prompt at the start of a session"
+        },
+        {
+          "path": "AI & SDLC/2026-04-19 - the-future-of-mcp.md",
+          "supporting_excerpt": "Simply wrapping traditional web endpoints in an agent schema delivers terrible results."
+        },
+        {
+          "path": "raw/2026-07-18-gateways-are-all-you-need.md",
+          "supporting_excerpt": "The solution is to introduce a [[Gateway]] that acts as a central hub for [[Authentication]], [[Authorization]], and [[Observability]]."
+        },
+        {
+          "path": "raw/2026-07-18-gateways-are-all-you-need.md",
+          "supporting_excerpt": "this may introduce a new [[Single-Point-Of-Failure]] because the gateway becomes the most critical piece of infrastructure in the entire agentic stack."
+        }
+      ],
+      "declared_gaps": [
+        "The inspected notes did not provide detailed evidence for prompt-injection, tool-poisoning, consent, or confused-deputy attack mechanics."
+      ],
+      "operational_trace": {
+        "facets": [
+          "protocol integration problem",
+          "agent-oriented tool design",
+          "context and discovery",
+          "authentication and authorization",
+          "security and gateway failure risks"
+        ],
+        "search_queries": [
+          "Model Context Protocol|\\bMCP\\b|MCP server|MCP tool|prompt injection.*tool",
+          "MCP.*prompt injection|prompt injection.*MCP|MCP.*least privilege|MCP.*authorization|MCP.*security|tool poisoning|rug pull|confused deputy"
+        ],
+        "documents_read": [
+          "AI & SDLC/2026-04-19 - the-future-of-mcp.md",
+          "raw/2026-07-18-gateways-are-all-you-need.md"
+        ],
+        "evidence_status_counts": {
+          "supported": 5,
+          "partial": 1,
+          "contradictory": 0,
+          "unsupported": 0
+        },
+        "stop_reason": "Protocol, design, access-control, and gateway-risk facets were supported; detailed adversarial-tool threats remained unsupported."
+      }
+    },
+    {
+      "id": "Q008",
+      "behavior": "answer",
+      "answer": "The most important maintainability principle is to put probabilistic agent behavior behind explicit, testable boundaries. Separate a deterministic core that decides from an imperative shell that performs model calls, tool calls, database access, clocks, and network I/O. Represent workflows as explicit state machines with narrow valid transitions; inject time and other environmental dependencies; keep adapters replaceable; pin dependencies; make builds hermetic and deployments idempotent. Version prompts, tools, policies, and evaluation sets like code, and preserve trace schemas as stable contracts. Apply the principle pragmatically: the vault notes caution that a pure-core mapping layer can itself become costly in deeply stateful transactional systems, so boundaries should reduce entropy rather than merely move complexity.",
+      "citations": [
+        {
+          "path": "AI & SDLC/2026-03-04 - simplest-way-to-make-your-architecture-testable.md",
+          "supporting_excerpt": "Enforcing determinism across code execution, state transitions, build environments, and infrastructure deployments is the foundational prerequisite for true [[Continuous-Delivery]] and [[Evolutionary-Architecture]]."
+        },
+        {
+          "path": "AI & SDLC/2026-03-04 - simplest-way-to-make-your-architecture-testable.md",
+          "supporting_excerpt": "Implement a strict architectural separation: group pure logic decisions into a Mock-free functional core, leaving hardware, databases, and clock IO strictly inside an outer imperative shell"
+        },
+        {
+          "path": "AI & SDLC/2026-03-04 - simplest-way-to-make-your-architecture-testable.md",
+          "supporting_excerpt": "Transition all delivery pipelines to use hermetic build boundaries, lock dependency trees, and run idempotent server configuration scripts"
+        },
+        {
+          "path": "AI & SDLC/2026-03-04 - simplest-way-to-make-your-architecture-testable.md",
+          "supporting_excerpt": "The extreme mapping layer required to load deep, normalized relational graphs into a pure in-memory domain model for a single decision often creates a new type of architectural overhead"
+        }
+      ],
+      "declared_gaps": [],
+      "operational_trace": {
+        "facets": [
+          "deterministic boundaries",
+          "separation of decisions and effects",
+          "explicit state and injected dependencies",
+          "reproducible delivery",
+          "tradeoffs and over-abstraction"
+        ],
+        "search_queries": [
+          "software architecture|maintainab|separation of concerns|dependency inversion|modular.*agent|agent architecture"
+        ],
+        "documents_read": [
+          "AI & SDLC/2026-03-04 - simplest-way-to-make-your-architecture-testable.md",
+          "AI & SDLC/2026-06-18 - the-production-ai-playbook-deploying-agents-at-enterprise-scale.md"
+        ],
+        "evidence_status_counts": {
+          "supported": 6,
+          "partial": 0,
+          "contradictory": 1,
+          "unsupported": 0
+        },
+        "stop_reason": "Core maintainability principles and an explicit boundary-design caveat were supported."
+      }
+    },
+    {
+      "id": "Q009",
+      "behavior": "answer",
+      "answer": "Trace the complete causal path of each run: user/session and task identity; prompt, model, policy, and tool versions; intent or routing decisions; retrieved records and vector lookups; every tool request, response, error, retry, and duration; guardrail results; confidence or uncertainty signals; agent and sub-agent handoffs; final outcome; and user correction or regeneration. Measure objective operational signals—error rate, latency, cost, retries, and affected users—alongside semantic outcomes such as task failure, frustration, refusals, jailbreak attempts, and constraint bypass. Correlate all of these at run and span level so a regression can be tied to the exact prompt, data, model, tool, or orchestration change. Treat self-diagnostics only as another signal, not as proof, and use automated triage to find root causes in production traces.",
+      "citations": [
+        {
+          "path": "AI & SDLC/2026-06-18 - the-production-ai-playbook-deploying-agents-at-enterprise-scale.md",
+          "supporting_excerpt": "Every intent classification, API call execution time, confidence metric, vector database lookup, and guardrail check must be deeply logged and visually mapped"
+        },
+        {
+          "path": "AI & SDLC/2026-05-07 - Everything-You-Need-To-Know-About-Agent-Observability.md",
+          "supporting_excerpt": "Monitoring objective reality metrics like [[Error-Rate]], [[Latency]], [[Cost]], and user regeneration rates."
+        },
+        {
+          "path": "AI & SDLC/2026-05-07 - Everything-You-Need-To-Know-About-Agent-Observability.md",
+          "supporting_excerpt": "Automated triage agents can dig through production traces to find root causes of spikes."
+        }
+      ],
+      "declared_gaps": [],
+      "operational_trace": {
+        "facets": [
+          "run identity and versioning",
+          "decision and retrieval trace",
+          "tool and handoff spans",
+          "operational metrics",
+          "semantic outcome signals"
+        ],
+        "search_queries": [
+          "agent tracing|trace.*agent|observability|debug.*agent|telemetry|inconsistent"
+        ],
+        "documents_read": [
+          "AI & SDLC/2026-05-07 - Everything-You-Need-To-Know-About-Agent-Observability.md",
+          "AI & SDLC/2026-06-18 - the-production-ai-playbook-deploying-agents-at-enterprise-scale.md"
+        ],
+        "evidence_status_counts": {
+          "supported": 6,
+          "partial": 0,
+          "contradictory": 0,
+          "unsupported": 0
+        },
+        "stop_reason": "Decision-level tracing and both explicit and semantic measurement facets were supported."
+      }
+    },
+    {
+      "id": "Q010",
+      "behavior": "answer",
+      "answer": "Insert human control where uncertainty intersects with consequence. Require approval before irreversible, externally visible, privileged, financial, legal, safety-critical, or policy-changing actions. Pause and escalate when confidence falls below a domain-set threshold, guardrails fail, tools repeatedly error, sources conflict, or the agent detects that it cannot complete the task within its capability. Use correction checkpoints at ambiguous requirements and quality-sensitive design decisions, where human taste and judgment remain important. After execution, sample and review high-impact outcomes and feed corrections into evaluation sets and policies. Low-risk, reversible steps can remain autonomous when they are well traced and protected by fallbacks; human review should be a designed breakpoint with enough trace context to decide, not a vague requirement to watch every step.",
+      "citations": [
+        {
+          "path": "AI & SDLC/2026-06-18 - the-production-ai-playbook-deploying-agents-at-enterprise-scale.md",
+          "supporting_excerpt": "strict Human-in-the-Loop architectural breakpoints that pause operations for human review whenever an agent drops below confidence thresholds"
+        },
+        {
+          "path": "AI & SDLC/2026-06-18 - the-production-ai-playbook-deploying-agents-at-enterprise-scale.md",
+          "supporting_excerpt": "online monitoring guardrails, automated fallback routines, or graceful handoffs to human operators when performance drops below critical thresholds"
+        },
+        {
+          "path": "AI & SDLC/2026-04-29 - andrej-karpathy-from-vibe-coding-to-agentic-engineering.md",
+          "supporting_excerpt": "You must be the \"Director\" in the loop; agents are powerful but stochastic and require [[Human-Oversight]]."
+        },
+        {
+          "path": "AI & SDLC/2026-04-29 - andrej-karpathy-from-vibe-coding-to-agentic-engineering.md",
+          "supporting_excerpt": "[[Taste]], [[Judgment]], and [[Design]] are the human-retained domains in an agent-heavy workflow."
+        }
+      ],
+      "declared_gaps": [],
+      "operational_trace": {
+        "facets": [
+          "pre-action approval",
+          "confidence and guardrail escalation",
+          "correction of ambiguity and quality",
+          "post-action review and learning",
+          "risk-based autonomy"
+        ],
+        "search_queries": [
+          "human in the loop|human approval|escalation|autonomous workflow|human oversight|interrupt.*agent",
+          "human-in-the-loop|human in the loop|approval gate|human review|escalation gate|high-risk action|human intervention"
+        ],
+        "documents_read": [
+          "AI & SDLC/2026-06-18 - the-production-ai-playbook-deploying-agents-at-enterprise-scale.md",
+          "AI & SDLC/2026-04-29 - andrej-karpathy-from-vibe-coding-to-agentic-engineering.md",
+          "AI & SDLC/2026-05-26 - stop-babysitting-your-agents.md"
+        ],
+        "evidence_status_counts": {
+          "supported": 6,
+          "partial": 0,
+          "contradictory": 0,
+          "unsupported": 0
+        },
+        "stop_reason": "Approval, escalation, correction, oversight, and risk-based autonomy facets were supported."
+      }
+    }
+  ]
+}

@@ -1,0 +1,79 @@
+{
+  "status": "instrumentation_only_no_efficacy_claim",
+  "workload": "code_testing",
+  "task_count": 5,
+  "valid_pair_count": 5,
+  "arm_descriptives": {
+    "configured": {
+      "task_count": 5,
+      "valid_task_count": 5,
+      "invalid_runs": 0,
+      "mean_fault_exposure_rate": 0.9333334000000001,
+      "mean_distinct_faults_exposed": 2.8,
+      "total_runtime_seconds": 5.351942,
+      "coupled_run_count": 0,
+      "unstable_run_count": 0,
+      "provider_usage_complete": false
+    },
+    "generic": {
+      "task_count": 5,
+      "valid_task_count": 5,
+      "invalid_runs": 0,
+      "mean_fault_exposure_rate": 0.8666668,
+      "mean_distinct_faults_exposed": 2.6,
+      "total_runtime_seconds": 10.116072,
+      "coupled_run_count": 0,
+      "unstable_run_count": 0,
+      "provider_usage_complete": false
+    }
+  },
+  "paired_task_deltas": [
+    {
+      "task_id": "TST-P001",
+      "configured_minus_generic_fault_exposure_rate": 0.0,
+      "configured_minus_generic_distinct_faults_exposed": 0,
+      "generic_minus_configured_runtime_seconds": 4.622626,
+      "generic_minus_configured_declared_tests": 0
+    },
+    {
+      "task_id": "TST-P002",
+      "configured_minus_generic_fault_exposure_rate": 0.0,
+      "configured_minus_generic_distinct_faults_exposed": 0,
+      "generic_minus_configured_runtime_seconds": -0.3083929999999999,
+      "generic_minus_configured_declared_tests": 0
+    },
+    {
+      "task_id": "TST-P003",
+      "configured_minus_generic_fault_exposure_rate": 0.0,
+      "configured_minus_generic_distinct_faults_exposed": 0,
+      "generic_minus_configured_runtime_seconds": -0.14703699999999986,
+      "generic_minus_configured_declared_tests": 0
+    },
+    {
+      "task_id": "TST-P004",
+      "configured_minus_generic_fault_exposure_rate": 0.333333,
+      "configured_minus_generic_distinct_faults_exposed": 1,
+      "generic_minus_configured_runtime_seconds": 0.1039310000000001,
+      "generic_minus_configured_declared_tests": 0
+    },
+    {
+      "task_id": "TST-P005",
+      "configured_minus_generic_fault_exposure_rate": 0.0,
+      "configured_minus_generic_distinct_faults_exposed": 0,
+      "generic_minus_configured_runtime_seconds": 0.49300299999999997,
+      "generic_minus_configured_declared_tests": 0
+    }
+  ],
+  "mean_paired_deltas": {
+    "configured_minus_generic_fault_exposure_rate": 0.06666659999999999,
+    "configured_minus_generic_distinct_faults_exposed": 0.2,
+    "generic_minus_configured_runtime_seconds": 0.9528260000000002,
+    "generic_minus_configured_declared_tests": 0.0
+  },
+  "limitations": [
+    "Five seen pilot fixtures are not a confirmation sample.",
+    "Provider usage and cost remain null when the adapter cannot expose them.",
+    "Root guards detect violations but do not replace an OS sandbox.",
+    "Runtime includes local scorer subprocess overhead and is descriptive."
+  ]
+}

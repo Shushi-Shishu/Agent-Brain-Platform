@@ -1,0 +1,76 @@
+{
+  "schema": "poc6c-code-development-run-v1",
+  "diagnostic_only": true,
+  "valid_run": true,
+  "task_id": "DEV-P002",
+  "workload": "code_development",
+  "split": "pilot",
+  "arm": "generic",
+  "instruction": {
+    "sha256": "97847D789A8558F423804559A1333AFCE9E73D38746356FA0A241EF0B1505BD4",
+    "decision_architecture": null
+  },
+  "matched_conditions": {
+    "model_id": "same_collaboration_runtime_unaudited",
+    "tools": "same_workspace_tools",
+    "network": "not_required",
+    "task_budget": "one_subagent_turn",
+    "provider_usage": null
+  },
+  "provider": {
+    "provider": null,
+    "model_id": null,
+    "model_version": null,
+    "model_calls": null,
+    "input_tokens": null,
+    "output_tokens": null,
+    "total_tokens": null,
+    "cost_amount": null,
+    "cost_currency": null
+  },
+  "agent": {
+    "duration_ms": 140782,
+    "result": "applied per-line discounts before subtotal, tax once, final rounding; focused checks",
+    "error": null
+  },
+  "integrity": {
+    "arms_byte_identical_at_start": true,
+    "source_public_sha256_pre": "67ACCBDDD8770F83D1B5FC315E17DAB4F1BE82D9734C55A534692F278A858757",
+    "source_public_sha256_post": "67ACCBDDD8770F83D1B5FC315E17DAB4F1BE82D9734C55A534692F278A858757",
+    "private_sha256_pre": "B11243BD4B6FDC363EBA48DA468519D36FD65222DD21D167E8820827A25BA17E",
+    "private_sha256_post": "B11243BD4B6FDC363EBA48DA468519D36FD65222DD21D167E8820827A25BA17E",
+    "workspace_sha256_pre": "67ACCBDDD8770F83D1B5FC315E17DAB4F1BE82D9734C55A534692F278A858757",
+    "workspace_sha256_post_agent": "A763AF023491D12C94DE10DA812127756274B8B6B0147312C369A48CD2CEC5F4",
+    "workspace_sha256_post_evaluator": "A763AF023491D12C94DE10DA812127756274B8B6B0147312C369A48CD2CEC5F4",
+    "workspace_changes": [
+      "modified:invoice.py"
+    ],
+    "protected_roots_unchanged": true,
+    "unauthorized_edit_detected": false,
+    "guard_scope": [
+      "fixture public package",
+      "fixture private package",
+      "other arm workspace",
+      "all other files inside paired run directory"
+    ],
+    "guard_limitation": "The harness detects changes only in declared guarded roots; OS-level sandboxing is required to prevent arbitrary external writes.",
+    "leakage_canary_ids": [],
+    "violations": []
+  },
+  "evaluator": {
+    "executed": true,
+    "timed_out": false,
+    "returncode": 0,
+    "duration_ms": 343,
+    "total": 3,
+    "passed": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "stdout": "",
+    "stderr": "...\n----------------------------------------------------------------------\nRan 3 tests in 0.000s\n\nOK\n",
+    "stdout_truncated": false,
+    "stderr_truncated": false,
+    "leakage_canary_ids": []
+  }
+}

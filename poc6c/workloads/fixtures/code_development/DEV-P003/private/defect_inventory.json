@@ -1,0 +1,7 @@
+{
+  "task_id": "DEV-P003",
+  "defect_id": "touching-window-merge",
+  "location": "windows.py:merge_windows",
+  "behavior": "Adjacent half-open windows are merged even though they do not overlap.",
+  "repair_target": "Merge only when the next start is strictly less than the current end."
+}

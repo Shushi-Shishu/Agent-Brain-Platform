@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "stage": "instrumentation_only",
+  "evaluator": {
+    "model_id": "unknown_if_not_auditable",
+    "notes": "Blind diagnostic evaluator; not calibrated human ground truth."
+  },
+  "cases": [
+    {
+      "case_id": "Q001",
+      "scores": [
+        {
+          "blind_output_id": "B-EXAMPLE",
+          "claim_support": 0,
+          "question_coverage": 0,
+          "gap_handling": 0,
+          "unsupported_claim_avoidance": 0,
+          "practical_usefulness": 0,
+          "citation_precision": 0,
+          "critical_failure": false,
+          "notes": "Concise evidence-based scoring rationale."
+        }
+      ]
+    }
+  ]
+}

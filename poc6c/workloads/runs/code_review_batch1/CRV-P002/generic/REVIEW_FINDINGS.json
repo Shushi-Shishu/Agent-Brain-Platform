@@ -1,0 +1,23 @@
+[
+  {
+    "file": "pagination.py",
+    "line": 6,
+    "category": "logic_error",
+    "severity": "high",
+    "explanation": "Floor division omits the final partial page, so totals not divisible by size report too few pages. Use ceiling division while preserving zero pages for an empty collection."
+  },
+  {
+    "file": "pagination.py",
+    "line": 10,
+    "category": "input_validation",
+    "severity": "medium",
+    "explanation": "Non-positive page numbers are accepted and become negative slice offsets, returning unrelated items instead of enforcing one-based pagination. Reject page values below one."
+  },
+  {
+    "file": "pagination.py",
+    "line": 10,
+    "category": "input_validation",
+    "severity": "medium",
+    "explanation": "A non-positive size is not rejected by page_items; zero or negative values produce empty or misleading slices. Validate size and raise ValueError as page_count does."
+  }
+]

@@ -1,0 +1,1269 @@
+{
+  "design": {
+    "base_seed": 20260728,
+    "confirmation_trials": 2000,
+    "equivalence_pct": 2.0,
+    "preregistration": "PREREGISTRATION.md",
+    "selection_trials": 1000
+  },
+  "regimes": {
+    "deceptive_depleting": {
+      "budget": 48,
+      "confirmation_ranking": [
+        "UCB1",
+        "DiscountedThompson(g=0.9)",
+        "ThompsonSampling",
+        "EpsilonGreedy(e=0.1)",
+        "ExploreThenCommit",
+        "RoundRobin"
+      ],
+      "description": "A near-certain shallow trap competes with a lower-rate sustainable branch.",
+      "k": 12,
+      "locked_reference": "UCB1",
+      "mode": "finite_urn",
+      "policies": {
+        "DiscountedThompson(g=0.9)": {
+          "ci95": [
+            11.3039105559413,
+            11.4720894440587
+          ],
+          "disqualification_stat": {
+            "ci95": [
+              2.178007066996919,
+              2.2707929330030803
+            ],
+            "mean": 2.2243999999999997
+          },
+          "mean": 11.388,
+          "relative_to_locked_reference_pct": 99.41944214064341,
+          "status": "viable",
+          "viability_stat": {
+            "ci95": [
+              0.4587607370548337,
+              0.553689262945168
+            ],
+            "mean": 0.5062250000000008
+          }
+        },
+        "EpsilonGreedy(e=0.1)": {
+          "ci95": [
+            10.12008636580906,
+            10.39991363419094
+          ],
+          "disqualification_stat": {
+            "ci95": [
+              0.9835242176126477,
+              1.209275782387351
+            ],
+            "mean": 1.0963999999999994
+          },
+          "mean": 10.26,
+          "relative_to_locked_reference_pct": 89.57178401501594,
+          "status": "uncertain",
+          "viability_stat": {
+            "ci95": [
+              -0.7334988367418855,
+              -0.5100511632581131
+            ],
+            "mean": -0.6217749999999993
+          }
+        },
+        "ExploreThenCommit": {
+          "ci95": [
+            9.943923441649979,
+            10.251076558350022
+          ],
+          "disqualification_stat": {
+            "ci95": [
+              0.8041172468355613,
+              1.0636827531644375
+            ],
+            "mean": 0.9338999999999994
+          },
+          "mean": 10.0975,
+          "relative_to_locked_reference_pct": 88.15312759177617,
+          "status": "uncertain",
+          "viability_stat": {
+            "ci95": [
+              -0.913124583583239,
+              -0.6554254164167596
+            ],
+            "mean": -0.7842749999999993
+          }
+        },
+        "RoundRobin": {
+          "ci95": [
+            8.774488811922176,
+            8.935511188077825
+          ],
+          "disqualification_stat": {
+            "ci95": [
+              -0.3539946843178165,
+              -0.2632053156821848
+            ],
+            "mean": -0.30860000000000065
+          },
+          "mean": 8.855,
+          "relative_to_locked_reference_pct": 77.3058623248505,
+          "status": "disqualified",
+          "viability_stat": {
+            "ci95": [
+              -2.07425640372956,
+              -1.9792935962704383
+            ],
+            "mean": -2.0267749999999993
+          }
+        },
+        "ThompsonSampling": {
+          "ci95": [
+            11.000700301097021,
+            11.193299698902978
+          ],
+          "disqualification_stat": {
+            "ci95": [
+              1.8795081887852145,
+              1.9872918112147842
+            ],
+            "mean": 1.9333999999999993
+          },
+          "mean": 11.097,
+          "relative_to_locked_reference_pct": 96.87895586887251,
+          "status": "viable",
+          "viability_stat": {
+            "ci95": [
+              0.1629478859376613,
+              0.2675021140623401
+            ],
+            "mean": 0.2152250000000007
+          }
+        },
+        "UCB1": {
+          "ci95": [
+            11.369779035152199,
+            11.5392209648478
+          ],
+          "disqualification_stat": {
+            "ci95": [
+              2.2739558070304393,
+              2.30784419296956
+            ],
+            "mean": 2.2908999999999997
+          },
+          "mean": 11.4545,
+          "relative_to_locked_reference_pct": 100.00000000000001,
+          "status": "viable",
+          "viability_stat": {
+            "ci95": [
+              0.5684889517576106,
+              0.5769610482423908
+            ],
+            "mean": 0.5727250000000007
+          }
+        }
+      },
+      "reference_vs_explore_then_commit": {
+        "material_beyond_2pct": true,
+        "raw_uplift_pct": 13.438970042089618,
+        "test_stat_ci95": [
+          1.023661226392385,
+          1.2864387736076144
+        ],
+        "test_stat_mean": 1.1550499999999997
+      },
+      "selection_means": {
+        "DiscountedThompson(g=0.9)": 11.315,
+        "EpsilonGreedy(e=0.1)": 10.095,
+        "ExploreThenCommit": 9.854,
+        "RoundRobin": 8.833,
+        "ThompsonSampling": 11.026,
+        "UCB1": 11.438
+      }
+    },
+    "depleting_needle": {
+      "budget": 48,
+      "confirmation_ranking": [
+        "ExploreThenCommit",
+        "EpsilonGreedy(e=0.1)",
+        "ThompsonSampling",
+        "UCB1",
+        "DiscountedThompson(g=0.9)",
+        "RoundRobin"
+      ],
+      "description": "One high-yield finite branch among finite poor branches.",
+      "k": 12,
+      "locked_reference": "ExploreThenCommit",
+      "mode": "finite_urn",
+      "policies": {
+        "DiscountedThompson(g=0.9)": {
+          "ci95": [
+            10.553667852428026,
+            10.857332147571976
+          ],
+          "disqualification_stat": {
+            "ci95": [
+              -7.274721150322649,
+              -6.572678849677353
+            ],
+            "mean": -6.923700000000001
+          },
+          "mean": 10.7055,
+          "relative_to_locked_reference_pct": 48.5807637328977,
+          "status": "disqualified",
+          "viability_stat": {
+            "ci95": [
+              -10.64461941922595,
+              -9.813730580774045
+            ],
+            "mean": -10.229174999999998
+          }
+        },
+        "EpsilonGreedy(e=0.1)": {
+          "ci95": [
+            20.725246332818767,
+            21.517753667181235
+          ],
+          "disqualification_stat": {
+            "ci95": [
+              3.361121517752069,
+              3.6234784822479287
+            ],
+            "mean": 3.492299999999999
+          },
+          "mean": 21.1215,
+          "relative_to_locked_reference_pct": 95.84779797154721,
+          "status": "viable",
+          "viability_stat": {
+            "ci95": [
+              0.03988536045991803,
+              0.33376463954008434
+            ],
+            "mean": 0.18682500000000118
+          }
+        },
+        "ExploreThenCommit": {
+          "ci95": [
+            21.57312047163491,
+            22.499879528365092
+          ],
+          "disqualification_stat": {
+            "ci95": [
+              4.314624094326981,
+              4.4999759056730175
+            ],
+            "mean": 4.407299999999999
+          },
+          "mean": 22.0365,
+          "relative_to_locked_reference_pct": 100.0,
+          "status": "viable",
+          "viability_stat": {
+            "ci95": [
+              1.0786560235817466,
+              1.1249939764182557
+            ],
+            "mean": 1.1018250000000012
+          }
+        },
+        "RoundRobin": {
+          "ci95": [
+            7.630717643637076,
+            7.818282356362924
+          ],
+          "disqualification_stat": {
+            "ci95": [
+              -10.266896669403783,
+              -9.54250333059622
+            ],
+            "mean": -9.904700000000002
+          },
+          "mean": 7.7245,
+          "relative_to_locked_reference_pct": 35.053207178998484,
+          "status": "disqualified",
+          "viability_stat": {
+            "ci95": [
+              -13.639980164230227,
+              -12.780369835769768
+            ],
+            "mean": -13.210174999999998
+          }
+        },
+        "ThompsonSampling": {
+          "ci95": [
+            16.004944188225558,
+            16.46605581177444
+          ],
+          "disqualification_stat": {
+            "ci95": [
+              -1.6992326312553696,
+              -1.088167368744633
+            ],
+            "mean": -1.3937000000000013
+          },
+          "mean": 16.2355,
+          "relative_to_locked_reference_pct": 73.67549293218069,
+          "status": "disqualified",
+          "viability_stat": {
+            "ci95": [
+              -5.061782620102961,
+              -4.336567379897038
+            ],
+            "mean": -4.699174999999999
+          }
+        },
+        "UCB1": {
+          "ci95": [
+            10.994262856198162,
+            11.219737143801837
+          ],
+          "disqualification_stat": {
+            "ci95": [
+              -6.870679397167255,
+              -6.173720602832747
+            ],
+            "mean": -6.522200000000001
+          },
+          "mean": 11.107,
+          "relative_to_locked_reference_pct": 50.40274090713134,
+          "status": "disqualified",
+          "viability_stat": {
+            "ci95": [
+              -10.242912421771802,
+              -9.412437578228193
+            ],
+            "mean": -9.827674999999997
+          }
+        }
+      },
+      "reference_vs_explore_then_commit": {
+        "material_beyond_2pct": false,
+        "raw_uplift_pct": 0.0,
+        "test_stat_ci95": [
+          -0.4499975905673025,
+          -0.43146240943269887
+        ],
+        "test_stat_mean": -0.4407300000000007
+      },
+      "selection_means": {
+        "DiscountedThompson(g=0.9)": 10.716,
+        "EpsilonGreedy(e=0.1)": 20.502,
+        "ExploreThenCommit": 21.313,
+        "RoundRobin": 7.774,
+        "ThompsonSampling": 16.162,
+        "UCB1": 11.176
+      }
+    },
+    "rich_depleting": {
+      "budget": 192,
+      "confirmation_ranking": [
+        "ThompsonSampling",
+        "UCB1",
+        "EpsilonGreedy(e=0.1)",
+        "DiscountedThompson(g=0.9)",
+        "ExploreThenCommit",
+        "RoundRobin"
+      ],
+      "description": "A long finite-urn run where controllers must exploit and then move after depletion.",
+      "k": 12,
+      "locked_reference": "ThompsonSampling",
+      "mode": "finite_urn",
+      "policies": {
+        "DiscountedThompson(g=0.9)": {
+          "ci95": [
+            56.69025342295892,
+            57.22274657704108
+          ],
+          "disqualification_stat": {
+            "ci95": [
+              -2.319672266889929,
+              -1.784127733110077
+            ],
+            "mean": -2.051900000000003
+          },
+          "mean": 56.9565,
+          "relative_to_locked_reference_pct": 77.21815877061572,
+          "status": "disqualified",
+          "viability_stat": {
+            "ci95": [
+              -13.390943938620785,
+              -12.84100606137921
+            ],
+            "mean": -13.115974999999997
+          }
+        },
+        "EpsilonGreedy(e=0.1)": {
+          "ci95": [
+            61.93641756766731,
+            63.14758243233269
+          ],
+          "disqualification_stat": {
+            "ci95": [
+              2.923991210677171,
+              4.1432087893228235
+            ],
+            "mean": 3.533599999999997
+          },
+          "mean": 62.542,
+          "relative_to_locked_reference_pct": 84.79063997668129,
+          "status": "uncertain",
+          "viability_stat": {
+            "ci95": [
+              -8.14390261597179,
+              -6.917047384028203
+            ],
+            "mean": -7.5304749999999965
+          }
+        },
+        "ExploreThenCommit": {
+          "ci95": [
+            50.104378403942924,
+            52.02162159605708
+          ],
+          "disqualification_stat": {
+            "ci95": [
+              -8.911425623608718,
+              -6.979374376391288
+            ],
+            "mean": -7.945400000000003
+          },
+          "mean": 51.063,
+          "relative_to_locked_reference_pct": 69.22810989621817,
+          "status": "disqualified",
+          "viability_stat": {
+            "ci95": [
+              -19.97882043487759,
+              -18.0401295651224
+            ],
+            "mean": -19.009474999999995
+          }
+        },
+        "RoundRobin": {
+          "ci95": [
+            47.00249402541465,
+            47.352505974585355
+          ],
+          "disqualification_stat": {
+            "ci95": [
+              -12.000494668762874,
+              -11.661305331237129
+            ],
+            "mean": -11.830900000000002
+          },
+          "mean": 47.1775,
+          "relative_to_locked_reference_pct": 63.96038530107578,
+          "status": "disqualified",
+          "viability_stat": {
+            "ci95": [
+              -23.07432348264401,
+              -22.71562651735597
+            ],
+            "mean": -22.89497499999999
+          }
+        },
+        "ThompsonSampling": {
+          "ci95": [
+            73.5982101314545,
+            73.9227898685455
+          ],
+          "disqualification_stat": {
+            "ci95": [
+              14.719642026290899,
+              14.784557973709099
+            ],
+            "mean": 14.752099999999999
+          },
+          "mean": 73.7605,
+          "relative_to_locked_reference_pct": 100.0,
+          "status": "viable",
+          "viability_stat": {
+            "ci95": [
+              3.6799105065727273,
+              3.6961394934272773
+            ],
+            "mean": 3.6880250000000023
+          }
+        },
+        "UCB1": {
+          "ci95": [
+            71.09554490505212,
+            71.44845509494789
+          ],
+          "disqualification_stat": {
+            "ci95": [
+              12.061312584088503,
+              12.465887415911494
+            ],
+            "mean": 12.263599999999999
+          },
+          "mean": 71.272,
+          "relative_to_locked_reference_pct": 96.62624304336333,
+          "status": "viable",
+          "viability_stat": {
+            "ci95": [
+              0.9838682681676489,
+              1.4151817318323567
+            ],
+            "mean": 1.1995250000000028
+          }
+        }
+      },
+      "reference_vs_explore_then_commit": {
+        "material_beyond_2pct": true,
+        "raw_uplift_pct": 44.44999314572193,
+        "test_stat_ci95": [
+          20.686747057507997,
+          22.665732942491996
+        ],
+        "test_stat_mean": 21.676239999999996
+      },
+      "selection_means": {
+        "DiscountedThompson(g=0.9)": 56.964,
+        "EpsilonGreedy(e=0.1)": 62.214,
+        "ExploreThenCommit": 49.038,
+        "RoundRobin": 47.369,
+        "ThompsonSampling": 73.96,
+        "UCB1": 71.192
+      }
+    },
+    "scarce_stationary": {
+      "budget": 14,
+      "confirmation_ranking": [
+        "ThompsonSampling",
+        "ExploreThenCommit",
+        "EpsilonGreedy(e=0.1)",
+        "DiscountedThompson(g=0.9)",
+        "UCB1",
+        "RoundRobin"
+      ],
+      "description": "A stationary needle with budget for only K + 2 pulls.",
+      "k": 12,
+      "locked_reference": "ThompsonSampling",
+      "mode": "stationary",
+      "policies": {
+        "DiscountedThompson(g=0.9)": {
+          "ci95": [
+            2.5711543471731644,
+            2.716845652826836
+          ],
+          "disqualification_stat": {
+            "ci95": [
+              0.33081052664160665,
+              0.46918947335839306
+            ],
+            "mean": 0.39999999999999986
+          },
+          "mean": 2.644,
+          "relative_to_locked_reference_pct": 94.2602495543672,
+          "status": "uncertain",
+          "viability_stat": {
+            "ci95": [
+              -0.09475392035334215,
+              0.053253920353342456
+            ],
+            "mean": -0.020749999999999845
+          }
+        },
+        "EpsilonGreedy(e=0.1)": {
+          "ci95": [
+            2.651219048862732,
+            2.760780951137268
+          ],
+          "disqualification_stat": {
+            "ci95": [
+              0.4126361963645964,
+              0.5113638036354035
+            ],
+            "mean": 0.4619999999999999
+          },
+          "mean": 2.706,
+          "relative_to_locked_reference_pct": 96.47058823529412,
+          "status": "uncertain",
+          "viability_stat": {
+            "ci95": [
+              -0.014586999973431582,
+              0.0970869999734319
+            ],
+            "mean": 0.041250000000000155
+          }
+        },
+        "ExploreThenCommit": {
+          "ci95": [
+            2.7072730619865526,
+            2.8177269380134478
+          ],
+          "disqualification_stat": {
+            "ci95": [
+              0.4699388174317569,
+              0.5670611825682426
+            ],
+            "mean": 0.5184999999999997
+          },
+          "mean": 2.7625,
+          "relative_to_locked_reference_pct": 98.48484848484848,
+          "status": "viable",
+          "viability_stat": {
+            "ci95": [
+              0.042838818106888,
+              0.1526611818931123
+            ],
+            "mean": 0.09775000000000016
+          }
+        },
+        "RoundRobin": {
+          "ci95": [
+            2.1160755292943803,
+            2.2209244707056195
+          ],
+          "disqualification_stat": {
+            "ci95": [
+              -0.1302717548044811,
+              -0.020728245195519197
+            ],
+            "mean": -0.07550000000000015
+          },
+          "mean": 2.1685,
+          "relative_to_locked_reference_pct": 77.30837789661318,
+          "status": "disqualified",
+          "viability_stat": {
+            "ci95": [
+              -0.5581684200066348,
+              -0.4343315799933648
+            ],
+            "mean": -0.4962499999999998
+          }
+        },
+        "ThompsonSampling": {
+          "ci95": [
+            2.7306954176010474,
+            2.879304582398953
+          ],
+          "disqualification_stat": {
+            "ci95": [
+              0.5461390835202092,
+              0.5758609164797902
+            ],
+            "mean": 0.5609999999999997
+          },
+          "mean": 2.805,
+          "relative_to_locked_reference_pct": 100.0,
+          "status": "viable",
+          "viability_stat": {
+            "ci95": [
+              0.13653477088005253,
+              0.14396522911994783
+            ],
+            "mean": 0.14025000000000018
+          }
+        },
+        "UCB1": {
+          "ci95": [
+            2.5775128835181937,
+            2.6834871164818064
+          ],
+          "disqualification_stat": {
+            "ci95": [
+              0.3392900744044498,
+              0.4337099255955499
+            ],
+            "mean": 0.38649999999999984
+          },
+          "mean": 2.6305,
+          "relative_to_locked_reference_pct": 93.77896613190731,
+          "status": "uncertain",
+          "viability_stat": {
+            "ci95": [
+              -0.08816667800999797,
+              0.0196666780099983
+            ],
+            "mean": -0.034249999999999836
+          }
+        }
+      },
+      "reference_vs_explore_then_commit": {
+        "material_beyond_2pct": false,
+        "raw_uplift_pct": 1.5384615384615377,
+        "test_stat_ci95": [
+          -0.0702569760117415,
+          0.04475697601174141
+        ],
+        "test_stat_mean": -0.012750000000000046
+      },
+      "selection_means": {
+        "DiscountedThompson(g=0.9)": 2.601,
+        "EpsilonGreedy(e=0.1)": 2.659,
+        "ExploreThenCommit": 2.717,
+        "RoundRobin": 2.144,
+        "ThompsonSampling": 2.839,
+        "UCB1": 2.583
+      }
+    },
+    "stationary_needle": {
+      "budget": 48,
+      "confirmation_ranking": [
+        "ExploreThenCommit",
+        "EpsilonGreedy(e=0.1)",
+        "ThompsonSampling",
+        "UCB1",
+        "DiscountedThompson(g=0.9)",
+        "RoundRobin"
+      ],
+      "description": "One high-yield stationary branch among poor branches.",
+      "k": 12,
+      "locked_reference": "ExploreThenCommit",
+      "mode": "stationary",
+      "policies": {
+        "DiscountedThompson(g=0.9)": {
+          "ci95": [
+            10.551317051468855,
+            10.881682948531145
+          ],
+          "disqualification_stat": {
+            "ci95": [
+              -7.806563847762943,
+              -7.147636152237059
+            ],
+            "mean": -7.477100000000001
+          },
+          "mean": 10.7165,
+          "relative_to_locked_reference_pct": 47.122064901943546,
+          "status": "disqualified",
+          "viability_stat": {
+            "ci95": [
+              -11.27769225423421,
+              -10.499107745765784
+            ],
+            "mean": -10.888399999999997
+          }
+        },
+        "EpsilonGreedy(e=0.1)": {
+          "ci95": [
+            21.1242840813436,
+            21.895715918656403
+          ],
+          "disqualification_stat": {
+            "ci95": [
+              3.1911094066099603,
+              3.4416905933900375
+            ],
+            "mean": 3.316399999999999
+          },
+          "mean": 21.51,
+          "relative_to_locked_reference_pct": 94.58271040365842,
+          "status": "uncertain",
+          "viability_stat": {
+            "ci95": [
+              -0.2309551513692103,
+              0.041155151369212606
+            ],
+            "mean": -0.09489999999999885
+          }
+        },
+        "ExploreThenCommit": {
+          "ci95": [
+            22.30058607657359,
+            23.18341392342641
+          ],
+          "disqualification_stat": {
+            "ci95": [
+              4.460117215314717,
+              4.636682784685282
+            ],
+            "mean": 4.548399999999999
+          },
+          "mean": 22.742,
+          "relative_to_locked_reference_pct": 100.00000000000001,
+          "status": "viable",
+          "viability_stat": {
+            "ci95": [
+              1.1150293038286805,
+              1.1591706961713217
+            ],
+            "mean": 1.137100000000001
+          }
+        },
+        "RoundRobin": {
+          "ci95": [
+            7.311690803611409,
+            7.50030919638859
+          ],
+          "disqualification_stat": {
+            "ci95": [
+              -11.13621078526861,
+              -10.438989214731397
+            ],
+            "mean": -10.787600000000003
+          },
+          "mean": 7.406,
+          "relative_to_locked_reference_pct": 32.56529768709876,
+          "status": "disqualified",
+          "viability_stat": {
+            "ci95": [
+              -14.611712525021028,
+              -13.786087474978968
+            ],
+            "mean": -14.198899999999998
+          }
+        },
+        "ThompsonSampling": {
+          "ci95": [
+            16.29937897270624,
+            16.80662102729376
+          ],
+          "disqualification_stat": {
+            "ci95": [
+              -1.9330252057545534,
+              -1.3481747942454485
+            ],
+            "mean": -1.640600000000001
+          },
+          "mean": 16.553,
+          "relative_to_locked_reference_pct": 72.7860346495471,
+          "status": "disqualified",
+          "viability_stat": {
+            "ci95": [
+              -5.394319342317147,
+              -4.7094806576828505
+            ],
+            "mean": -5.051899999999999
+          }
+        },
+        "UCB1": {
+          "ci95": [
+            10.989562219592543,
+            11.230437780407456
+          ],
+          "disqualification_stat": {
+            "ci95": [
+              -7.410936497771054,
+              -6.756263502228949
+            ],
+            "mean": -7.0836000000000015
+          },
+          "mean": 11.11,
+          "relative_to_locked_reference_pct": 48.85234368129452,
+          "status": "disqualified",
+          "viability_stat": {
+            "ci95": [
+              -10.88513776005235,
+              -10.104662239947645
+            ],
+            "mean": -10.494899999999998
+          }
+        }
+      },
+      "reference_vs_explore_then_commit": {
+        "material_beyond_2pct": false,
+        "raw_uplift_pct": 0.0,
+        "test_stat_ci95": [
+          -0.463668278468529,
+          -0.4460117215314725
+        ],
+        "test_stat_mean": -0.45484000000000074
+      },
+      "selection_means": {
+        "DiscountedThompson(g=0.9)": 10.678,
+        "EpsilonGreedy(e=0.1)": 20.986,
+        "ExploreThenCommit": 22.155,
+        "RoundRobin": 7.409,
+        "ThompsonSampling": 16.456,
+        "UCB1": 11.095
+      }
+    },
+    "stationary_uniform": {
+      "budget": 48,
+      "confirmation_ranking": [
+        "ExploreThenCommit",
+        "UCB1",
+        "EpsilonGreedy(e=0.1)",
+        "ThompsonSampling",
+        "RoundRobin",
+        "DiscountedThompson(g=0.9)"
+      ],
+      "description": "True no-effect control: equal stationary branches.",
+      "k": 12,
+      "locked_reference": "RoundRobin",
+      "mode": "stationary",
+      "policies": {
+        "DiscountedThompson(g=0.9)": {
+          "ci95": [
+            16.57237440080136,
+            16.85562559919864
+          ],
+          "disqualification_stat": {
+            "ci95": [
+              3.261552460636319,
+              3.418447539363679
+            ],
+            "mean": 3.339999999999999
+          },
+          "mean": 16.714,
+          "relative_to_locked_reference_pct": 99.97906385524149,
+          "status": "viable",
+          "viability_stat": {
+            "ci95": [
+              0.7521326360082976,
+              0.9126173639917039
+            ],
+            "mean": 0.8323750000000008
+          }
+        },
+        "EpsilonGreedy(e=0.1)": {
+          "ci95": [
+            16.591974399804982,
+            16.87602560019502
+          ],
+          "disqualification_stat": {
+            "ci95": [
+              3.2337569141601747,
+              3.4862430858398232
+            ],
+            "mean": 3.359999999999999
+          },
+          "mean": 16.734,
+          "relative_to_locked_reference_pct": 100.09869896814715,
+          "status": "viable",
+          "viability_stat": {
+            "ci95": [
+              0.7180796829536578,
+              0.9866703170463438
+            ],
+            "mean": 0.8523750000000008
+          }
+        },
+        "ExploreThenCommit": {
+          "ci95": [
+            16.651544478817414,
+            16.934455521182585
+          ],
+          "disqualification_stat": {
+            "ci95": [
+              3.2850085704726095,
+              3.552991429527389
+            ],
+            "mean": 3.418999999999999
+          },
+          "mean": 16.793,
+          "relative_to_locked_reference_pct": 100.45162255121878,
+          "status": "viable",
+          "viability_stat": {
+            "ci95": [
+              0.7683365703677396,
+              1.054413429632262
+            ],
+            "mean": 0.9113750000000008
+          }
+        },
+        "RoundRobin": {
+          "ci95": [
+            16.575045774516237,
+            16.859954225483765
+          ],
+          "disqualification_stat": {
+            "ci95": [
+              3.3150091549032465,
+              3.371990845096752
+            ],
+            "mean": 3.3434999999999993
+          },
+          "mean": 16.7175,
+          "relative_to_locked_reference_pct": 100.0,
+          "status": "viable",
+          "viability_stat": {
+            "ci95": [
+              0.8287522887258126,
+              0.842997711274189
+            ],
+            "mean": 0.8358750000000008
+          }
+        },
+        "ThompsonSampling": {
+          "ci95": [
+            16.591717541403685,
+            16.876282458596318
+          ],
+          "disqualification_stat": {
+            "ci95": [
+              3.2665041429707125,
+              3.4534958570292855
+            ],
+            "mean": 3.359999999999999
+          },
+          "mean": 16.734,
+          "relative_to_locked_reference_pct": 100.09869896814715,
+          "status": "viable",
+          "viability_stat": {
+            "ci95": [
+              0.7550277970435254,
+              0.9497222029564764
+            ],
+            "mean": 0.8523750000000009
+          }
+        },
+        "UCB1": {
+          "ci95": [
+            16.601216627943057,
+            16.882783372056945
+          ],
+          "disqualification_stat": {
+            "ci95": [
+              3.308427932212904,
+              3.427572067787094
+            ],
+            "mean": 3.367999999999999
+          },
+          "mean": 16.742,
+          "relative_to_locked_reference_pct": 100.1465530133094,
+          "status": "viable",
+          "viability_stat": {
+            "ci95": [
+              0.8021532091365002,
+              0.9185967908635011
+            ],
+            "mean": 0.8603750000000007
+          }
+        }
+      },
+      "reference_vs_explore_then_commit": {
+        "material_beyond_2pct": false,
+        "raw_uplift_pct": -0.4495920919430604,
+        "test_stat_ci95": [
+          -0.5594500207566067,
+          -0.2632699792433935
+        ],
+        "test_stat_mean": -0.41136000000000006
+      },
+      "selection_means": {
+        "DiscountedThompson(g=0.9)": 16.851,
+        "EpsilonGreedy(e=0.1)": 16.931,
+        "ExploreThenCommit": 16.831,
+        "RoundRobin": 16.958,
+        "ThompsonSampling": 16.913,
+        "UCB1": 16.923
+      }
+    }
+  },
+  "verdict": {
+    "conditions": {
+      "at_least_two_regime_dependent_disqualifications": true,
+      "explore_then_commit_viable_somewhere": true,
+      "valid_control": true
+    },
+    "control_grand_mean": 16.739083333333337,
+    "control_pairwise_equivalence": [
+      {
+        "ci95": [
+          -0.22212317053204256,
+          0.07112317053204255
+        ],
+        "equivalence_bound": 0.33478166666666676,
+        "equivalent": true,
+        "left": "RoundRobin",
+        "mean_difference": -0.0755,
+        "right": "ExploreThenCommit"
+      },
+      {
+        "ci95": [
+          -0.15411347825303467,
+          0.12111347825303469
+        ],
+        "equivalence_bound": 0.33478166666666676,
+        "equivalent": true,
+        "left": "RoundRobin",
+        "mean_difference": -0.0165,
+        "right": "EpsilonGreedy(e=0.1)"
+      },
+      {
+        "ci95": [
+          -0.08399530137113873,
+          0.03499530137113872
+        ],
+        "equivalence_bound": 0.33478166666666676,
+        "equivalent": true,
+        "left": "RoundRobin",
+        "mean_difference": -0.0245,
+        "right": "UCB1"
+      },
+      {
+        "ci95": [
+          -0.11612133741138901,
+          0.08312133741138901
+        ],
+        "equivalence_bound": 0.33478166666666676,
+        "equivalent": true,
+        "left": "RoundRobin",
+        "mean_difference": -0.0165,
+        "right": "ThompsonSampling"
+      },
+      {
+        "ci95": [
+          -0.07857745868880447,
+          0.08557745868880448
+        ],
+        "equivalence_bound": 0.33478166666666676,
+        "equivalent": true,
+        "left": "RoundRobin",
+        "mean_difference": 0.0035,
+        "right": "DiscountedThompson(g=0.9)"
+      },
+      {
+        "ci95": [
+          -0.006280481507361116,
+          0.12428048150736111
+        ],
+        "equivalence_bound": 0.33478166666666676,
+        "equivalent": true,
+        "left": "ExploreThenCommit",
+        "mean_difference": 0.059,
+        "right": "EpsilonGreedy(e=0.1)"
+      },
+      {
+        "ci95": [
+          -0.08665656200752606,
+          0.18865656200752604
+        ],
+        "equivalence_bound": 0.33478166666666676,
+        "equivalent": true,
+        "left": "ExploreThenCommit",
+        "mean_difference": 0.051,
+        "right": "UCB1"
+      },
+      {
+        "ci95": [
+          -0.06396133636359097,
+          0.18196133636359096
+        ],
+        "equivalence_bound": 0.33478166666666676,
+        "equivalent": true,
+        "left": "ExploreThenCommit",
+        "mean_difference": 0.059,
+        "right": "ThompsonSampling"
+      },
+      {
+        "ci95": [
+          -0.0584565016000191,
+          0.2164565016000191
+        ],
+        "equivalence_bound": 0.33478166666666676,
+        "equivalent": true,
+        "left": "ExploreThenCommit",
+        "mean_difference": 0.079,
+        "right": "DiscountedThompson(g=0.9)"
+      },
+      {
+        "ci95": [
+          -0.13541629772231897,
+          0.11941629772231896
+        ],
+        "equivalence_bound": 0.33478166666666676,
+        "equivalent": true,
+        "left": "EpsilonGreedy(e=0.1)",
+        "mean_difference": -0.008,
+        "right": "UCB1"
+      },
+      {
+        "ci95": [
+          -0.11243372746438574,
+          0.11243372746438574
+        ],
+        "equivalence_bound": 0.33478166666666676,
+        "equivalent": true,
+        "left": "EpsilonGreedy(e=0.1)",
+        "mean_difference": 0.0,
+        "right": "ThompsonSampling"
+      },
+      {
+        "ci95": [
+          -0.1080756892274468,
+          0.1480756892274468
+        ],
+        "equivalence_bound": 0.33478166666666676,
+        "equivalent": true,
+        "left": "EpsilonGreedy(e=0.1)",
+        "mean_difference": 0.02,
+        "right": "DiscountedThompson(g=0.9)"
+      },
+      {
+        "ci95": [
+          -0.07684570269278648,
+          0.09284570269278647
+        ],
+        "equivalence_bound": 0.33478166666666676,
+        "equivalent": true,
+        "left": "UCB1",
+        "mean_difference": 0.008,
+        "right": "ThompsonSampling"
+      },
+      {
+        "ci95": [
+          -0.04659164061223357,
+          0.10259164061223357
+        ],
+        "equivalence_bound": 0.33478166666666676,
+        "equivalent": true,
+        "left": "UCB1",
+        "mean_difference": 0.028,
+        "right": "DiscountedThompson(g=0.9)"
+      },
+      {
+        "ci95": [
+          -0.0733819156533295,
+          0.1133819156533295
+        ],
+        "equivalence_bound": 0.33478166666666676,
+        "equivalent": true,
+        "left": "ThompsonSampling",
+        "mean_difference": 0.02,
+        "right": "DiscountedThompson(g=0.9)"
+      }
+    ],
+    "passed": true,
+    "policy_statuses_non_control": {
+      "DiscountedThompson(g=0.9)": {
+        "deceptive_depleting": "viable",
+        "depleting_needle": "disqualified",
+        "rich_depleting": "disqualified",
+        "scarce_stationary": "uncertain",
+        "stationary_needle": "disqualified"
+      },
+      "EpsilonGreedy(e=0.1)": {
+        "deceptive_depleting": "uncertain",
+        "depleting_needle": "viable",
+        "rich_depleting": "uncertain",
+        "scarce_stationary": "uncertain",
+        "stationary_needle": "uncertain"
+      },
+      "ExploreThenCommit": {
+        "deceptive_depleting": "uncertain",
+        "depleting_needle": "viable",
+        "rich_depleting": "disqualified",
+        "scarce_stationary": "viable",
+        "stationary_needle": "viable"
+      },
+      "RoundRobin": {
+        "deceptive_depleting": "disqualified",
+        "depleting_needle": "disqualified",
+        "rich_depleting": "disqualified",
+        "scarce_stationary": "disqualified",
+        "stationary_needle": "disqualified"
+      },
+      "ThompsonSampling": {
+        "deceptive_depleting": "viable",
+        "depleting_needle": "disqualified",
+        "rich_depleting": "viable",
+        "scarce_stationary": "viable",
+        "stationary_needle": "disqualified"
+      },
+      "UCB1": {
+        "deceptive_depleting": "viable",
+        "depleting_needle": "disqualified",
+        "rich_depleting": "viable",
+        "scarce_stationary": "uncertain",
+        "stationary_needle": "disqualified"
+      }
+    },
+    "swinging_policies": [
+      "ExploreThenCommit",
+      "UCB1",
+      "ThompsonSampling",
+      "DiscountedThompson(g=0.9)"
+    ]
+  }
+}

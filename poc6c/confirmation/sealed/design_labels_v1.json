@@ -1,0 +1,186 @@
+{
+  "version": 1,
+  "classification": "designer_only_do_not_expose_to_run_agents_or_evaluators",
+  "purpose": "Design-stratum balance checks only. These are likelihood labels, not answer keys or accepted relevance judgments.",
+  "allowed_coverage_likelihoods": [
+    "answerable_likely",
+    "partial_likely"
+  ],
+  "expected_balance": {
+    "coverage_likelihood": {
+      "answerable_likely": 24,
+      "partial_likely": 8
+    },
+    "topic_family": {
+      "agent_information_systems": 4,
+      "ml_math_foundations": 4,
+      "decision_search_alignment": 4,
+      "compute_model_architecture": 4,
+      "engineering_organization_design": 4,
+      "business_finance_security": 4,
+      "gap_sensitive_specialist_requests": 8
+    }
+  },
+  "labels": [
+    {
+      "id": "C001",
+      "topic_family": "agent_information_systems",
+      "coverage_likelihood": "answerable_likely"
+    },
+    {
+      "id": "C002",
+      "topic_family": "ml_math_foundations",
+      "coverage_likelihood": "answerable_likely"
+    },
+    {
+      "id": "C003",
+      "topic_family": "ml_math_foundations",
+      "coverage_likelihood": "answerable_likely"
+    },
+    {
+      "id": "C004",
+      "topic_family": "decision_search_alignment",
+      "coverage_likelihood": "answerable_likely"
+    },
+    {
+      "id": "C005",
+      "topic_family": "ml_math_foundations",
+      "coverage_likelihood": "answerable_likely"
+    },
+    {
+      "id": "C006",
+      "topic_family": "agent_information_systems",
+      "coverage_likelihood": "answerable_likely"
+    },
+    {
+      "id": "C007",
+      "topic_family": "agent_information_systems",
+      "coverage_likelihood": "answerable_likely"
+    },
+    {
+      "id": "C008",
+      "topic_family": "engineering_organization_design",
+      "coverage_likelihood": "answerable_likely"
+    },
+    {
+      "id": "C009",
+      "topic_family": "engineering_organization_design",
+      "coverage_likelihood": "answerable_likely"
+    },
+    {
+      "id": "C010",
+      "topic_family": "engineering_organization_design",
+      "coverage_likelihood": "answerable_likely"
+    },
+    {
+      "id": "C011",
+      "topic_family": "compute_model_architecture",
+      "coverage_likelihood": "answerable_likely"
+    },
+    {
+      "id": "C012",
+      "topic_family": "compute_model_architecture",
+      "coverage_likelihood": "answerable_likely"
+    },
+    {
+      "id": "C013",
+      "topic_family": "business_finance_security",
+      "coverage_likelihood": "answerable_likely"
+    },
+    {
+      "id": "C014",
+      "topic_family": "engineering_organization_design",
+      "coverage_likelihood": "answerable_likely"
+    },
+    {
+      "id": "C015",
+      "topic_family": "business_finance_security",
+      "coverage_likelihood": "answerable_likely"
+    },
+    {
+      "id": "C016",
+      "topic_family": "gap_sensitive_specialist_requests",
+      "coverage_likelihood": "partial_likely"
+    },
+    {
+      "id": "C017",
+      "topic_family": "gap_sensitive_specialist_requests",
+      "coverage_likelihood": "partial_likely"
+    },
+    {
+      "id": "C018",
+      "topic_family": "gap_sensitive_specialist_requests",
+      "coverage_likelihood": "partial_likely"
+    },
+    {
+      "id": "C019",
+      "topic_family": "gap_sensitive_specialist_requests",
+      "coverage_likelihood": "partial_likely"
+    },
+    {
+      "id": "C020",
+      "topic_family": "gap_sensitive_specialist_requests",
+      "coverage_likelihood": "partial_likely"
+    },
+    {
+      "id": "C021",
+      "topic_family": "ml_math_foundations",
+      "coverage_likelihood": "answerable_likely"
+    },
+    {
+      "id": "C022",
+      "topic_family": "decision_search_alignment",
+      "coverage_likelihood": "answerable_likely"
+    },
+    {
+      "id": "C023",
+      "topic_family": "agent_information_systems",
+      "coverage_likelihood": "answerable_likely"
+    },
+    {
+      "id": "C024",
+      "topic_family": "business_finance_security",
+      "coverage_likelihood": "answerable_likely"
+    },
+    {
+      "id": "C025",
+      "topic_family": "decision_search_alignment",
+      "coverage_likelihood": "answerable_likely"
+    },
+    {
+      "id": "C026",
+      "topic_family": "compute_model_architecture",
+      "coverage_likelihood": "answerable_likely"
+    },
+    {
+      "id": "C027",
+      "topic_family": "compute_model_architecture",
+      "coverage_likelihood": "answerable_likely"
+    },
+    {
+      "id": "C028",
+      "topic_family": "business_finance_security",
+      "coverage_likelihood": "answerable_likely"
+    },
+    {
+      "id": "C029",
+      "topic_family": "decision_search_alignment",
+      "coverage_likelihood": "answerable_likely"
+    },
+    {
+      "id": "C030",
+      "topic_family": "gap_sensitive_specialist_requests",
+      "coverage_likelihood": "partial_likely"
+    },
+    {
+      "id": "C031",
+      "topic_family": "gap_sensitive_specialist_requests",
+      "coverage_likelihood": "partial_likely"
+    },
+    {
+      "id": "C032",
+      "topic_family": "gap_sensitive_specialist_requests",
+      "coverage_likelihood": "partial_likely"
+    }
+  ]
+}

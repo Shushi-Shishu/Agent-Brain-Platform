@@ -1,6 +1,17 @@
 # Agent Brain Platform
 
-> **An IDE for agent cognitive architecture — not the execution layer, but the brain behind it.**
+> **A measurement and compilation layer for explicit, testable agent decision
+> logic.**
+
+**Current direction:** the early canvas, star ratings, and static
+goal-to-technique ranking below are historical POC concepts. Testing showed
+that policy value is workload- and budget-dependent, cheap workload detection
+can fail, and a simple baseline is often sufficient. The authoritative current
+direction is in [`VISION.md`](./VISION.md), the evidence is in
+[`RESEARCH.md`](./RESEARCH.md), and the diagnostic comparative benchmark is
+documented in [`poc6c/RESULTS.md`](./poc6c/RESULTS.md). Its untouched
+confirmation stage is prepared but not activated because the recorded
+readiness gates are unmet.
 
 ---
 
@@ -125,17 +136,17 @@ Current registry spans:
 
 ---
 
-## Build Phases
+## Current Research-Gated Phases
 
 | Phase | What | Status |
 |---|---|---|
-| **0** | Vision + project definition | ✅ Done |
-| **1** | Technique Registry schema + seed data | 🔄 Next |
-| **2** | Component Canvas — visual slot configuration | ⬜ |
-| **3** | Goal Encoder — scoring + auto-ranking engine | ⬜ |
-| **4** | Draft Generator — blueprint + JSON config export | ⬜ |
-| **5** | Code Scaffold Generator — Python agent skeleton | ⬜ |
-| **6** | Runtime Bridge — connect blueprint to n8n / LangGraph | ⬜ |
+| **0** | Simulation, sensitivity, stopping, and historical transfer | ✅ Done |
+| **1** | Matched generic-agent versus configured-agent search diagnostic | ✅ Done |
+| **2** | Diagnostic transfer to code development, review, and testing | ✅ Done |
+| **3** | Confirmation and transaction economics | 🟨 Prepared; readiness-gated |
+| **4** | Decision contracts, three proven blocks, and trace schema | ⬜ |
+| **5** | Architecture compiler and one runtime adapter | ⬜ |
+| **6** | Guided visual workbench | ⬜ |
 
 ---
 
@@ -155,16 +166,19 @@ Agent-Brain-Platform/
 
 ---
 
-## POC
+## Historical Visual POC
 
 [`POC.html`](./POC.html) — open directly in any browser, no server needed.
 
-Demonstrates:
+The original visual POC demonstrates:
 - All 11 cognitive slots on a visual canvas
 - Technique library with ★ rankings per slot
 - Goal text → auto-encode dimensions → re-rank techniques
 - Multi-technique selection per slot
 - Generate Cognitive Blueprint modal with JSON export and Markdown download
+
+Its star rankings and static recommendation behavior are not supported by the
+later experiments and must not be treated as the current product specification.
 
 ---
 

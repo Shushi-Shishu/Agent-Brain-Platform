@@ -1,0 +1,93 @@
+{
+  "schema": "poc6c-code-review-run-v1",
+  "diagnostic_only": true,
+  "valid_run": true,
+  "task_id": "CRV-P004",
+  "workload": "code_review",
+  "split": "pilot",
+  "arm": "configured",
+  "instruction": {
+    "sha256": "6C8516CCA268B717F0896A94F353C35CCEFDE7CB056282EA66DFD6D296708C64",
+    "decision_architecture": "risk-schedule-evidence-ledger-critic-voi-stop",
+    "max_findings": 6
+  },
+  "matched_conditions": {
+    "model_id": "same_collaboration_runtime_unaudited",
+    "tools": "same_workspace_tools",
+    "network": "not_required",
+    "task_budget": "one_subagent_turn",
+    "max_findings": 6
+  },
+  "provider": {
+    "provider": null,
+    "model_id": null,
+    "model_version": null,
+    "model_calls": null,
+    "input_tokens": null,
+    "output_tokens": null,
+    "total_tokens": null,
+    "cost_amount": null,
+    "cost_currency": null
+  },
+  "agent": {
+    "duration_ms": 81515,
+    "result": "two critic-validated audit findings",
+    "error": null
+  },
+  "findings": {
+    "output_file": "REVIEW_FINDINGS.json",
+    "count": 2,
+    "schema_valid": true,
+    "schema_errors": [],
+    "max_findings": 6
+  },
+  "integrity": {
+    "arms_byte_identical_at_start": true,
+    "source_public_sha256_pre": "F1106B58683876F95EAB5907F702BFAA6EBA6B64104A39CB2062B16E3A2FCBCA",
+    "source_public_sha256_post": "F1106B58683876F95EAB5907F702BFAA6EBA6B64104A39CB2062B16E3A2FCBCA",
+    "private_sha256_pre": "70CD00F0EC5601C3FFD6E3B103E0F3988956C0159E7CDF8F9DA3B0ED0023BC0D",
+    "private_sha256_post": "70CD00F0EC5601C3FFD6E3B103E0F3988956C0159E7CDF8F9DA3B0ED0023BC0D",
+    "workspace_sha256_pre": "F1106B58683876F95EAB5907F702BFAA6EBA6B64104A39CB2062B16E3A2FCBCA",
+    "workspace_sha256_post_agent": "271D37602F33139773C9FAA3006D6F9917071BD2F3E71F6585F1619B3B9D4BB6",
+    "workspace_sha256_post_evaluator": "271D37602F33139773C9FAA3006D6F9917071BD2F3E71F6585F1619B3B9D4BB6",
+    "workspace_changes": [
+      "created:REVIEW_FINDINGS.json"
+    ],
+    "protected_roots_unchanged": true,
+    "unauthorized_edit_detected": false,
+    "guard_scope": [
+      "fixture public package",
+      "fixture private package",
+      "other arm workspace",
+      "all other files inside paired run directory",
+      "assigned source files (output file creation only)"
+    ],
+    "guard_limitation": "Declared roots are audited; OS-level sandboxing is required to prevent arbitrary external writes.",
+    "leakage_canary_ids": [],
+    "violations": []
+  },
+  "evaluator": {
+    "executed": true,
+    "timed_out": false,
+    "returncode": 0,
+    "duration_ms": 78,
+    "metrics": {
+      "false_positive_count": 0,
+      "false_positive_indexes": [],
+      "matched_defect_ids": [
+        "crv-p004-case-redaction",
+        "crv-p004-credential-log"
+      ],
+      "missed_count": 0,
+      "severity_weighted_recall": 1.0,
+      "task_id": "CRV-P004",
+      "true_positive_count": 2,
+      "precision": 1.0
+    },
+    "stdout": "{\"false_positive_count\": 0, \"false_positive_indexes\": [], \"matched_defect_ids\": [\"crv-p004-case-redaction\", \"crv-p004-credential-log\"], \"missed_count\": 0, \"severity_weighted_recall\": 1.0, \"task_id\": \"CRV-P004\", \"true_positive_count\": 2}\n",
+    "stderr": "",
+    "stdout_truncated": false,
+    "stderr_truncated": false,
+    "leakage_canary_ids": []
+  }
+}

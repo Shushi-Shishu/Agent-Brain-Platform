@@ -1,0 +1,16 @@
+[
+  {
+    "file": "access.py",
+    "line": 6,
+    "category": "input_validation",
+    "severity": "high",
+    "explanation": "Splitting and taking element 1 returns an empty credential for `Bearer ` and silently accepts trailing fields such as `Bearer token extra`; either can violate the requirement to reject blank or malformed headers and may authenticate if the expected value is blank or matches the retained token. Validate an exact two-part scheme/value form and require a non-empty credential."
+  },
+  {
+    "file": "access.py",
+    "line": 12,
+    "category": "authentication",
+    "severity": "high",
+    "explanation": "Case-folding both operands makes case-sensitive opaque credentials equivalent, so a differently cased token can authenticate as the expected token. Compare the original credential strings without normalization."
+  }
+]

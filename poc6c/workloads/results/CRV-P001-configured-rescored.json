@@ -1,0 +1,1 @@
+﻿{"false_positive_count": 0, "false_positive_indexes": [], "matched_defect_ids": ["crv-p001-header-split", "crv-p001-token-case"], "missed_count": 0, "severity_weighted_recall": 1.0, "task_id": "CRV-P001", "true_positive_count": 2}

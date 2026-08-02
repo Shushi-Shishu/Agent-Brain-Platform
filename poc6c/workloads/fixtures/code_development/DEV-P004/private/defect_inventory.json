@@ -1,0 +1,7 @@
+{
+  "task_id": "DEV-P004",
+  "defect_id": "csv-quote-parsing",
+  "location": "sales.py:summarize_sales",
+  "behavior": "Rows are split on commas directly, so a quoted region containing a comma is rejected.",
+  "repair_target": "Use the standard CSV parser while preserving the validation contract."
+}

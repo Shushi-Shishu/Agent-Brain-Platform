@@ -1,0 +1,16 @@
+[
+  {
+    "file": "access.py",
+    "line": 6,
+    "category": "input_validation",
+    "severity": "medium",
+    "explanation": "Splitting and returning only the second field makes `Bearer ` produce a blank credential and silently accepts malformed values such as `Bearer token extra`. Require exactly one non-empty bearer credential and otherwise return None."
+  },
+  {
+    "file": "access.py",
+    "line": 12,
+    "category": "authentication",
+    "severity": "high",
+    "explanation": "Case-folding opaque credentials makes distinct tokens compare equal, allowing a differently cased value to authenticate. Compare the original credential strings without case normalization."
+  }
+]

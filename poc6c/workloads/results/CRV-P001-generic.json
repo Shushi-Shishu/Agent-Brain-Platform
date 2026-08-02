@@ -1,0 +1,93 @@
+{
+  "schema": "poc6c-code-review-run-v1",
+  "diagnostic_only": true,
+  "valid_run": true,
+  "task_id": "CRV-P001",
+  "workload": "code_review",
+  "split": "pilot",
+  "arm": "generic",
+  "instruction": {
+    "sha256": "DF76D0C14EA5E5637BA4D4BC20B02428DEB178FDF9A2D7EA9C8ED2F5BD7398BA",
+    "decision_architecture": null,
+    "max_findings": 6
+  },
+  "matched_conditions": {
+    "model_id": "same_collaboration_runtime_unaudited",
+    "tools": "same_workspace_tools",
+    "network": "not_required",
+    "task_budget": "one_subagent_turn",
+    "max_findings": 6
+  },
+  "provider": {
+    "provider": null,
+    "model_id": null,
+    "model_version": null,
+    "model_calls": null,
+    "input_tokens": null,
+    "output_tokens": null,
+    "total_tokens": null,
+    "cost_amount": null,
+    "cost_currency": null
+  },
+  "agent": {
+    "duration_ms": 225844,
+    "result": "fresh two-finding review after scorer calibration",
+    "error": null
+  },
+  "findings": {
+    "output_file": "REVIEW_FINDINGS.json",
+    "count": 2,
+    "schema_valid": true,
+    "schema_errors": [],
+    "max_findings": 6
+  },
+  "integrity": {
+    "arms_byte_identical_at_start": true,
+    "source_public_sha256_pre": "BDFCF2B98120940B906D7D4DD915DDA122F4CFB4ABBB34ACF4A4A7E28DB212A2",
+    "source_public_sha256_post": "BDFCF2B98120940B906D7D4DD915DDA122F4CFB4ABBB34ACF4A4A7E28DB212A2",
+    "private_sha256_pre": "51B085B82BFCDF2C4ED3C6D820FAB0AAF0F3AE45F4386B2C9A4FA56B66451BEF",
+    "private_sha256_post": "51B085B82BFCDF2C4ED3C6D820FAB0AAF0F3AE45F4386B2C9A4FA56B66451BEF",
+    "workspace_sha256_pre": "BDFCF2B98120940B906D7D4DD915DDA122F4CFB4ABBB34ACF4A4A7E28DB212A2",
+    "workspace_sha256_post_agent": "E26B97B1F8271467838E4E5E7C08A310A08849E8427DC6F5ACD126B98E7A3385",
+    "workspace_sha256_post_evaluator": "E26B97B1F8271467838E4E5E7C08A310A08849E8427DC6F5ACD126B98E7A3385",
+    "workspace_changes": [
+      "created:REVIEW_FINDINGS.json"
+    ],
+    "protected_roots_unchanged": true,
+    "unauthorized_edit_detected": false,
+    "guard_scope": [
+      "fixture public package",
+      "fixture private package",
+      "other arm workspace",
+      "all other files inside paired run directory",
+      "assigned source files (output file creation only)"
+    ],
+    "guard_limitation": "Declared roots are audited; OS-level sandboxing is required to prevent arbitrary external writes.",
+    "leakage_canary_ids": [],
+    "violations": []
+  },
+  "evaluator": {
+    "executed": true,
+    "timed_out": false,
+    "returncode": 0,
+    "duration_ms": 813,
+    "metrics": {
+      "false_positive_count": 0,
+      "false_positive_indexes": [],
+      "matched_defect_ids": [
+        "crv-p001-header-split",
+        "crv-p001-token-case"
+      ],
+      "missed_count": 0,
+      "severity_weighted_recall": 1.0,
+      "task_id": "CRV-P001",
+      "true_positive_count": 2,
+      "precision": 1.0
+    },
+    "stdout": "{\"false_positive_count\": 0, \"false_positive_indexes\": [], \"matched_defect_ids\": [\"crv-p001-header-split\", \"crv-p001-token-case\"], \"missed_count\": 0, \"severity_weighted_recall\": 1.0, \"task_id\": \"CRV-P001\", \"true_positive_count\": 2}\n",
+    "stderr": "",
+    "stdout_truncated": false,
+    "stderr_truncated": false,
+    "leakage_canary_ids": []
+  }
+}

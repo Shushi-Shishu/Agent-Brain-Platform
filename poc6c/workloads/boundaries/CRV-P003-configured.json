@@ -1,0 +1,162 @@
+{
+  "schema": "poc6c-code-review-boundary-v1",
+  "task_id": "CRV-P003",
+  "arm": "configured",
+  "pair_root": "C:\\XboxGames\\My Projects\\10. Project_ID_010_Agnet_Brain_Platform\\poc6c\\workloads\\runs\\code_review_batch1\\CRV-P003",
+  "matched_conditions": {
+    "model_id": "same_collaboration_runtime_unaudited",
+    "tools": "same_workspace_tools",
+    "network": "not_required",
+    "task_budget": "one_subagent_turn",
+    "max_findings": 6
+  },
+  "source_public_snapshot": {
+    "schema": "poc6c-package-snapshot-v1",
+    "sha256": "26A50F7F1EDB78F2B5A4D9A06A496010CD5426D24D9D0F9EEDA8CFBA905E0E53",
+    "files": [
+      {
+        "path": "TASK.md",
+        "size_bytes": 430,
+        "sha256": "F965107DDCE4961E98BA893C05EF25C14E76E60791129E7C96D8C1186BDBA77E"
+      },
+      {
+        "path": "cache.py",
+        "size_bytes": 210,
+        "sha256": "9CBAFA7B7FD0C7F5F0EAD5657361F7C98093FECCBAD79D05905B3E2C2E8ECDAA"
+      }
+    ]
+  },
+  "private_snapshot": {
+    "schema": "poc6c-package-snapshot-v1",
+    "sha256": "F25435C4032148A525B528847BDEF8043830B59C457522642755E0D321B65A23",
+    "files": [
+      {
+        "path": "canary.txt",
+        "size_bytes": 33,
+        "sha256": "75198A257DFED0598BAF29DE44DF7819F421553A8FD56104AB21C534BBAF61BB"
+      },
+      {
+        "path": "defect_inventory.json",
+        "size_bytes": 917,
+        "sha256": "1EB4448978DEB36EB4363E0E863ADCF9E44491EF80A34A1D469A8EB0C2CB060D"
+      },
+      {
+        "path": "evaluate_review.py",
+        "size_bytes": 2290,
+        "sha256": "23AD6A8C11E8013E2A780F934439B6E39CDC2BCB1283A41F23F4A0E40B7966B2"
+      }
+    ]
+  },
+  "arm_start_snapshot": {
+    "schema": "poc6c-package-snapshot-v1",
+    "sha256": "26A50F7F1EDB78F2B5A4D9A06A496010CD5426D24D9D0F9EEDA8CFBA905E0E53",
+    "files": [
+      {
+        "path": "TASK.md",
+        "size_bytes": 430,
+        "sha256": "F965107DDCE4961E98BA893C05EF25C14E76E60791129E7C96D8C1186BDBA77E"
+      },
+      {
+        "path": "cache.py",
+        "size_bytes": 210,
+        "sha256": "9CBAFA7B7FD0C7F5F0EAD5657361F7C98093FECCBAD79D05905B3E2C2E8ECDAA"
+      }
+    ]
+  },
+  "workspace_pre": {
+    "schema": "poc6c-package-snapshot-v1",
+    "sha256": "26A50F7F1EDB78F2B5A4D9A06A496010CD5426D24D9D0F9EEDA8CFBA905E0E53",
+    "files": [
+      {
+        "path": "TASK.md",
+        "size_bytes": 430,
+        "sha256": "F965107DDCE4961E98BA893C05EF25C14E76E60791129E7C96D8C1186BDBA77E"
+      },
+      {
+        "path": "cache.py",
+        "size_bytes": 210,
+        "sha256": "9CBAFA7B7FD0C7F5F0EAD5657361F7C98093FECCBAD79D05905B3E2C2E8ECDAA"
+      }
+    ]
+  },
+  "source_public_pre": {
+    "schema": "poc6c-package-snapshot-v1",
+    "sha256": "26A50F7F1EDB78F2B5A4D9A06A496010CD5426D24D9D0F9EEDA8CFBA905E0E53",
+    "files": [
+      {
+        "path": "TASK.md",
+        "size_bytes": 430,
+        "sha256": "F965107DDCE4961E98BA893C05EF25C14E76E60791129E7C96D8C1186BDBA77E"
+      },
+      {
+        "path": "cache.py",
+        "size_bytes": 210,
+        "sha256": "9CBAFA7B7FD0C7F5F0EAD5657361F7C98093FECCBAD79D05905B3E2C2E8ECDAA"
+      }
+    ]
+  },
+  "private_pre": {
+    "schema": "poc6c-package-snapshot-v1",
+    "sha256": "F25435C4032148A525B528847BDEF8043830B59C457522642755E0D321B65A23",
+    "files": [
+      {
+        "path": "canary.txt",
+        "size_bytes": 33,
+        "sha256": "75198A257DFED0598BAF29DE44DF7819F421553A8FD56104AB21C534BBAF61BB"
+      },
+      {
+        "path": "defect_inventory.json",
+        "size_bytes": 917,
+        "sha256": "1EB4448978DEB36EB4363E0E863ADCF9E44491EF80A34A1D469A8EB0C2CB060D"
+      },
+      {
+        "path": "evaluate_review.py",
+        "size_bytes": 2290,
+        "sha256": "23AD6A8C11E8013E2A780F934439B6E39CDC2BCB1283A41F23F4A0E40B7966B2"
+      }
+    ]
+  },
+  "other_arm_pre": {
+    "schema": "poc6c-package-snapshot-v1",
+    "sha256": "6F75D7BB7BEC1A10032B2089AC9BA225F6675FD0F23D40522DCA82F92902D9FD",
+    "files": [
+      {
+        "path": "REVIEW_FINDINGS.json",
+        "size_bytes": 744,
+        "sha256": "FECDD9236A335E4057D1A2C539655D148D4C09F1F6C0AF10E3EC925E155151B9"
+      },
+      {
+        "path": "TASK.md",
+        "size_bytes": 430,
+        "sha256": "F965107DDCE4961E98BA893C05EF25C14E76E60791129E7C96D8C1186BDBA77E"
+      },
+      {
+        "path": "cache.py",
+        "size_bytes": 210,
+        "sha256": "9CBAFA7B7FD0C7F5F0EAD5657361F7C98093FECCBAD79D05905B3E2C2E8ECDAA"
+      }
+    ]
+  },
+  "outside_assigned_pre": {
+    "schema": "poc6c-package-snapshot-v1",
+    "sha256": "ECB7AFF28636024E9C9A47E75221F6EED91FF3DDAEDA591938FF5F55754C2B6D",
+    "files": [
+      {
+        "path": "generic/REVIEW_FINDINGS.json",
+        "size_bytes": 744,
+        "sha256": "FECDD9236A335E4057D1A2C539655D148D4C09F1F6C0AF10E3EC925E155151B9"
+      },
+      {
+        "path": "generic/TASK.md",
+        "size_bytes": 430,
+        "sha256": "F965107DDCE4961E98BA893C05EF25C14E76E60791129E7C96D8C1186BDBA77E"
+      },
+      {
+        "path": "generic/cache.py",
+        "size_bytes": 210,
+        "sha256": "9CBAFA7B7FD0C7F5F0EAD5657361F7C98093FECCBAD79D05905B3E2C2E8ECDAA"
+      }
+    ]
+  },
+  "started_monotonic": 15100.812
+}

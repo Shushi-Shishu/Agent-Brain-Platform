@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "poc6c-code-review-findings-v1",
+  "type": "array",
+  "maxItems": 6,
+  "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "file",
+      "line",
+      "category",
+      "severity",
+      "explanation"
+    ],
+    "properties": {
+      "file": {
+        "type": "string",
+        "minLength": 1
+      },
+      "line": {
+        "type": "integer",
+        "minimum": 1
+      },
+      "category": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$"
+      },
+      "severity": {
+        "enum": [
+          "low",
+          "medium",
+          "high",
+          "critical"
+        ]
+      },
+      "explanation": {
+        "type": "string",
+        "minLength": 20,
+        "maxLength": 600
+      }
+    }
+  }
+}

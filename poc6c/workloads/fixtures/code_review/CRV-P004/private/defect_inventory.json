@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "task_id": "CRV-P004",
+  "content_id": "review-audit-redaction-v1",
+  "surface": "seeded",
+  "location_tolerance_lines": 1,
+  "defects": [
+    {
+      "defect_id": "crv-p004-credential-log",
+      "file": "audit.py",
+      "line": 4,
+      "category": "data_exposure",
+      "severity": "critical",
+      "title": "Credential value is copied into the audit record",
+      "expected_finding": "Omit the credential field entirely from audit data.",
+      "evidence": "return {\"user\": user, \"action\": action, \"credential\": credential}"
+    },
+    {
+      "defect_id": "crv-p004-case-redaction",
+      "file": "audit.py",
+      "line": 8,
+      "category": "data_exposure",
+      "severity": "high",
+      "title": "Redaction misses case variants of a secret",
+      "expected_finding": "Apply case-insensitive matching while preserving non-secret message text.",
+      "evidence": "return message.replace(secret, \"***\")"
+    }
+  ]
+}

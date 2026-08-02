@@ -1,0 +1,23 @@
+[
+  {
+    "file": "pagination.py",
+    "line": 6,
+    "category": "incorrect_calculation",
+    "severity": "high",
+    "explanation": "Floor division drops a final partial page: for example, 11 items at size 10 reports one page instead of two. Compute a ceiling division while preserving zero pages for an empty collection."
+  },
+  {
+    "file": "pagination.py",
+    "line": 10,
+    "category": "input_validation",
+    "severity": "medium",
+    "explanation": "The helper accepts page zero or negative page numbers and converts them into negative slice offsets, returning unrelated items despite the one-based page contract. Reject page values below one before calculating start."
+  },
+  {
+    "file": "pagination.py",
+    "line": 11,
+    "category": "input_validation",
+    "severity": "medium",
+    "explanation": "Unlike page_count, page_items does not reject a zero or negative size; it silently returns empty or misleading slices. Validate size as positive before performing pagination."
+  }
+]

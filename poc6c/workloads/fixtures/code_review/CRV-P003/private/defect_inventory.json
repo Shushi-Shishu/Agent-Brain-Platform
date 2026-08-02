@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "task_id": "CRV-P003",
+  "content_id": "review-cache-state-v1",
+  "surface": "seeded",
+  "location_tolerance_lines": 1,
+  "defects": [
+    {
+      "defect_id": "crv-p003-shared-default",
+      "file": "cache.py",
+      "line": 3,
+      "category": "state_management",
+      "severity": "high",
+      "title": "Default cache is shared across independent callers",
+      "expected_finding": "Use a null default and allocate caller-local storage inside the function.",
+      "evidence": "def get_or_create(key, factory, cache={}):"
+    },
+    {
+      "defect_id": "crv-p003-false-value",
+      "file": "cache.py",
+      "line": 5,
+      "category": "correctness",
+      "severity": "medium",
+      "title": "False-like cached values are treated as misses",
+      "expected_finding": "Test key membership rather than the truth value returned by get.",
+      "evidence": "if value:"
+    }
+  ]
+}

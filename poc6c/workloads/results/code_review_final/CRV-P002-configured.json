@@ -1,0 +1,88 @@
+{
+  "schema": "poc6c-code-review-run-v1",
+  "diagnostic_only": true,
+  "valid_run": false,
+  "task_id": "CRV-P002",
+  "workload": "code_review",
+  "split": "pilot",
+  "arm": "configured",
+  "instruction": {
+    "sha256": "6C8516CCA268B717F0896A94F353C35CCEFDE7CB056282EA66DFD6D296708C64",
+    "decision_architecture": "risk-schedule-evidence-ledger-critic-voi-stop",
+    "max_findings": 6
+  },
+  "matched_conditions": {
+    "model_id": "same_collaboration_runtime_unaudited",
+    "tools": "same_workspace_tools",
+    "network": "not_required",
+    "task_budget": "one_subagent_turn",
+    "max_findings": 6
+  },
+  "provider": {
+    "provider": null,
+    "model_id": null,
+    "model_version": null,
+    "model_calls": null,
+    "input_tokens": null,
+    "output_tokens": null,
+    "total_tokens": null,
+    "cost_amount": null,
+    "cost_currency": null
+  },
+  "agent": {
+    "duration_ms": 196206453,
+    "result": "three risk-scheduled actionable pagination findings",
+    "error": null
+  },
+  "findings": {
+    "output_file": "REVIEW_FINDINGS.json",
+    "count": null,
+    "schema_valid": false,
+    "schema_errors": [
+      "finding[1].category must be lowercase_snake_case",
+      "finding[2].category must be lowercase_snake_case",
+      "finding[2] duplicates an earlier finding"
+    ],
+    "max_findings": 6
+  },
+  "integrity": {
+    "arms_byte_identical_at_start": true,
+    "source_public_sha256_pre": "2E49DDC4E2B73B193B3FF74226DF32BC817337DF870DE82BFF78FF52619A72AD",
+    "source_public_sha256_post": "2E49DDC4E2B73B193B3FF74226DF32BC817337DF870DE82BFF78FF52619A72AD",
+    "private_sha256_pre": "1833AA1C4B0E141FDCBDED390341A455D4944A2FA2FB15F6BD2696E67DD66DFF",
+    "private_sha256_post": "1833AA1C4B0E141FDCBDED390341A455D4944A2FA2FB15F6BD2696E67DD66DFF",
+    "workspace_sha256_pre": "2E49DDC4E2B73B193B3FF74226DF32BC817337DF870DE82BFF78FF52619A72AD",
+    "workspace_sha256_post_agent": "DA33EEBFB45607033C149AC5D2BE137A8F4E90F2AA3AF315DBFFB5821FD51A51",
+    "workspace_sha256_post_evaluator": "DA33EEBFB45607033C149AC5D2BE137A8F4E90F2AA3AF315DBFFB5821FD51A51",
+    "workspace_changes": [
+      "created:REVIEW_FINDINGS.json"
+    ],
+    "protected_roots_unchanged": true,
+    "unauthorized_edit_detected": false,
+    "guard_scope": [
+      "fixture public package",
+      "fixture private package",
+      "other arm workspace",
+      "all other files inside paired run directory",
+      "assigned source files (output file creation only)"
+    ],
+    "guard_limitation": "Declared roots are audited; OS-level sandboxing is required to prevent arbitrary external writes.",
+    "leakage_canary_ids": [],
+    "violations": [
+      "review findings schema invalid"
+    ]
+  },
+  "evaluator": {
+    "executed": false,
+    "skip_reason": "review findings failed schema validation",
+    "timed_out": false,
+    "returncode": null,
+    "duration_ms": 0,
+    "metrics": null,
+    "stdout": "",
+    "stderr": "",
+    "stdout_truncated": false,
+    "stderr_truncated": false,
+    "leakage_canary_ids": []
+  }
+}

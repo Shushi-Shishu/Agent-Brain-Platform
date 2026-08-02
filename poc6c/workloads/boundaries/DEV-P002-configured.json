@@ -1,0 +1,152 @@
+{
+  "schema": "poc6c-code-development-boundary-v1",
+  "task_id": "DEV-P002",
+  "arm": "configured",
+  "pair_root": "C:\\XboxGames\\My Projects\\10. Project_ID_010_Agnet_Brain_Platform\\poc6c\\workloads\\runs\\code_development_batch1\\DEV-P002",
+  "matched_conditions": {
+    "model_id": "same_collaboration_runtime_unaudited",
+    "tools": "same_workspace_tools",
+    "network": "not_required",
+    "task_budget": "one_subagent_turn",
+    "provider_usage": null
+  },
+  "source_public_snapshot": {
+    "schema": "poc6c-package-snapshot-v1",
+    "sha256": "67ACCBDDD8770F83D1B5FC315E17DAB4F1BE82D9734C55A534692F278A858757",
+    "files": [
+      {
+        "path": "TASK.md",
+        "size_bytes": 432,
+        "sha256": "66B36F9DA71C92BD0704035367A1816151513E612BAC922D306D1D0ABF95E656"
+      },
+      {
+        "path": "invoice.py",
+        "size_bytes": 726,
+        "sha256": "8121C1581565A45EAB4556CACA28ABBA84A8078348C44E752DBAA4F1462A872A"
+      }
+    ]
+  },
+  "private_snapshot": {
+    "schema": "poc6c-package-snapshot-v1",
+    "sha256": "B11243BD4B6FDC363EBA48DA468519D36FD65222DD21D167E8820827A25BA17E",
+    "files": [
+      {
+        "path": "canary.txt",
+        "size_bytes": 33,
+        "sha256": "3909EFF62D9C114A5FBA0B687ED923ACC16C3F213D7A9BAF45D7815594EDE871"
+      },
+      {
+        "path": "defect_inventory.json",
+        "size_bytes": 326,
+        "sha256": "30A19E6DBD0C322A8EFEC4E30CDC66BBEFE22C0A5FBB74F82538CCD416519A3E"
+      },
+      {
+        "path": "evaluator_tests.py",
+        "size_bytes": 962,
+        "sha256": "790F6A5D43290053BA0D84B22B1B23CD81B7B522AFA8C9D2B3A826039AAC66A8"
+      }
+    ]
+  },
+  "arm_start_snapshot": {
+    "schema": "poc6c-package-snapshot-v1",
+    "sha256": "67ACCBDDD8770F83D1B5FC315E17DAB4F1BE82D9734C55A534692F278A858757",
+    "files": [
+      {
+        "path": "TASK.md",
+        "size_bytes": 432,
+        "sha256": "66B36F9DA71C92BD0704035367A1816151513E612BAC922D306D1D0ABF95E656"
+      },
+      {
+        "path": "invoice.py",
+        "size_bytes": 726,
+        "sha256": "8121C1581565A45EAB4556CACA28ABBA84A8078348C44E752DBAA4F1462A872A"
+      }
+    ]
+  },
+  "workspace_pre": {
+    "schema": "poc6c-package-snapshot-v1",
+    "sha256": "67ACCBDDD8770F83D1B5FC315E17DAB4F1BE82D9734C55A534692F278A858757",
+    "files": [
+      {
+        "path": "TASK.md",
+        "size_bytes": 432,
+        "sha256": "66B36F9DA71C92BD0704035367A1816151513E612BAC922D306D1D0ABF95E656"
+      },
+      {
+        "path": "invoice.py",
+        "size_bytes": 726,
+        "sha256": "8121C1581565A45EAB4556CACA28ABBA84A8078348C44E752DBAA4F1462A872A"
+      }
+    ]
+  },
+  "source_public_pre": {
+    "schema": "poc6c-package-snapshot-v1",
+    "sha256": "67ACCBDDD8770F83D1B5FC315E17DAB4F1BE82D9734C55A534692F278A858757",
+    "files": [
+      {
+        "path": "TASK.md",
+        "size_bytes": 432,
+        "sha256": "66B36F9DA71C92BD0704035367A1816151513E612BAC922D306D1D0ABF95E656"
+      },
+      {
+        "path": "invoice.py",
+        "size_bytes": 726,
+        "sha256": "8121C1581565A45EAB4556CACA28ABBA84A8078348C44E752DBAA4F1462A872A"
+      }
+    ]
+  },
+  "private_pre": {
+    "schema": "poc6c-package-snapshot-v1",
+    "sha256": "B11243BD4B6FDC363EBA48DA468519D36FD65222DD21D167E8820827A25BA17E",
+    "files": [
+      {
+        "path": "canary.txt",
+        "size_bytes": 33,
+        "sha256": "3909EFF62D9C114A5FBA0B687ED923ACC16C3F213D7A9BAF45D7815594EDE871"
+      },
+      {
+        "path": "defect_inventory.json",
+        "size_bytes": 326,
+        "sha256": "30A19E6DBD0C322A8EFEC4E30CDC66BBEFE22C0A5FBB74F82538CCD416519A3E"
+      },
+      {
+        "path": "evaluator_tests.py",
+        "size_bytes": 962,
+        "sha256": "790F6A5D43290053BA0D84B22B1B23CD81B7B522AFA8C9D2B3A826039AAC66A8"
+      }
+    ]
+  },
+  "other_arm_pre": {
+    "schema": "poc6c-package-snapshot-v1",
+    "sha256": "A763AF023491D12C94DE10DA812127756274B8B6B0147312C369A48CD2CEC5F4",
+    "files": [
+      {
+        "path": "TASK.md",
+        "size_bytes": 432,
+        "sha256": "66B36F9DA71C92BD0704035367A1816151513E612BAC922D306D1D0ABF95E656"
+      },
+      {
+        "path": "invoice.py",
+        "size_bytes": 624,
+        "sha256": "0EFC429C8B5B817443C27478FF1A9B424EA4F73B2FC547B26E57DF70BD68F2DA"
+      }
+    ]
+  },
+  "outside_assigned_pre": {
+    "schema": "poc6c-package-snapshot-v1",
+    "sha256": "3123363FC7AD35102B963B94BECFD20A9B6583B6618A62DFBA69F4C376E1DD07",
+    "files": [
+      {
+        "path": "generic/TASK.md",
+        "size_bytes": 432,
+        "sha256": "66B36F9DA71C92BD0704035367A1816151513E612BAC922D306D1D0ABF95E656"
+      },
+      {
+        "path": "generic/invoice.py",
+        "size_bytes": 624,
+        "sha256": "0EFC429C8B5B817443C27478FF1A9B424EA4F73B2FC547B26E57DF70BD68F2DA"
+      }
+    ]
+  },
+  "started_monotonic": 12558.984
+}
