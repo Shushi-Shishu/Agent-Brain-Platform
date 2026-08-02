@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agent Brain Platform — Component Canvas</title>
+<style>
+  :root {
+    --bg: #0d1117; --surface: #161b22; --surface2: #21262d; --surface3: #2d333b;
+    --border: #30363d; --accent: #58a6ff; --accent2: #3fb950;
+    --warn: #d29922; --danger: #f85149; --purple: #bc8cff;
+    --text: #c9d1d9; --text2: #8b949e; --text3: #6e7681;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; font-size: 13px; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+  /* ── Header ─────────────────────────────────────────────────────────────── */
+  .hdr { background: var(--surface); border-bottom: 1px solid var(--border); padding: 9px 20px; display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+  .hdr-logo { font-size: 14px; font-weight: 700; color: var(--accent); }
+  .hdr-logo span { color: var(--text3); font-weight: 400; font-size: 12px; }
+  .hdr-sep { width: 1px; height: 18px; background: var(--border); }
+  .agent-input { background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 4px 10px; border-radius: 6px; font-size: 12px; width: 180px; outline: none; }
+  .agent-input:focus { border-color: var(--accent); }
+  .hdr-right { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+  .btn { padding: 5px 13px; border-radius: 6px; border: 1px solid var(--border); background: var(--surface2); color: var(--text); cursor: pointer; font-size: 11px; transition: all 0.15s; white-space: nowrap; }
+  .btn:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-primary { background: var(--accent); border-color: var(--accent); color: #000; font-weight: 600; }
+  .btn-primary:hover { background: #79c0ff; border-color: #79c0ff; color: #000; }
+  .btn-success { background: var(--accent2); border-color: var(--accent2); color: #000; font-weight: 600; }
+  .btn-success:hover { background: #56d364; }
+  .btn-danger { border-color: var(--danger); color: var(--danger); }
+  .btn-danger:hover { background: rgba(248,81,73,0.1); }
+
+  /* ── Status bar ─────────────────────────────────────────────────────────── */
+  .statusbar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 5px 20px; display: flex; align-items: center; gap: 14px; flex-shrink: 0; font-size: 11px; }
+  .compat-pill { padding: 2px 9px; border-radius: 10px; font-weight: 600; font-size: 11px; }
+  .compat-ok  { background: rgba(63,185,80,0.15); color: var(--accent2); }
+  .compat-warn { background: rgba(210,153,34,0.15); color: var(--warn); }
+  .compat-err  { background: rgba(248,81,73,0.12); color: var(--danger); }
+  .sb-sep { color: var(--text3); }
+  .sb-label { color: var(--text3); }
+  .sb-val { color: var(--text2); }
+  .sb-val b { color: var(--accent); }
+  .progress-track { flex: 1; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; max-width: 200px; }
+  .progress-fill { height: 100%; border-radius: 2px; background: var(--accent2); transition: width 0.4s; }
+
+  /* ── Main layout ─────────────────────────────────────────────────────────── */
+  .main { display: flex; flex: 1; overflow: hidden; }
+
+  /* ── Left: Goal + context ────────────────────────────────────────────────── */
+  .left { width: 250px; background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; overflow-y: auto; }
+  .panel-sec { padding: 12px 14px; border-bottom: 1px solid var(--border); }
+  .sec-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text3); margin-bottom: 8px; }
+  .goal-ta { width: 100%; background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 7px 9px; border-radius: 6px; font-size: 11px; resize: vertical; min-height: 72px; font-family: inherit; outline: none; }
+  .goal-ta:focus { border-color: var(--accent); }
+  .encode-btn { width: 100%; margin-top: 8px; }
+  .dim-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 7px; }
+  .dim-lbl { font-size: 11px; color: var(--text2); }
+  .toggle { width: 30px; height: 16px; background: var(--surface2); border: 1px solid var(--border); border-radius: 9px; cursor: pointer; position: relative; transition: background 0.2s; flex-shrink: 0; }
+  .toggle.on { background: var(--accent); border-color: var(--accent); }
+  .toggle::after { content: ''; position: absolute; top: 2px; left: 2px; width: 10px; height: 10px; border-radius: 50%; background: #fff; transition: left 0.2s; }
+  .toggle.on::after { left: 16px; }
+  /* Slot info */
+  .slot-info { padding: 12px 14px; flex: 1; }
+  .si-name { font-size: 13px; font-weight: 600; color: var(--accent); margin-bottom: 4px; }
+  .si-desc { font-size: 11px; color: var(--text2); line-height: 1.5; }
+  .si-opt  { font-size: 10px; color: var(--text3); margin-top: 6px; }
+  .si-empty { font-size: 11px; color: var(--text3); font-style: italic; }
+  /* Selected techniques summary */
+  .sel-list { display: flex; flex-direction: column; gap: 4px; margin-top: 8px; }
+  .sel-item { background: var(--surface2); border: 1px solid var(--accent2); border-radius: 6px; padding: 5px 8px; display: flex; align-items: center; justify-content: space-between; }
+  .sel-item-name { font-size: 11px; color: var(--text); font-weight: 600; }
+  .sel-item-slot { font-size: 10px; color: var(--text3); }
+  .sel-remove { cursor: pointer; color: var(--text3); font-size: 11px; }
+  .sel-remove:hover { color: var(--danger); }
+
+  /* ── Canvas ──────────────────────────────────────────────────────────────── */
+  .canvas-wrap { flex: 1; overflow: auto; padding: 20px; display: flex; align-items: flex-start; justify-content: center; }
+  .canvas { display: flex; flex-direction: column; align-items: center; gap: 0; min-width: 520px; }
+  .c-label { font-size: 10px; color: var(--text3); letter-spacing: 0.6px; text-align: center; margin-bottom: 16px; text-transform: uppercase; }
+
+  /* flow connectors */
+  .arrow-v { width: 2px; height: 22px; background: var(--border); position: relative; margin: 0 auto; }
+  .arrow-v::after { content: '▼'; position: absolute; bottom: -7px; left: 50%; transform: translateX(-50%); color: var(--text3); font-size: 9px; }
+  .arrow-h { width: 22px; height: 2px; background: var(--border); position: relative; flex-shrink: 0; align-self: center; }
+  .arrow-h::after { content: '▶'; position: absolute; right: -7px; top: 50%; transform: translateY(-50%); color: var(--text3); font-size: 9px; }
+  .row { display: flex; align-items: flex-start; gap: 0; }
+  .col { display: flex; flex-direction: column; align-items: center; }
+  .feedback-loop { display: flex; align-items: center; gap: 6px; color: var(--text3); font-size: 10px; margin-top: 8px; width: 90%; }
+  .loop-line { flex: 1; height: 1px; border-top: 1px dashed var(--border); }
+
+  /* Slot card */
+  .slot-card { background: var(--surface); border: 1.5px solid var(--border); border-radius: 10px; padding: 10px 13px; width: 180px; cursor: pointer; transition: all 0.15s; position: relative; user-select: none; }
+  .slot-card:hover { border-color: var(--accent); box-shadow: 0 3px 12px rgba(88,166,255,0.12); transform: translateY(-1px); }
+  .slot-card.active { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(88,166,255,0.2); }
+  .slot-card.filled { border-color: var(--accent2); }
+  .slot-card.filled.active { border-color: var(--accent); }
+  .slot-card.has-conflict { border-color: var(--danger); }
+  .slot-icon { font-size: 16px; margin-bottom: 3px; }
+  .slot-name { font-size: 11px; font-weight: 700; color: var(--text); }
+  .slot-purpose { font-size: 10px; color: var(--text3); margin-top: 1px; line-height: 1.3; }
+  .slot-chips { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 7px; min-height: 18px; }
+  .slot-chip { background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; padding: 2px 6px; font-size: 9px; color: var(--text2); display: flex; align-items: center; gap: 3px; }
+  .slot-chip .x { cursor: pointer; color: var(--text3); font-size: 8px; }
+  .slot-chip .x:hover { color: var(--danger); }
+  .slot-empty { font-size: 10px; color: var(--text3); font-style: italic; }
+  .slot-badge-count { position: absolute; top: 7px; right: 7px; background: var(--accent); color: #000; border-radius: 50%; width: 15px; height: 15px; font-size: 9px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+  .slot-opt-dot { position: absolute; bottom: 7px; right: 7px; width: 6px; height: 6px; border-radius: 50%; background: var(--text3); }
+  .slot-req-dot { position: absolute; bottom: 7px; right: 7px; width: 6px; height: 6px; border-radius: 50%; background: var(--accent2); }
+
+  /* ── Right: Technique picker ──────────────────────────────────────────────── */
+  .right { width: 270px; background: var(--surface); border-left: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; overflow: hidden; }
+  .right-header { padding: 10px 14px 0; border-bottom: 1px solid var(--border); }
+  .right-slot-name { font-size: 13px; font-weight: 700; color: var(--accent); margin-bottom: 4px; }
+  .right-search { width: 100%; background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 5px 9px; border-radius: 6px; font-size: 11px; outline: none; margin-bottom: 10px; }
+  .right-search:focus { border-color: var(--accent); }
+  .right-empty { padding: 14px; font-size: 11px; color: var(--text3); font-style: italic; }
+  .tech-list { flex: 1; overflow-y: auto; padding: 6px 10px 10px; display: flex; flex-direction: column; gap: 5px; }
+  .tech-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; cursor: pointer; transition: all 0.15s; }
+  .tech-card:hover { border-color: var(--accent); }
+  .tech-card.selected { border-color: var(--accent2); background: rgba(63,185,80,0.07); }
+  .tech-card.conflict { border-color: var(--danger); opacity: 0.55; cursor: not-allowed; }
+  .tc-top { display: flex; align-items: center; justify-content: space-between; }
+  .tc-name { font-size: 12px; font-weight: 600; color: var(--text); }
+  .tc-stars { display: flex; gap: 1px; }
+  .star { font-size: 9px; color: var(--text3); }
+  .star.on { color: var(--warn); }
+  .tc-desc { font-size: 10px; color: var(--text2); margin-top: 3px; line-height: 1.4; }
+  .tc-tags { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 4px; }
+  .tc-tag { background: var(--bg); border: 1px solid var(--border); border-radius: 3px; padding: 1px 5px; font-size: 9px; color: var(--text3); }
+  .tc-conflict-note { font-size: 9px; color: var(--danger); margin-top: 3px; }
+  .tc-requires-note { font-size: 9px; color: var(--warn); margin-top: 3px; }
+  .tc-metrics { display: flex; gap: 6px; margin-top: 5px; }
+  .tc-metric { display: flex; flex-direction: column; align-items: center; flex: 1; }
+  .tc-m-lbl { font-size: 8px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.4px; }
+  .tc-m-bar { width: 100%; height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; margin-top: 2px; }
+  .tc-m-fill { height: 100%; border-radius: 2px; }
+  .fill-c { background: var(--danger); }
+  .fill-i { background: var(--accent2); }
+  .fill-s { background: var(--purple); }
+
+  /* ── Blueprint Modal ──────────────────────────────────────────────────────── */
+  .modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 200; align-items: center; justify-content: center; }
+  .modal-bg.open { display: flex; }
+  .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; width: 740px; max-height: 88vh; overflow-y: auto; padding: 22px 24px; }
+  .modal-hdr { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+  .modal-title { font-size: 16px; font-weight: 700; color: var(--text); }
+  .modal-x { cursor: pointer; color: var(--text3); font-size: 18px; }
+  .modal-x:hover { color: var(--text); }
+  .bp-sec { margin-bottom: 16px; }
+  .bp-sec-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text2); margin-bottom: 8px; padding-bottom: 5px; border-bottom: 1px solid var(--border); }
+  .bp-status { display: flex; align-items: center; gap: 10px; background: var(--surface2); border-radius: 8px; padding: 10px 14px; margin-bottom: 16px; }
+  .bp-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .bp-row { display: flex; align-items: flex-start; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--border); }
+  .bp-row:last-child { border-bottom: none; }
+  .bp-slot-name { width: 140px; flex-shrink: 0; font-size: 12px; font-weight: 600; color: var(--text2); }
+  .bp-techs { flex: 1; display: flex; flex-wrap: wrap; gap: 4px; }
+  .bp-tech-tag { background: var(--surface2); border: 1px solid var(--accent2); border-radius: 4px; padding: 2px 8px; font-size: 11px; color: var(--accent2); }
+  .bp-tech-empty { font-size: 11px; color: var(--danger); font-style: italic; }
+  .bp-rationale { font-size: 10px; color: var(--text3); margin-top: 3px; }
+  .export-row { display: flex; gap: 8px; margin-top: 14px; }
+  .json-pre { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px; font-family: 'Consolas', monospace; font-size: 10px; color: var(--text2); margin-top: 10px; max-height: 220px; overflow-y: auto; white-space: pre; display: none; }
+  .json-pre.open { display: block; }
+
+  /* ── Conflict badge ───────────────────────────────────────────────────────── */
+  .conflict-banner { background: rgba(248,81,73,0.1); border: 1px solid var(--danger); border-radius: 6px; padding: 6px 10px; font-size: 11px; color: var(--danger); margin-top: 6px; display: none; }
+
+  /* ── Scrollbar ──────────────────────────────────────────────────────────────  */
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="hdr">
+  <div class="hdr-logo">Agent Brain Platform <span>/ Canvas</span></div>
+  <div class="hdr-sep"></div>
+  <a style="font-size:11px;color:var(--text3);text-decoration:none;padding:4px 8px;border-radius:5px;" href="../encoder/index.html">← Goal Encoder</a>
+  <a style="font-size:11px;color:var(--text3);text-decoration:none;padding:4px 8px;border-radius:5px;" href="../registry/index.html">Registry</a>
+  <input class="agent-input" id="agentName" placeholder="Agent name…" value="My Agent v1">
+  <div class="hdr-right">
+    <div id="conflictBadge" style="display:none;font-size:11px;color:var(--danger)">⚠ Conflicts detected</div>
+    <button class="btn btn-danger" onclick="clearAll()">Clear</button>
+    <button class="btn" onclick="loadPreset('negotiation')">▶ Preset: Negotiation</button>
+    <button class="btn" onclick="loadPreset('rag-agent')">▶ Preset: RAG Agent</button>
+    <button class="btn btn-success" onclick="openBlueprint()">Generate Blueprint ▶</button>
+    <button class="btn btn-primary" onclick="sendToGenerator()">→ Full Blueprint</button>
+  </div>
+</div>
+
+<!-- Status bar -->
+<div class="statusbar">
+  <span class="sb-label">Status:</span>
+  <span class="compat-pill compat-warn" id="compatPill">Loading…</span>
+  <span class="sb-sep">|</span>
+  <span class="sb-label">Slots filled:</span>
+  <span class="sb-val" id="fillCount">0 / 11</span>
+  <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+  <span class="sb-sep">|</span>
+  <span class="sb-label">Techniques:</span>
+  <span class="sb-val" id="techCount"><b>0</b> assigned</span>
+  <span class="sb-sep" id="dimActiveSep" style="display:none">|</span>
+  <span class="sb-val" id="dimActiveLabel" style="display:none;color:var(--accent)"></span>
+</div>
+
+<!-- Main -->
+<div class="main">
+
+  <!-- Left panel -->
+  <div class="left">
+    <div class="panel-sec">
+      <div class="sec-title">Goal Definition</div>
+      <textarea class="goal-ta" id="goalText" placeholder="Describe the agent's goal…&#10;&#10;e.g. Autonomously negotiate vendor contracts in adversarial settings with compliance audit trail"></textarea>
+      <button class="btn btn-primary encode-btn" onclick="encodeGoal()">⚡ Encode + Rank</button>
+    </div>
+    <div class="panel-sec">
+      <div class="sec-title">Environment Dimensions</div>
+      <div class="dim-row"><span class="dim-lbl">Adversarial</span><div class="toggle" id="dim-adversarial" onclick="toggleDim(this,'adversarial')"></div></div>
+      <div class="dim-row"><span class="dim-lbl">Real-time</span><div class="toggle" id="dim-realtime" onclick="toggleDim(this,'realtime')"></div></div>
+      <div class="dim-row"><span class="dim-lbl">Long Horizon</span><div class="toggle" id="dim-long_horizon" onclick="toggleDim(this,'long_horizon')"></div></div>
+      <div class="dim-row"><span class="dim-lbl">Data Scarce</span><div class="toggle" id="dim-data_scarce" onclick="toggleDim(this,'data_scarce')"></div></div>
+      <div class="dim-row"><span class="dim-lbl">Multi-Agent</span><div class="toggle" id="dim-multi_agent" onclick="toggleDim(this,'multi_agent')"></div></div>
+      <div class="dim-row"><span class="dim-lbl">Interpretable</span><div class="toggle" id="dim-interpretable" onclick="toggleDim(this,'interpretable')"></div></div>
+      <div class="dim-row"><span class="dim-lbl">Partial Obs.</span><div class="toggle" id="dim-partial_obs" onclick="toggleDim(this,'partial_obs')"></div></div>
+    </div>
+    <div class="slot-info" id="slotInfo">
+      <p class="si-empty">← Click a canvas block to configure it.</p>
+    </div>
+  </div>
+
+  <!-- Canvas -->
+  <div class="canvas-wrap">
+    <div class="canvas">
+      <div class="c-label">Cognitive Architecture Canvas — click a block to configure</div>
+
+      <!-- Perception -->
+      <div class="col">
+        <div class="slot-card" id="sc-perception" onclick="selectSlot('perception')">
+          <div class="slot-icon">👁</div>
+          <div class="slot-name">Perception</div>
+          <div class="slot-purpose">Receive + structure world input</div>
+          <div class="slot-chips" id="chips-perception"><span class="slot-empty">empty</span></div>
+          <div class="slot-req-dot"></div>
+        </div>
+        <div class="arrow-v"></div>
+      </div>
+
+      <!-- State Encoder -->
+      <div class="col">
+        <div class="slot-card" id="sc-stateEncoder" onclick="selectSlot('stateEncoder')">
+          <div class="slot-icon">🔄</div>
+          <div class="slot-name">State Encoder</div>
+          <div class="slot-purpose">History → compact Markov state</div>
+          <div class="slot-chips" id="chips-stateEncoder"><span class="slot-empty">empty</span></div>
+          <div class="slot-req-dot"></div>
+        </div>
+        <div class="arrow-v"></div>
+      </div>
+
+      <!-- Memory | Reasoning | Value row -->
+      <div class="row">
+        <div class="col" style="align-items:flex-end">
+          <div class="slot-card" id="sc-memory" onclick="selectSlot('memory')">
+            <div class="slot-icon">🧠</div>
+            <div class="slot-name">Memory</div>
+            <div class="slot-purpose">Store + retrieve knowledge</div>
+            <div class="slot-chips" id="chips-memory"><span class="slot-empty">empty</span></div>
+            <div class="slot-req-dot"></div>
+          </div>
+        </div>
+        <div class="arrow-h" style="margin-top:30px"></div>
+        <div class="col">
+          <div class="slot-card" id="sc-reasoning" onclick="selectSlot('reasoning')" style="width:195px">
+            <div class="slot-icon">💡</div>
+            <div class="slot-name">Reasoning Engine</div>
+            <div class="slot-purpose">Core decision-making brain</div>
+            <div class="slot-chips" id="chips-reasoning"><span class="slot-empty">empty</span></div>
+            <div class="slot-req-dot"></div>
+          </div>
+          <div class="arrow-v"></div>
+        </div>
+        <div class="arrow-h" style="margin-top:30px"></div>
+        <div class="col" style="align-items:flex-start">
+          <div class="slot-card" id="sc-value" onclick="selectSlot('value')">
+            <div class="slot-icon">📊</div>
+            <div class="slot-name">Value / Critic</div>
+            <div class="slot-purpose">Evaluate state desirability</div>
+            <div class="slot-chips" id="chips-value"><span class="slot-empty">empty</span></div>
+            <div class="slot-opt-dot"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Planning -->
+      <div class="col">
+        <div class="slot-card" id="sc-planning" onclick="selectSlot('planning')">
+          <div class="slot-icon">🗺</div>
+          <div class="slot-name">Planning</div>
+          <div class="slot-purpose">Decompose goals → action sequences</div>
+          <div class="slot-chips" id="chips-planning"><span class="slot-empty">empty</span></div>
+          <div class="slot-req-dot"></div>
+        </div>
+        <div class="arrow-v"></div>
+      </div>
+
+      <!-- Exploration -->
+      <div class="col">
+        <div class="slot-card" id="sc-exploration" onclick="selectSlot('exploration')">
+          <div class="slot-icon">🔍</div>
+          <div class="slot-name">Exploration Strategy</div>
+          <div class="slot-purpose">Balance known vs unknown</div>
+          <div class="slot-chips" id="chips-exploration"><span class="slot-empty">empty</span></div>
+          <div class="slot-opt-dot"></div>
+        </div>
+        <div class="arrow-v"></div>
+      </div>
+
+      <!-- Action -->
+      <div class="col">
+        <div class="slot-card" id="sc-action" onclick="selectSlot('action')">
+          <div class="slot-icon">⚡</div>
+          <div class="slot-name">Action Layer</div>
+          <div class="slot-purpose">Execute decisions on the world</div>
+          <div class="slot-chips" id="chips-action"><span class="slot-empty">empty</span></div>
+          <div class="slot-req-dot"></div>
+        </div>
+        <div class="arrow-v"></div>
+      </div>
+
+      <!-- Safety | Feedback | Orchestration row -->
+      <div class="row">
+        <div class="col" style="align-items:flex-end">
+          <div class="slot-card" id="sc-safety" onclick="selectSlot('safety')">
+            <div class="slot-icon">🛡</div>
+            <div class="slot-name">Safety / Guardrails</div>
+            <div class="slot-purpose">Constrain harmful behavior</div>
+            <div class="slot-chips" id="chips-safety"><span class="slot-empty">empty</span></div>
+            <div class="slot-opt-dot"></div>
+          </div>
+        </div>
+        <div class="arrow-h" style="margin-top:30px"></div>
+        <div class="col">
+          <div class="slot-card" id="sc-feedback" onclick="selectSlot('feedback')">
+            <div class="slot-icon">🔁</div>
+            <div class="slot-name">Feedback / Learning</div>
+            <div class="slot-purpose">Update from outcomes</div>
+            <div class="slot-chips" id="chips-feedback"><span class="slot-empty">empty</span></div>
+            <div class="slot-req-dot"></div>
+          </div>
+        </div>
+        <div class="arrow-h" style="margin-top:30px"></div>
+        <div class="col" style="align-items:flex-start">
+          <div class="slot-card" id="sc-orchestration" onclick="selectSlot('orchestration')">
+            <div class="slot-icon">🎛</div>
+            <div class="slot-name">Orchestration</div>
+            <div class="slot-purpose">Coordinate all components</div>
+            <div class="slot-chips" id="chips-orchestration"><span class="slot-empty">empty</span></div>
+            <div class="slot-req-dot"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="feedback-loop">
+        <div class="loop-line"></div>
+        <span>← feedback loop to Perception</span>
+        <div class="loop-line"></div>
+      </div>
+
+      <!-- Legend -->
+      <div style="display:flex;gap:14px;margin-top:18px;font-size:10px;color:var(--text3)">
+        <span><span style="color:var(--accent2)">●</span> Required slot</span>
+        <span><span style="color:var(--text3)">●</span> Optional slot</span>
+        <span style="color:var(--accent2)">■</span> Filled
+        <span style="color:var(--accent)">■</span> Active
+        <span style="color:var(--danger)">■</span> Conflict
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: Technique picker -->
+  <div class="right">
+    <div class="right-header">
+      <div class="right-empty" id="noSlotMsg">← Select a canvas block.</div>
+      <div id="techPickerHeader" style="display:none">
+        <div class="right-slot-name" id="rightSlotName"></div>
+        <input class="right-search" id="techSearch" placeholder="Search techniques…" oninput="renderTechPicker()">
+      </div>
+    </div>
+    <div class="tech-list" id="techList"></div>
+  </div>
+</div>
+
+<!-- Blueprint Modal -->
+<div class="modal-bg" id="bpModal" onclick="closeBpOutside(event)">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="modal-title">🧠 Cognitive Blueprint — <span id="bpAgentName"></span></div>
+      <span class="modal-x" onclick="closeBp()">✕</span>
+    </div>
+    <div class="bp-status" id="bpStatus"></div>
+    <div class="bp-sec">
+      <div class="bp-sec-title">Goal</div>
+      <div id="bpGoal" style="font-size:13px;color:var(--text);line-height:1.5"></div>
+    </div>
+    <div class="bp-sec">
+      <div class="bp-sec-title">Active Dimensions</div>
+      <div id="bpDims" style="display:flex;flex-wrap:wrap;gap:5px"></div>
+    </div>
+    <div class="bp-sec">
+      <div class="bp-sec-title">Component Configuration</div>
+      <div id="bpRows"></div>
+    </div>
+    <div class="bp-sec">
+      <div class="bp-sec-title">Export</div>
+      <div class="export-row">
+        <button class="btn" onclick="toggleJSON()">{ } JSON Config</button>
+        <button class="btn" onclick="copyJSON()">Copy JSON</button>
+        <button class="btn btn-primary" onclick="exportMarkdown()">↓ Markdown Blueprint</button>
+      </div>
+      <pre class="json-pre" id="jsonPre"></pre>
+    </div>
+  </div>
+</div>
+
+<script>
+// ────────────────────────────────────────────────────────────────────────────
+//  DATA
+// ────────────────────────────────────────────────────────────────────────────
+const SLOTS = {
+  perception:    { label:'Perception',          icon:'👁',  desc:'How the agent receives and structures information from the environment — users, APIs, sensors, documents.', required:true },
+  stateEncoder:  { label:'State Encoder',        icon:'🔄', desc:'Compresses raw history into a compact, actionable state. Ensures the Markov Property holds for downstream RL.', required:true },
+  memory:        { label:'Memory',               icon:'🧠', desc:'Stores and retrieves knowledge across time — working memory for current task, long-term for accumulated facts.', required:true },
+  reasoning:     { label:'Reasoning Engine',     icon:'💡', desc:'The core decision-making brain. Interprets state, integrates memory, selects the next action or tool call.', required:true },
+  planning:      { label:'Planning',             icon:'🗺', desc:'Decomposes high-level goals into action sequences. Lookahead, search trees, or LLM-based decomposition.', required:true },
+  value:         { label:'Value / Critic',       icon:'📊', desc:'Estimates how desirable a state or action is. Drives policy improvement. Optional but improves RL agents.', required:false },
+  exploration:   { label:'Exploration Strategy', icon:'🔍', desc:'Balances exploiting known-good paths against discovering new ones. Prevents local optima.', required:false },
+  action:        { label:'Action Layer',         icon:'⚡', desc:'Where decisions are executed — API calls, tool use, file writes, RPA, physical actuators.', required:true },
+  feedback:      { label:'Feedback / Learning',  icon:'🔁', desc:'Captures outcomes and updates the agent — reward signals, TD learning, policy gradient, RLHF.', required:true },
+  safety:        { label:'Safety / Guardrails',  icon:'🛡', desc:'Constrains harmful behavior — policy limits, reward shaping, constitutional rules, output filtering.', required:false },
+  orchestration: { label:'Orchestration',        icon:'🎛', desc:'Coordinates all components. Handles the agent loop, multi-agent routing, hierarchical task management.', required:true },
+};
+
+const DIM_LABELS = {
+  adversarial:'Adversarial', realtime:'Real-time', long_horizon:'Long Horizon',
+  data_scarce:'Data Scarce', multi_agent:'Multi-Agent', interpretable:'Interpretable',
+  partial_obs:'Partial Obs.',
+};
+
+const GOAL_KEYWORDS = {
+  adversarial:   ['adversarial','compet','negotiat','game','opponent','rival','bid'],
+  realtime:      ['real-time','realtime','live','instant','fast','low latency','streaming'],
+  long_horizon:  ['long','horizon','strategic','multi-step','complex','optimize over','plan ahead'],
+  data_scarce:   ['few data','scarce','limited data','small dataset','sample efficient','cold start'],
+  multi_agent:   ['multi-agent','multiple agent','team','cooperat','coordinat','swarm','multi agent'],
+  interpretable: ['explain','interpret','audit','comply','transparent','justif','regulat'],
+  partial_obs:   ['partial','unknown','hidden','uncertain','sensor','noisy','incomplete'],
+};
+
+const PRESETS = {
+  'negotiation': {
+    name: 'Vendor Negotiation Agent',
+    goal: 'Autonomously negotiate vendor contracts in adversarial settings with full compliance audit trail',
+    dims: { adversarial:true, interpretable:true, long_horizon:true },
+    selections: {
+      perception: ['rag','apiPoll'],
+      stateEncoder: ['markov'],
+      memory: ['vectorDB','kg'],
+      reasoning: ['llm','cot'],
+      planning: ['minimax','llmPlan'],
+      value: ['advantage'],
+      exploration: ['thompson'],
+      action: ['toolUse'],
+      feedback: ['reward','rlhfFeed'],
+      safety: ['constAI','polConst'],
+      orchestration: ['reactLoop'],
+    },
+  },
+  'rag-agent': {
+    name: 'Enterprise RAG Assistant',
+    goal: 'Answer complex enterprise knowledge queries by retrieving and reasoning over internal document stores',
+    dims: { interpretable:true, data_scarce:true },
+    selections: {
+      perception: ['rag','docParse'],
+      stateEncoder: ['attention'],
+      memory: ['vectorDB','working'],
+      reasoning: ['llm','cot'],
+      planning: ['llmPlan'],
+      value: [],
+      exploration: [],
+      action: ['toolUse','apiCall'],
+      feedback: ['rlhfFeed'],
+      safety: ['outFilter','constAI'],
+      orchestration: ['reactLoop'],
+    },
+  },
+};
+
+// ────────────────────────────────────────────────────────────────────────────
+//  STATE
+// ────────────────────────────────────────────────────────────────────────────
+let ALL_TECHNIQUES = [];
+let selections = {};  // { slotId: Set<techId> }
+let dims = {};        // { dimKey: bool }
+let activeSlot = null;
+
+Object.keys(SLOTS).forEach(s => { selections[s] = new Set(); });
+
+// ────────────────────────────────────────────────────────────────────────────
+//  LOAD
+// ────────────────────────────────────────────────────────────────────────────
+async function loadRegistry() {
+  try {
+    const res = await fetch('../registry/techniques.json');
+    const json = await res.json();
+    ALL_TECHNIQUES = json.techniques;
+  } catch(e) {
+    document.getElementById('noSlotMsg').textContent = '⚠ Could not load registry. Open via Live Server or http-server.';
+    return;
+  }
+  // Accept handoff from Goal Encoder
+  if (new URLSearchParams(location.search).get('from') === 'encoder') {
+    const raw = localStorage.getItem('abp_encoder_payload');
+    if (raw) {
+      try {
+        const payload = JSON.parse(raw);
+        localStorage.removeItem('abp_encoder_payload');
+        if (payload.goal) document.getElementById('goalText').value = payload.goal;
+        if (payload.dims) setDims(payload.dims);
+        if (payload.selections) {
+          Object.entries(payload.selections).forEach(([slotId, techIds]) => {
+            selections[slotId] = new Set(techIds);
+            renderSlotCard(slotId);
+          });
+        }
+      } catch(e) { /* ignore bad payload */ }
+    }
+  }
+  updateStatus();
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+//  DIMS
+// ────────────────────────────────────────────────────────────────────────────
+function toggleDim(el, key) {
+  el.classList.toggle('on');
+  dims[key] = el.classList.contains('on');
+  updateDimLabel();
+  if (activeSlot) renderTechPicker();
+}
+
+function setDims(obj) {
+  Object.keys(DIM_LABELS).forEach(k => {
+    const el = document.getElementById('dim-' + k);
+    if (!el) return;
+    if (obj[k]) { el.classList.add('on'); dims[k] = true; }
+    else { el.classList.remove('on'); delete dims[k]; }
+  });
+  updateDimLabel();
+}
+
+function updateDimLabel() {
+  const active = Object.entries(dims).filter(([,v]) => v).map(([k]) => DIM_LABELS[k]);
+  const sep = document.getElementById('dimActiveSep');
+  const lbl = document.getElementById('dimActiveLabel');
+  if (active.length) {
+    sep.style.display = ''; lbl.style.display = '';
+    lbl.textContent = '⚡ ' + active.join(' · ');
+  } else {
+    sep.style.display = 'none'; lbl.style.display = 'none';
+  }
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+//  GOAL ENCODER
+// ────────────────────────────────────────────────────────────────────────────
+function encodeGoal() {
+  const goal = document.getElementById('goalText').value.toLowerCase();
+  const newDims = {};
+  Object.entries(GOAL_KEYWORDS).forEach(([dim, words]) => {
+    if (words.some(w => goal.includes(w))) newDims[dim] = true;
+  });
+  setDims(newDims);
+  if (activeSlot) renderTechPicker();
+  const btn = document.querySelector('.encode-btn');
+  btn.textContent = '✓ Encoded';
+  btn.style.background = 'var(--accent2)';
+  setTimeout(() => { btn.textContent = '⚡ Encode + Rank'; btn.style.background = ''; }, 1400);
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+//  RANK
+// ────────────────────────────────────────────────────────────────────────────
+function effectiveRank(tech) {
+  let r = tech.base_rank;
+  Object.entries(dims).forEach(([k, on]) => {
+    if (on) r += (tech.goal_boosts[k] || 0);
+  });
+  return Math.max(1, Math.min(5, r));
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+//  SLOT SELECTION
+// ────────────────────────────────────────────────────────────────────────────
+function selectSlot(slotId) {
+  if (activeSlot) document.getElementById('sc-' + activeSlot)?.classList.remove('active');
+  activeSlot = slotId;
+  document.getElementById('sc-' + slotId).classList.add('active');
+
+  const slot = SLOTS[slotId];
+  document.getElementById('slotInfo').innerHTML = `
+    <div class="si-name">${slot.icon} ${slot.label}</div>
+    <div class="si-desc">${slot.desc}</div>
+    <div class="si-opt">${slot.required ? '● Required' : '○ Optional'}</div>
+    <div id="selSummary" style="margin-top:10px"></div>
+  `;
+  renderSelSummary(slotId);
+
+  document.getElementById('noSlotMsg').style.display = 'none';
+  document.getElementById('techPickerHeader').style.display = 'block';
+  document.getElementById('rightSlotName').textContent = slot.label + ' — Techniques';
+  document.getElementById('techSearch').value = '';
+  renderTechPicker();
+}
+
+function renderSelSummary(slotId) {
+  const el = document.getElementById('selSummary');
+  if (!el) return;
+  const sel = selections[slotId];
+  if (!sel || sel.size === 0) { el.innerHTML = ''; return; }
+  const techMap = {};
+  ALL_TECHNIQUES.forEach(t => { techMap[t.id] = t; });
+  el.innerHTML = '<div class="sec-title" style="margin-bottom:6px">Assigned</div><div class="sel-list">' +
+    [...sel].map(id => {
+      const t = techMap[id];
+      return `<div class="sel-item">
+        <div><div class="sel-item-name">${t ? t.name : id}</div></div>
+        <span class="sel-remove" onclick="removeTech('${slotId}','${id}')">✕</span>
+      </div>`;
+    }).join('') + '</div>';
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+//  TECHNIQUE PICKER
+// ────────────────────────────────────────────────────────────────────────────
+function renderTechPicker() {
+  if (!activeSlot) return;
+  const q = (document.getElementById('techSearch')?.value || '').toLowerCase();
+  const slotTechs = ALL_TECHNIQUES.filter(t => t.slot.includes(activeSlot));
+  const sel = selections[activeSlot];
+
+  // All selected tech IDs across ALL slots (for conflict detection)
+  const allSelected = new Set();
+  Object.values(selections).forEach(s => s.forEach(id => allSelected.add(id)));
+
+  let techs = slotTechs.filter(t => {
+    if (!q) return true;
+    return (t.name + t.full_name + t.description + t.tags.join(' ')).toLowerCase().includes(q);
+  });
+  techs = techs.sort((a, b) => effectiveRank(b) - effectiveRank(a));
+
+  const techMap = {};
+  ALL_TECHNIQUES.forEach(t => { techMap[t.id] = t; });
+
+  const list = document.getElementById('techList');
+  list.innerHTML = '';
+
+  techs.forEach(tech => {
+    const rank = effectiveRank(tech);
+    const isSelected = sel.has(tech.id);
+
+    // Conflict check
+    const conflictingWith = (tech.conflicts_with || []).filter(cid => allSelected.has(cid) && !sel.has(cid) /* different slot */);
+    const hasConflict = conflictingWith.length > 0 && !isSelected;
+
+    // Requires check
+    const missingRequires = (tech.requires || []).filter(rid => !allSelected.has(rid));
+
+    const div = document.createElement('div');
+    div.className = 'tech-card' + (isSelected ? ' selected' : '') + (hasConflict ? ' conflict' : '');
+
+    const stars = Array.from({length: 5}, (_, i) =>
+      `<span class="star ${i < rank ? 'on' : ''}">★</span>`).join('');
+
+    div.innerHTML = `
+      <div class="tc-top">
+        <div class="tc-name">${tech.name}</div>
+        <div class="tc-stars">${stars}</div>
+      </div>
+      <div class="tc-desc">${tech.description.substring(0, 90)}${tech.description.length > 90 ? '…' : ''}</div>
+      ${hasConflict ? `<div class="tc-conflict-note">⚠ Conflicts with: ${conflictingWith.map(id => techMap[id]?.name || id).join(', ')}</div>` : ''}
+      ${missingRequires.length ? `<div class="tc-requires-note">↳ Requires: ${missingRequires.map(id => techMap[id]?.name || id).join(', ')}</div>` : ''}
+      <div class="tc-tags">${tech.tags.slice(0,4).map(t => `<span class="tc-tag">${t}</span>`).join('')}</div>
+      <div class="tc-metrics">
+        <div class="tc-metric">
+          <div class="tc-m-lbl">Complexity</div>
+          <div class="tc-m-bar"><div class="tc-m-fill fill-c" style="width:${tech.complexity*20}%"></div></div>
+        </div>
+        <div class="tc-metric">
+          <div class="tc-m-lbl">Interpret.</div>
+          <div class="tc-m-bar"><div class="tc-m-fill fill-i" style="width:${tech.interpretability*20}%"></div></div>
+        </div>
+        <div class="tc-metric">
+          <div class="tc-m-lbl">Sample Eff.</div>
+          <div class="tc-m-bar"><div class="tc-m-fill fill-s" style="width:${tech.sample_efficiency*20}%"></div></div>
+        </div>
+      </div>
+    `;
+    if (!hasConflict) div.onclick = () => toggleTech(activeSlot, tech.id);
+    list.appendChild(div);
+  });
+
+  if (techs.length === 0) {
+    list.innerHTML = '<div style="padding:12px;font-size:11px;color:var(--text3);font-style:italic">No techniques match.</div>';
+  }
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+//  TOGGLE / REMOVE TECH
+// ────────────────────────────────────────────────────────────────────────────
+function toggleTech(slotId, techId) {
+  const sel = selections[slotId];
+  if (sel.has(techId)) sel.delete(techId);
+  else sel.add(techId);
+  renderSlotCard(slotId);
+  renderSelSummary(slotId);
+  renderTechPicker();
+  updateStatus();
+}
+
+function removeTech(slotId, techId) {
+  selections[slotId].delete(techId);
+  renderSlotCard(slotId);
+  renderSelSummary(slotId);
+  if (activeSlot === slotId) renderTechPicker();
+  updateStatus();
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+//  RENDER SLOT CARD (chips + filled state)
+// ────────────────────────────────────────────────────────────────────────────
+function renderSlotCard(slotId) {
+  const sel = selections[slotId];
+  const card = document.getElementById('sc-' + slotId);
+  const chipsEl = document.getElementById('chips-' + slotId);
+
+  const techMap = {};
+  ALL_TECHNIQUES.forEach(t => { techMap[t.id] = t; });
+
+  // Check conflicts on this slot
+  const allSelected = new Set();
+  Object.values(selections).forEach(s => s.forEach(id => allSelected.add(id)));
+  let hasConflict = false;
+  sel.forEach(id => {
+    const t = techMap[id];
+    if (t && (t.conflicts_with || []).some(cid => allSelected.has(cid) && !sel.has(cid))) hasConflict = true;
+  });
+
+  card.classList.toggle('filled', sel.size > 0);
+  card.classList.toggle('has-conflict', hasConflict);
+
+  if (sel.size === 0) {
+    chipsEl.innerHTML = '<span class="slot-empty">empty</span>';
+  } else {
+    chipsEl.innerHTML = [...sel].map(id => {
+      const name = techMap[id]?.name || id;
+      return `<span class="slot-chip">${name}<span class="x" onclick="event.stopPropagation();removeTech('${slotId}','${id}')">✕</span></span>`;
+    }).join('');
+  }
+
+  // Count badge
+  const existingBadge = card.querySelector('.slot-badge-count');
+  if (existingBadge) existingBadge.remove();
+  if (sel.size > 1) {
+    const badge = document.createElement('div');
+    badge.className = 'slot-badge-count';
+    badge.textContent = sel.size;
+    card.appendChild(badge);
+  }
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+//  STATUS BAR
+// ────────────────────────────────────────────────────────────────────────────
+function updateStatus() {
+  const required = Object.entries(SLOTS).filter(([,s]) => s.required).map(([id]) => id);
+  const filledReq = required.filter(id => selections[id].size > 0).length;
+  const totalFilled = Object.values(selections).filter(s => s.size > 0).length;
+  const totalTechs = Object.values(selections).reduce((sum, s) => sum + s.size, 0);
+
+  document.getElementById('fillCount').innerHTML = `<b>${totalFilled}</b> / 11`;
+  document.getElementById('techCount').innerHTML = `<b>${totalTechs}</b> assigned`;
+  document.getElementById('progressFill').style.width = (totalFilled / 11 * 100) + '%';
+
+  const pill = document.getElementById('compatPill');
+  const conflictBadge = document.getElementById('conflictBadge');
+
+  // Detect cross-slot conflicts
+  const allSelected = new Set();
+  Object.values(selections).forEach(s => s.forEach(id => allSelected.add(id)));
+  const techMap = {};
+  ALL_TECHNIQUES.forEach(t => { techMap[t.id] = t; });
+  let conflictFound = false;
+  allSelected.forEach(id => {
+    const t = techMap[id];
+    if (t && (t.conflicts_with || []).some(cid => allSelected.has(cid))) conflictFound = true;
+  });
+
+  conflictBadge.style.display = conflictFound ? '' : 'none';
+
+  if (conflictFound) {
+    pill.textContent = '⚠ Conflicts detected'; pill.className = 'compat-pill compat-err';
+  } else if (filledReq === required.length) {
+    pill.textContent = '✅ Valid'; pill.className = 'compat-pill compat-ok';
+  } else {
+    const missing = required.length - filledReq;
+    pill.textContent = `⚠ ${missing} required slot${missing>1?'s':''} empty`; pill.className = 'compat-pill compat-warn';
+  }
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+//  CLEAR / PRESET
+// ────────────────────────────────────────────────────────────────────────────
+function clearAll() {
+  Object.keys(SLOTS).forEach(s => { selections[s] = new Set(); renderSlotCard(s); });
+  document.getElementById('goalText').value = '';
+  setDims({});
+  activeSlot = null;
+  document.getElementById('slotInfo').innerHTML = '<p class="si-empty">← Click a canvas block to configure it.</p>';
+  document.getElementById('noSlotMsg').style.display = 'block';
+  document.getElementById('techPickerHeader').style.display = 'none';
+  document.getElementById('techList').innerHTML = '';
+  document.querySelectorAll('.slot-card').forEach(c => c.classList.remove('active'));
+  updateStatus();
+}
+
+function loadPreset(key) {
+  const p = PRESETS[key];
+  if (!p) return;
+  clearAll();
+  document.getElementById('agentName').value = p.name;
+  document.getElementById('goalText').value = p.goal;
+  setDims(p.dims);
+  Object.entries(p.selections).forEach(([slotId, techIds]) => {
+    selections[slotId] = new Set(techIds);
+    renderSlotCard(slotId);
+  });
+  updateStatus();
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+//  BLUEPRINT MODAL
+// ────────────────────────────────────────────────────────────────────────────
+function openBlueprint() {
+  const name = document.getElementById('agentName').value || 'Unnamed Agent';
+  const goal = document.getElementById('goalText').value || '—';
+  document.getElementById('bpAgentName').textContent = name;
+  document.getElementById('bpGoal').textContent = goal;
+
+  // Dims
+  const activeDimsList = Object.entries(dims).filter(([,v]) => v).map(([k]) => DIM_LABELS[k]);
+  document.getElementById('bpDims').innerHTML = activeDimsList.length
+    ? activeDimsList.map(d => `<span style="background:rgba(88,166,255,0.12);border:1px solid var(--accent);border-radius:10px;padding:2px 9px;font-size:11px;color:var(--accent)">${d}</span>`).join('')
+    : '<span style="font-size:11px;color:var(--text3);font-style:italic">None specified</span>';
+
+  // Status
+  const required = Object.entries(SLOTS).filter(([,s]) => s.required).map(([id]) => id);
+  const missing = required.filter(id => selections[id].size === 0).map(id => SLOTS[id].label);
+  const statusEl = document.getElementById('bpStatus');
+  if (missing.length === 0) {
+    statusEl.innerHTML = `<div class="bp-dot" style="background:var(--accent2)"></div><span style="font-size:12px">✅ All required slots configured. Architecture is valid.</span>`;
+  } else {
+    statusEl.innerHTML = `<div class="bp-dot" style="background:var(--warn)"></div><span style="font-size:12px">⚠ Missing required slots: <b style="color:var(--warn)">${missing.join(', ')}</b></span>`;
+  }
+
+  // Rows
+  const techMap = {};
+  ALL_TECHNIQUES.forEach(t => { techMap[t.id] = t; });
+
+  const rowsEl = document.getElementById('bpRows');
+  rowsEl.innerHTML = Object.entries(SLOTS).map(([id, slot]) => {
+    const sel = [...selections[id]];
+    const techsHtml = sel.length
+      ? sel.map(tid => `<span class="bp-tech-tag">${techMap[tid]?.name || tid}</span>`).join('')
+      : `<span class="bp-tech-empty">${slot.required ? 'Not configured' : 'Not used (optional)'}</span>`;
+    const rationales = sel.map(tid => {
+      const t = techMap[tid];
+      if (!t) return '';
+      const rank = effectiveRank(t);
+      return `${t.name}: rank ${rank}/5`;
+    }).filter(Boolean).join(' · ');
+    return `<div class="bp-row">
+      <div class="bp-slot-name">${slot.icon} ${slot.label}</div>
+      <div><div class="bp-techs">${techsHtml}</div>${rationales ? `<div class="bp-rationale">${rationales}</div>` : ''}</div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('jsonPre').classList.remove('open');
+  document.getElementById('bpModal').classList.add('open');
+}
+
+function closeBp() { document.getElementById('bpModal').classList.remove('open'); }
+function closeBpOutside(e) { if (e.target === document.getElementById('bpModal')) closeBp(); }
+
+function buildBlueprintJSON() {
+  const techMap = {};
+  ALL_TECHNIQUES.forEach(t => { techMap[t.id] = t; });
+  const config = {
+    agent: document.getElementById('agentName').value || 'My Agent',
+    goal: document.getElementById('goalText').value || '',
+    dimensions: Object.entries(dims).filter(([,v]) => v).map(([k]) => k),
+    blueprint: {},
+  };
+  Object.entries(SLOTS).forEach(([id, slot]) => {
+    config.blueprint[id] = {
+      slot: slot.label,
+      required: slot.required,
+      techniques: [...selections[id]].map(tid => {
+        const t = techMap[tid];
+        return t ? { id: t.id, name: t.name, rank: effectiveRank(t), framework: t.framework } : { id: tid };
+      }),
+    };
+  });
+  return config;
+}
+
+function toggleJSON() {
+  const pre = document.getElementById('jsonPre');
+  if (pre.classList.contains('open')) { pre.classList.remove('open'); return; }
+  pre.textContent = JSON.stringify(buildBlueprintJSON(), null, 2);
+  pre.classList.add('open');
+}
+
+function copyJSON() {
+  navigator.clipboard.writeText(JSON.stringify(buildBlueprintJSON(), null, 2))
+    .then(() => { const btn = event.target; btn.textContent = '✓ Copied'; setTimeout(() => btn.textContent = 'Copy JSON', 1500); });
+}
+
+function sendToGenerator() {
+  const techMap = {};
+  ALL_TECHNIQUES.forEach(t => { techMap[t.id] = t; });
+  const payload = {
+    agent: document.getElementById('agentName').value || 'My Agent',
+    goal: document.getElementById('goalText').value || '',
+    dims: { ...dims },
+    selections: Object.fromEntries(
+      Object.entries(selections).map(([slot, set]) => [slot,
+        [...set].map(id => {
+          const t = techMap[id];
+          return { id, name: t?.name || id, framework: t?.framework || '', rank: t ? Math.min(5, Math.max(1, t.base_rank + Object.entries(dims).reduce((s,[k,v])=>s+(v?(t.goal_boosts[k]||0):0),0))) : 3 };
+        })
+      ])
+    ),
+  };
+  localStorage.setItem('abp_blueprint_payload', JSON.stringify(payload));
+  window.location.href = '../generator/index.html';
+}
+
+function exportMarkdown() {
+  const cfg = buildBlueprintJSON();
+  const techMap = {};
+  ALL_TECHNIQUES.forEach(t => { techMap[t.id] = t; });
+  let md = `# Cognitive Blueprint: ${cfg.agent}\n\n`;
+  md += `**Goal:** ${cfg.goal || '—'}\n\n`;
+  md += `**Dimensions:** ${cfg.dimensions.length ? cfg.dimensions.map(d => DIM_LABELS[d]).join(', ') : 'None'}\n\n`;
+  md += `| Slot | Technique(s) | Rank | Framework |\n|---|---|---|---|\n`;
+  Object.entries(cfg.blueprint).forEach(([id, slot]) => {
+    if (slot.techniques.length === 0) {
+      md += `| ${slot.slot} | — | — | — |\n`;
+    } else {
+      slot.techniques.forEach((t, i) => {
+        md += `| ${i === 0 ? slot.slot : ''} | ${t.name} | ${t.rank}/5 | ${t.framework || ''} |\n`;
+      });
+    }
+  });
+  md += `\n*Generated by Agent Brain Platform — ${new Date().toLocaleDateString()}*\n`;
+  const blob = new Blob([md], { type: 'text/markdown' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = (cfg.agent || 'blueprint').replace(/\s+/g,'_') + '.md';
+  a.click();
+}
+
+// keyboard shortcut
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeBp(); });
+
+// ────────────────────────────────────────────────────────────────────────────
+//  BOOT
+// ────────────────────────────────────────────────────────────────────────────
+loadRegistry();
+</script>
+</body>
+</html>

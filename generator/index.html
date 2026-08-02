@@ -1,0 +1,1090 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agent Brain Platform — Blueprint Generator</title>
+<style>
+  :root {
+    --bg:#0d1117;--surface:#161b22;--surface2:#21262d;--surface3:#2d333b;
+    --border:#30363d;--accent:#58a6ff;--accent2:#3fb950;
+    --warn:#d29922;--danger:#f85149;--purple:#bc8cff;
+    --text:#c9d1d9;--text2:#8b949e;--text3:#6e7681;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;font-size:13px;min-height:100vh;display:flex;flex-direction:column;}
+
+  /* Header */
+  .hdr{background:var(--surface);border-bottom:1px solid var(--border);padding:9px 24px;display:flex;align-items:center;gap:12px;flex-shrink:0;}
+  .hdr-logo{font-size:14px;font-weight:700;color:var(--accent);}
+  .hdr-logo span{color:var(--text3);font-weight:400;font-size:12px;}
+  .hdr-sep{width:1px;height:18px;background:var(--border);}
+  .hdr-right{margin-left:auto;display:flex;gap:8px;align-items:center;}
+  .btn{padding:5px 13px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--text);cursor:pointer;font-size:11px;transition:all .15s;white-space:nowrap;}
+  .btn:hover{border-color:var(--accent);color:var(--accent);}
+  .btn-primary{background:var(--accent);border-color:var(--accent);color:#000;font-weight:600;}
+  .btn-primary:hover{background:#79c0ff;color:#000;}
+  .btn-success{background:var(--accent2);border-color:var(--accent2);color:#000;font-weight:600;}
+  .btn-success:hover{background:#56d364;}
+  .btn-purple{background:var(--purple);border-color:var(--purple);color:#000;font-weight:600;}
+  .btn-purple:hover{background:#d2b6ff;}
+  .nav-link{font-size:11px;color:var(--text3);text-decoration:none;padding:4px 8px;border-radius:5px;}
+  .nav-link:hover{background:var(--surface2);color:var(--text);}
+
+  /* Tab bar */
+  .tabs{background:var(--surface);border-bottom:1px solid var(--border);display:flex;padding:0 24px;gap:0;flex-shrink:0;}
+  .tab{padding:10px 18px;font-size:12px;font-weight:600;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;user-select:none;}
+  .tab:hover{color:var(--text2);}
+  .tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+
+  /* Main */
+  .main{flex:1;overflow:auto;padding:24px;}
+  .tab-pane{display:none;}
+  .tab-pane.active{display:block;}
+
+  /* ── Blueprint tab ──────────────────────────────────────────────────────── */
+  .bp-layout{display:grid;grid-template-columns:1fr 320px;gap:20px;max-width:1100px;margin:0 auto;}
+  @media(max-width:900px){.bp-layout{grid-template-columns:1fr;}}
+
+  /* Agent card */
+  .agent-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin-bottom:20px;max-width:1100px;margin-left:auto;margin-right:auto;}
+  .agent-name{font-size:20px;font-weight:700;color:var(--text);margin-bottom:4px;}
+  .agent-goal{font-size:13px;color:var(--text2);line-height:1.55;margin-bottom:12px;}
+  .agent-meta{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+  .meta-chip{padding:3px 10px;border-radius:10px;font-size:11px;font-weight:600;}
+  .chip-valid{background:rgba(63,185,80,.15);color:var(--accent2);border:1px solid var(--accent2);}
+  .chip-warn{background:rgba(210,153,34,.15);color:var(--warn);border:1px solid var(--warn);}
+  .chip-err{background:rgba(248,81,73,.12);color:var(--danger);border:1px solid var(--danger);}
+  .dim-tag{background:rgba(88,166,255,.1);border:1px solid var(--accent);color:var(--accent);padding:2px 9px;border-radius:10px;font-size:11px;}
+
+  /* Slot section */
+  .slot-section{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:12px;}
+  .slot-hdr{padding:11px 16px;display:flex;align-items:center;gap:10px;background:var(--surface);}
+  .slot-icon{font-size:16px;}
+  .slot-hdr-name{font-size:13px;font-weight:700;color:var(--text);flex:1;}
+  .slot-req-badge{font-size:10px;padding:2px 7px;border-radius:8px;font-weight:600;}
+  .badge-req{background:rgba(63,185,80,.15);color:var(--accent2);}
+  .badge-opt{background:rgba(110,118,129,.15);color:var(--text3);}
+  .badge-missing{background:rgba(248,81,73,.12);color:var(--danger);}
+  .slot-body{border-top:1px solid var(--border);padding:12px 16px;display:flex;flex-direction:column;gap:10px;}
+  .slot-empty-msg{font-size:12px;color:var(--text3);font-style:italic;padding:4px 0;}
+
+  /* Technique entry */
+  .tech-entry{background:var(--surface2);border-radius:8px;padding:10px 13px;border-left:3px solid var(--border);}
+  .tech-entry.primary{border-left-color:var(--accent2);}
+  .tech-entry.secondary{border-left-color:var(--accent);}
+  .te-top{display:flex;align-items:flex-start;gap:10px;margin-bottom:6px;}
+  .te-name{font-size:13px;font-weight:700;color:var(--text);flex:1;}
+  .te-fw{font-size:10px;padding:2px 7px;border-radius:5px;font-weight:600;}
+  .te-rank{display:flex;gap:2px;flex-shrink:0;}
+  .star{font-size:9px;color:var(--text3);}
+  .star.on{color:var(--warn);}
+  .te-desc{font-size:11px;color:var(--text2);line-height:1.5;margin-bottom:6px;}
+  .te-theory{font-size:11px;color:var(--text3);font-style:italic;border-left:2px solid var(--accent);padding-left:8px;line-height:1.5;margin-bottom:6px;}
+  .te-rationale{font-size:11px;color:var(--accent2);margin-bottom:5px;}
+  .te-metrics{display:flex;gap:10px;margin-top:6px;}
+  .te-metric{flex:1;text-align:center;}
+  .te-m-lbl{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;}
+  .te-m-bar{height:3px;background:var(--border);border-radius:2px;overflow:hidden;margin-top:2px;}
+  .te-m-fill{height:100%;border-radius:2px;}
+  .fill-c{background:var(--danger);}
+  .fill-i{background:var(--accent2);}
+  .fill-s{background:var(--purple);}
+  .te-m-val{font-size:9px;color:var(--text2);margin-top:2px;}
+  .te-pairs{font-size:10px;color:var(--text3);margin-top:4px;}
+
+  /* Sidebar */
+  .sidebar-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:14px;}
+  .sc-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);margin-bottom:10px;}
+
+  /* Compat matrix */
+  .compat-row{display:flex;align-items:flex-start;gap:8px;font-size:11px;margin-bottom:7px;line-height:1.45;}
+  .compat-icon{flex-shrink:0;font-size:13px;}
+
+  /* Stats grid */
+  .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .stat-box{background:var(--surface2);border-radius:8px;padding:10px;text-align:center;}
+  .stat-num{font-size:20px;font-weight:700;color:var(--accent);}
+  .stat-lbl{font-size:10px;color:var(--text3);margin-top:2px;}
+
+  /* Export row */
+  .export-row{display:flex;flex-direction:column;gap:7px;}
+  .export-btn{width:100%;padding:8px;font-size:11px;}
+
+  /* ── Scaffold tab ───────────────────────────────────────────────────────── */
+  .scaffold-layout{max-width:1000px;margin:0 auto;}
+  .scaffold-header{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 18px;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;gap:16px;}
+  .scaffold-desc{font-size:12px;color:var(--text2);line-height:1.5;}
+  .code-block-wrap{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:16px;}
+  .code-block-hdr{padding:9px 14px;background:var(--surface2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+  .code-block-title{font-size:11px;font-weight:600;color:var(--text2);}
+  .code-block-copy{font-size:10px;padding:3px 9px;border-radius:5px;border:1px solid var(--border);background:transparent;color:var(--text3);cursor:pointer;transition:all .15s;}
+  .code-block-copy:hover{border-color:var(--accent);color:var(--accent);}
+  pre.code{background:var(--bg);padding:16px;font-family:'Consolas','Courier New',monospace;font-size:11px;color:var(--text2);overflow-x:auto;white-space:pre;line-height:1.6;max-height:500px;overflow-y:auto;}
+  .kw{color:var(--purple);}
+  .fn{color:var(--accent);}
+  .st{color:var(--accent2);}
+  .cm{color:var(--text3);}
+  .nm{color:var(--warn);}
+
+  /* ── Empty/loading ──────────────────────────────────────────────────────── */
+  .empty{text-align:center;padding:60px 20px;color:var(--text3);}
+  .empty-icon{font-size:40px;margin-bottom:12px;}
+
+  ::-webkit-scrollbar{width:5px;height:5px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-logo">Agent Brain Platform <span>/ Blueprint Generator</span></div>
+  <div class="hdr-sep"></div>
+  <a class="nav-link" href="../encoder/index.html">← Encoder</a>
+  <a class="nav-link" href="../canvas/index.html">Canvas</a>
+  <a class="nav-link" href="../bridge/index.html">Bridge →</a>
+  <div class="hdr-right">
+    <button class="btn" onclick="loadFromCanvas()">↺ Reload from Canvas</button>
+    <button class="btn btn-primary" onclick="exportMarkdown()">↓ Markdown</button>
+    <button class="btn btn-success" onclick="exportJSON()">{ } JSON Config</button>
+    <button class="btn btn-purple" onclick="goToBridge()">→ Runtime Bridge</button>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="setTab('blueprint',this)">📋 Phase 4 — Cognitive Blueprint</div>
+  <div class="tab" onclick="setTab('scaffold',this)">🐍 Phase 5 — Python Scaffold</div>
+</div>
+
+<div class="main">
+  <!-- Blueprint tab -->
+  <div class="tab-pane active" id="pane-blueprint">
+    <div id="bp-empty" class="empty">
+      <div class="empty-icon">📋</div>
+      <div style="font-size:14px;font-weight:600;color:var(--text2);margin-bottom:8px">No blueprint loaded</div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:16px">Configure your agent in the Canvas, then click Generate Blueprint to open this view.</div>
+      <button class="btn btn-primary" onclick="loadDemo()">Load Demo Blueprint</button>
+    </div>
+    <div id="bp-content" style="display:none"></div>
+  </div>
+
+  <!-- Scaffold tab -->
+  <div class="tab-pane" id="pane-scaffold">
+    <div id="sc-empty" class="empty">
+      <div class="empty-icon">🐍</div>
+      <div style="font-size:14px;font-weight:600;color:var(--text2);margin-bottom:8px">Load a blueprint first</div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:16px">The Python scaffold is generated from the active blueprint.</div>
+      <button class="btn btn-primary" onclick="loadDemo()">Load Demo Blueprint</button>
+    </div>
+    <div id="sc-content" style="display:none"></div>
+  </div>
+</div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────────
+const SLOT_META = {
+  perception:    {label:'Perception',          icon:'👁',  required:true,  desc:'Receives and structures world input'},
+  stateEncoder:  {label:'State Encoder',        icon:'🔄', required:true,  desc:'Compresses history into compact Markov state'},
+  memory:        {label:'Memory',               icon:'🧠', required:true,  desc:'Stores and retrieves knowledge across time'},
+  reasoning:     {label:'Reasoning Engine',     icon:'💡', required:true,  desc:'Core decision-making brain'},
+  planning:      {label:'Planning',             icon:'🗺', required:true,  desc:'Decomposes goals into action sequences'},
+  value:         {label:'Value / Critic',       icon:'📊', required:false, desc:'Estimates state/action desirability'},
+  exploration:   {label:'Exploration Strategy', icon:'🔍', required:false, desc:'Balances exploitation vs exploration'},
+  action:        {label:'Action Layer',         icon:'⚡', required:true,  desc:'Executes decisions on the world'},
+  feedback:      {label:'Feedback / Learning',  icon:'🔁', required:true,  desc:'Updates agent from outcomes'},
+  safety:        {label:'Safety / Guardrails',  icon:'🛡', required:false, desc:'Constrains harmful behaviour'},
+  orchestration: {label:'Orchestration',        icon:'🎛', required:true,  desc:'Coordinates all components'},
+};
+const DIM_LABELS = {adversarial:'Adversarial',realtime:'Real-time',long_horizon:'Long Horizon',data_scarce:'Data Scarce',multi_agent:'Multi-Agent',interpretable:'Interpretable',partial_obs:'Partial Obs.'};
+const FW_COLORS = {'RL':'#58a6ff','MDP':'#79c0ff','game-theory':'#f85149','Bayesian':'#d29922','LLM':'#3fb950','symbolic':'#bc8cff','control':'#39d353','multi-agent':'#ff7b72','safety':'#ffa657'};
+
+let ALL_TECHNIQUES = [];
+let BLUEPRINT = null;
+
+// ── LOAD ──────────────────────────────────────────────────────────────────────
+async function init() {
+  try {
+    const res = await fetch('../registry/techniques.json');
+    const json = await res.json();
+    ALL_TECHNIQUES = json.techniques;
+  } catch(e) {
+    showError('Could not load registry/techniques.json — open via Live Server or http-server.');
+    return;
+  }
+  // Check for payload from canvas
+  const raw = localStorage.getItem('abp_blueprint_payload');
+  if (raw) {
+    try {
+      BLUEPRINT = JSON.parse(raw);
+      localStorage.removeItem('abp_blueprint_payload');
+      renderBlueprint();
+      return;
+    } catch(e) {}
+  }
+  // Nothing loaded — show empty with demo button
+}
+
+function loadFromCanvas() {
+  const raw = localStorage.getItem('abp_blueprint_payload');
+  if (raw) {
+    try { BLUEPRINT = JSON.parse(raw); localStorage.removeItem('abp_blueprint_payload'); renderBlueprint(); }
+    catch(e) { alert('Invalid payload in localStorage.'); }
+  } else {
+    alert('No blueprint payload found. Generate a blueprint from the Canvas first.');
+  }
+}
+
+function loadDemo() {
+  BLUEPRINT = {
+    agent: 'Vendor Negotiation Agent',
+    goal: 'Autonomously negotiate vendor contracts in adversarial settings with full compliance audit trail',
+    dims: {adversarial:true, interpretable:true, long_horizon:true},
+    selections: {
+      perception:    [{id:'rag',name:'RAG',rank:5,framework:'LLM'},{id:'apiPoll',name:'API Polling',rank:3,framework:'symbolic'}],
+      stateEncoder:  [{id:'markov',name:'Markov State',rank:5,framework:'MDP'}],
+      memory:        [{id:'vectorDB',name:'Vector DB',rank:5,framework:'LLM'},{id:'kg',name:'Knowledge Graph',rank:4,framework:'symbolic'}],
+      reasoning:     [{id:'llm',name:'LLM',rank:5,framework:'LLM'},{id:'cot',name:'Chain-of-Thought',rank:5,framework:'LLM'}],
+      planning:      [{id:'minimax',name:'Minimax',rank:5,framework:'game-theory'},{id:'llmPlan',name:'LLM Planner',rank:4,framework:'LLM'}],
+      value:         [{id:'advantage',name:'Advantage A(s,a)',rank:4,framework:'RL'}],
+      exploration:   [{id:'thompson',name:'Thompson Sampling',rank:5,framework:'Bayesian'}],
+      action:        [{id:'toolUse',name:'Tool Use',rank:5,framework:'LLM'}],
+      feedback:      [{id:'reward',name:'Reward Signal',rank:5,framework:'RL'},{id:'rlhfFeed',name:'RLHF',rank:3,framework:'LLM'}],
+      safety:        [{id:'constAI',name:'Constitutional AI',rank:5,framework:'safety'},{id:'polConst',name:'Policy Constraints',rank:4,framework:'symbolic'}],
+      orchestration: [{id:'reactLoop',name:'ReAct Loop',rank:4,framework:'LLM'}],
+    },
+  };
+  renderBlueprint();
+}
+
+function showError(msg) {
+  document.getElementById('bp-empty').innerHTML = `<div class="empty-icon">⚠</div><div>${msg}</div>`;
+}
+
+// ── UTILS ──────────────────────────────────────────────────────────────────────
+function techById(id) { return ALL_TECHNIQUES.find(t => t.id === id) || null; }
+function stars(n) { return Array.from({length:5},(_,i)=>`<span class="star ${i<n?'on':''}">★</span>`).join(''); }
+
+function effectiveRank(tech) {
+  if (!BLUEPRINT) return tech.base_rank;
+  let r = tech.base_rank;
+  Object.entries(BLUEPRINT.dims || {}).forEach(([k,on]) => { if(on) r += (tech.goal_boosts[k]||0); });
+  return Math.max(1, Math.min(5, r));
+}
+
+function rankRationale(tech) {
+  const parts = [];
+  Object.entries(BLUEPRINT.dims || {}).forEach(([k,on]) => {
+    if (!on) return;
+    const b = tech.goal_boosts[k]||0;
+    if (b !== 0) parts.push(`${DIM_LABELS[k]} ${b>0?'+':''}${b}`);
+  });
+  if (!parts.length) return `Base rank: ${tech.base_rank}/5`;
+  return `Base ${tech.base_rank} + (${parts.join(', ')}) = ${effectiveRank(tech)}/5`;
+}
+
+// ── COMPATIBILITY ─────────────────────────────────────────────────────────────
+function computeCompat() {
+  const results = [];
+  const allIds = Object.values(BLUEPRINT.selections).flat().map(t => t.id);
+  const allIdSet = new Set(allIds);
+  const required = Object.entries(SLOT_META).filter(([,s])=>s.required).map(([id])=>id);
+  const missing = required.filter(s => !(BLUEPRINT.selections[s]||[]).length);
+
+  if (missing.length === 0) results.push({ok:true, msg:'All required slots configured.'});
+  else results.push({ok:false, msg:`Missing required slots: ${missing.map(s=>SLOT_META[s].label).join(', ')}`});
+
+  // Conflict detection
+  const conflicts = [];
+  allIds.forEach(id => {
+    const t = techById(id);
+    if (!t) return;
+    (t.conflicts_with||[]).forEach(cid => {
+      if (allIdSet.has(cid)) {
+        const ct = techById(cid);
+        conflicts.push(`${t.name} conflicts with ${ct?.name||cid}`);
+      }
+    });
+  });
+  const unique = [...new Set(conflicts)];
+  if (unique.length) unique.forEach(c => results.push({ok:false, msg:c}));
+  else results.push({ok:true, msg:'No technique conflicts detected.'});
+
+  // Requires check
+  allIds.forEach(id => {
+    const t = techById(id);
+    if (!t) return;
+    (t.requires||[]).forEach(rid => {
+      if (!allIdSet.has(rid)) {
+        const rt = techById(rid);
+        results.push({ok:false, msg:`${t.name} requires ${rt?.name||rid} (not assigned)`});
+      }
+    });
+  });
+
+  return results;
+}
+
+// ── RENDER BLUEPRINT ──────────────────────────────────────────────────────────
+function renderBlueprint() {
+  document.getElementById('bp-empty').style.display = 'none';
+  document.getElementById('sc-empty').style.display = 'none';
+  document.getElementById('bp-content').style.display = 'block';
+  document.getElementById('sc-content').style.display = 'block';
+
+  const compat = computeCompat();
+  const allOk = compat.every(c => c.ok);
+  const hasErr = compat.some(c => !c.ok);
+  const statusCls = allOk ? 'chip-valid' : hasErr ? 'chip-err' : 'chip-warn';
+  const statusTxt = allOk ? '✅ Valid' : '⚠ Issues detected';
+  const allIds = Object.values(BLUEPRINT.selections).flat().map(t => t.id);
+  const frameworks = [...new Set(allIds.map(id => techById(id)?.framework).filter(Boolean))];
+  const dims = Object.entries(BLUEPRINT.dims||{}).filter(([,v])=>v);
+  const totalTechs = allIds.length;
+
+  // Compat rows
+  const compatHtml = compat.map(c =>
+    `<div class="compat-row"><span class="compat-icon">${c.ok?'✅':'⚠'}</span><span style="color:${c.ok?'var(--accent2)':'var(--warn)'}">${c.msg}</span></div>`
+  ).join('');
+
+  // Stats
+  const filledSlots = Object.values(BLUEPRINT.selections).filter(s=>s.length).length;
+  const avgRank = totalTechs ? (allIds.reduce((sum,id)=>{const t=techById(id);return sum+(t?effectiveRank(t):0);},0)/totalTechs).toFixed(1) : '—';
+
+  // Slot sections
+  const slotsHtml = Object.entries(SLOT_META).map(([slotId, slotMeta]) => {
+    const techs = BLUEPRINT.selections[slotId] || [];
+    const bodyHtml = techs.length === 0
+      ? `<div class="slot-empty-msg">${slotMeta.required ? '⚠ Not configured (required)' : 'Not used (optional)'}</div>`
+      : techs.map((t, idx) => {
+          const fullTech = techById(t.id);
+          if (!fullTech) return `<div class="tech-entry"><div class="te-name">${t.name}</div></div>`;
+          const rank = effectiveRank(fullTech);
+          const rationale = rankRationale(fullTech);
+          const pairsNames = (fullTech.pairs_well_with||[]).filter(pid => allIds.includes(pid)).map(pid => techById(pid)?.name||pid);
+          return `<div class="tech-entry ${idx===0?'primary':'secondary'}">
+            <div class="te-top">
+              <div>
+                <div class="te-name">${fullTech.name}</div>
+                <div style="font-size:10px;color:${FW_COLORS[fullTech.framework]||'#888'};margin-top:1px">${fullTech.framework} · ${fullTech.full_name}</div>
+              </div>
+              <span class="te-fw" style="background:${FW_COLORS[fullTech.framework]||'#888'}22;color:${FW_COLORS[fullTech.framework]||'#888'};border:1px solid ${FW_COLORS[fullTech.framework]||'#888'}44">${fullTech.framework}</span>
+              <div class="te-rank">${stars(rank)}</div>
+            </div>
+            <div class="te-desc">${fullTech.description}</div>
+            ${fullTech.theory_note ? `<div class="te-theory">${fullTech.theory_note}</div>` : ''}
+            <div class="te-rationale">⚡ Rank rationale: ${rationale}</div>
+            ${pairsNames.length ? `<div class="te-pairs">🔗 Synergises with: ${pairsNames.join(', ')}</div>` : ''}
+            ${fullTech.example_use_case ? `<div style="font-size:10px;color:var(--text3);margin-top:4px;border-left:2px solid var(--accent2);padding-left:7px">${fullTech.example_use_case}</div>` : ''}
+            <div class="te-metrics">
+              <div class="te-metric"><div class="te-m-lbl">Complexity</div><div class="te-m-bar"><div class="te-m-fill fill-c" style="width:${fullTech.complexity*20}%"></div></div><div class="te-m-val">${fullTech.complexity}/5</div></div>
+              <div class="te-metric"><div class="te-m-lbl">Interpretability</div><div class="te-m-bar"><div class="te-m-fill fill-i" style="width:${fullTech.interpretability*20}%"></div></div><div class="te-m-val">${fullTech.interpretability}/5</div></div>
+              <div class="te-metric"><div class="te-m-lbl">Sample Eff.</div><div class="te-m-bar"><div class="te-m-fill fill-s" style="width:${fullTech.sample_efficiency*20}%"></div></div><div class="te-m-val">${fullTech.sample_efficiency}/5</div></div>
+            </div>
+          </div>`;
+        }).join('');
+
+    const missingSlot = techs.length === 0 && slotMeta.required;
+    return `<div class="slot-section">
+      <div class="slot-hdr">
+        <span class="slot-icon">${slotMeta.icon}</span>
+        <span class="slot-hdr-name">${slotMeta.label}</span>
+        <span class="slot-req-badge ${missingSlot?'badge-missing':slotMeta.required?'badge-req':'badge-opt'}">${missingSlot?'Missing':slotMeta.required?'Required':'Optional'}</span>
+        <span style="font-size:11px;color:var(--text3);margin-left:6px">${techs.length} technique${techs.length!==1?'s':''}</span>
+      </div>
+      <div class="slot-body">${bodyHtml}</div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('bp-content').innerHTML = `
+    <div class="agent-card">
+      <div class="agent-name">${BLUEPRINT.agent || 'Unnamed Agent'}</div>
+      <div class="agent-goal">${BLUEPRINT.goal || '—'}</div>
+      <div class="agent-meta">
+        <span class="meta-chip ${statusCls}">${statusTxt}</span>
+        ${dims.map(([k])=>`<span class="dim-tag">${DIM_LABELS[k]}</span>`).join('')}
+      </div>
+    </div>
+    <div class="bp-layout">
+      <div>${slotsHtml}</div>
+      <div>
+        <div class="sidebar-card">
+          <div class="sc-title">Stats</div>
+          <div class="stats-grid">
+            <div class="stat-box"><div class="stat-num">${totalTechs}</div><div class="stat-lbl">Techniques</div></div>
+            <div class="stat-box"><div class="stat-num">${filledSlots}</div><div class="stat-lbl">Slots Filled</div></div>
+            <div class="stat-box"><div class="stat-num">${avgRank}</div><div class="stat-lbl">Avg Rank</div></div>
+            <div class="stat-box"><div class="stat-num">${frameworks.length}</div><div class="stat-lbl">Frameworks</div></div>
+          </div>
+        </div>
+        <div class="sidebar-card">
+          <div class="sc-title">Compatibility</div>
+          ${compatHtml}
+        </div>
+        <div class="sidebar-card">
+          <div class="sc-title">Frameworks Used</div>
+          <div style="display:flex;flex-wrap:wrap;gap:5px">
+            ${frameworks.map(fw=>`<span style="padding:3px 9px;border-radius:8px;font-size:11px;background:${FW_COLORS[fw]||'#888'}22;color:${FW_COLORS[fw]||'#888'};border:1px solid ${FW_COLORS[fw]||'#888'}44">${fw}</span>`).join('')}
+          </div>
+        </div>
+        <div class="sidebar-card">
+          <div class="sc-title">Export</div>
+          <div class="export-row">
+            <button class="btn export-btn btn-primary" onclick="exportMarkdown()">↓ Markdown Blueprint</button>
+            <button class="btn export-btn btn-success" onclick="exportJSON()">{ } JSON Config</button>
+            <button class="btn export-btn" onclick="copyJSON()">Copy JSON</button>
+            <button class="btn export-btn btn-purple" onclick="goToBridge()">→ Send to Bridge</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  renderScaffold();
+}
+
+// ── RENDER SCAFFOLD ───────────────────────────────────────────────────────────
+function renderScaffold() {
+  const code = generatePythonScaffold();
+  const reqFile = generateRequirements();
+  const readmeFile = generateAgentReadme();
+
+  document.getElementById('sc-content').innerHTML = `
+    <div class="scaffold-layout">
+      <div class="scaffold-header">
+        <div>
+          <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px">Python Agent Scaffold — ${BLUEPRINT.agent||'Agent'}</div>
+          <div class="scaffold-desc">Auto-generated from the Cognitive Blueprint. Contains stub classes for every configured technique, wired into a runnable agent loop. Fill in the <code style="background:var(--surface2);padding:1px 5px;border-radius:3px;font-size:10px"># TODO</code> sections to implement.</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <button class="btn btn-success" onclick="downloadScaffold()">↓ Download agent.py</button>
+          <button class="btn" onclick="downloadRequirements()">↓ requirements.txt</button>
+        </div>
+      </div>
+      <div class="code-block-wrap">
+        <div class="code-block-hdr">
+          <span class="code-block-title">agent.py</span>
+          <button class="code-block-copy" onclick="copyCode('main-code')">Copy</button>
+        </div>
+        <pre class="code" id="main-code">${escHtml(code)}</pre>
+      </div>
+      <div class="code-block-wrap">
+        <div class="code-block-hdr">
+          <span class="code-block-title">requirements.txt</span>
+          <button class="code-block-copy" onclick="copyCode('req-code')">Copy</button>
+        </div>
+        <pre class="code" id="req-code">${escHtml(reqFile)}</pre>
+      </div>
+      <div class="code-block-wrap">
+        <div class="code-block-hdr">
+          <span class="code-block-title">AGENT_README.md</span>
+          <button class="code-block-copy" onclick="copyCode('readme-code')">Copy</button>
+        </div>
+        <pre class="code" id="readme-code">${escHtml(readmeFile)}</pre>
+      </div>
+    </div>
+  `;
+}
+
+function escHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ── PYTHON SCAFFOLD GENERATOR ─────────────────────────────────────────────────
+function generatePythonScaffold() {
+  const bp = BLUEPRINT;
+  const allIds = Object.values(bp.selections).flat().map(t=>t.id);
+  const get = slot => (bp.selections[slot]||[]);
+  const firstName = slot => get(slot)[0]?.name || 'None';
+  const allNames = slot => get(slot).map(t=>t.name).join(', ') || 'None';
+  const agentSlug = (bp.agent||'Agent').replace(/\s+/g,'').replace(/[^a-zA-Z0-9]/g,'');
+  const now = new Date().toISOString().split('T')[0];
+
+  // Detect frameworks in use
+  const usesLLM = allIds.some(id => techById(id)?.framework === 'LLM');
+  const usesRL = allIds.some(id => ['RL','MDP'].includes(techById(id)?.framework));
+  const usesBayes = allIds.some(id => techById(id)?.framework === 'Bayesian');
+  const usesMultiAgent = allIds.some(id => techById(id)?.framework === 'multi-agent');
+
+  let lines = [];
+  lines.push(`"""
+${agentSlug} — Python Agent Scaffold
+Generated by Agent Brain Platform on ${now}
+
+Goal: ${bp.goal || 'Not specified'}
+Dimensions: ${Object.entries(bp.dims||{}).filter(([,v])=>v).map(([k])=>DIM_LABELS[k]).join(', ')||'None'}
+
+This file is AUTO-GENERATED. Fill in # TODO sections to implement.
+Each class corresponds to a cognitive slot in the Cognitive Blueprint.
+"""
+`);
+
+  // Imports
+  lines.push('from __future__ import annotations');
+  lines.push('import logging');
+  lines.push('from dataclasses import dataclass, field');
+  lines.push('from typing import Any, Dict, List, Optional, Tuple');
+  if (usesLLM) lines.push('# from anthropic import Anthropic  # pip install anthropic');
+  if (usesRL)  lines.push('# import numpy as np               # pip install numpy');
+  if (usesBayes) lines.push('# from scipy.stats import beta    # pip install scipy');
+  if (usesMultiAgent) lines.push('# import asyncio                  # stdlib');
+  lines.push('');
+  lines.push('logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")');
+  lines.push('logger = logging.getLogger(__name__)');
+  lines.push('');
+
+  // State dataclass
+  lines.push('');
+  lines.push('# ─── Agent State ───────────────────────────────────────────────────────────────');
+  lines.push('@dataclass');
+  lines.push('class AgentState:');
+  lines.push('    """Shared state passed through the cognitive pipeline each step."""');
+  lines.push('    raw_input: Any = None         # raw observation from environment');
+  lines.push('    encoded_state: Any = None     # output of StateEncoder');
+  lines.push('    memory_context: List = field(default_factory=list)');
+  lines.push('    reasoning_output: Any = None');
+  lines.push('    plan: List[str] = field(default_factory=list)');
+  lines.push('    action: Any = None');
+  lines.push('    reward: float = 0.0');
+  lines.push('    step: int = 0');
+  lines.push('    metadata: Dict = field(default_factory=dict)');
+  lines.push('');
+
+  // ── Perception
+  lines.push('');
+  lines.push('# ─── Perception ────────────────────────────────────────────────────────────────');
+  lines.push(`# Configured: ${allNames('perception')}`);
+  lines.push('class PerceptionModule:');
+  lines.push(`    """${get('perception').map(t=>t.name).join(' + ')} — receives and structures world input."""`);
+  lines.push('');
+  lines.push('    def perceive(self, raw_input: Any) -> Any:');
+  if (get('perception').some(t=>t.id==='rag')) {
+    lines.push('        # RAG: retrieve relevant documents from vector store');
+    lines.push('        # TODO: embed query, search vector_db, return top-k docs');
+    lines.push('        retrieved_docs = []  # TODO: implement retrieval');
+    lines.push('        return {"raw": raw_input, "retrieved": retrieved_docs}');
+  } else {
+    lines.push('        # TODO: implement perception logic');
+    lines.push('        return raw_input');
+  }
+  lines.push('');
+
+  // ── State Encoder
+  lines.push('');
+  lines.push('# ─── State Encoder ─────────────────────────────────────────────────────────────');
+  lines.push(`# Configured: ${allNames('stateEncoder')}`);
+  lines.push('class StateEncoder:');
+  const seNames = get('stateEncoder').map(t=>t.name).join(' + ');
+  lines.push(`    """${seNames} — compresses raw input into a compact state representation."""`);
+  lines.push('');
+  if (get('stateEncoder').some(t=>t.id==='belief')) {
+    lines.push('    def __init__(self):');
+    lines.push('        self.belief: Dict[str, float] = {}  # probability distribution over states');
+    lines.push('');
+    lines.push('    def encode(self, observation: Any) -> Dict[str, float]:');
+    lines.push('        # Bayesian belief update: b\'(s\') = P(o|s\',a) * sum_s P(s\'|s,a)*b(s)');
+    lines.push('        # TODO: implement belief update with observation model');
+    lines.push('        return self.belief');
+  } else if (get('stateEncoder').some(t=>t.id==='rnn')) {
+    lines.push('    def __init__(self):');
+    lines.push('        self.hidden_state = None  # LSTM hidden state');
+    lines.push('');
+    lines.push('    def encode(self, observation: Any) -> Any:');
+    lines.push('        # RNN/LSTM: update hidden state from new observation');
+    lines.push('        # TODO: pass observation through LSTM cell, return hidden state');
+    lines.push('        return self.hidden_state');
+  } else {
+    lines.push('    def encode(self, observation: Any) -> Any:');
+    lines.push('        # Markov state: compact sufficient statistic of history');
+    lines.push('        # TODO: extract relevant features from observation');
+    lines.push('        return observation');
+  }
+  lines.push('');
+
+  // ── Memory
+  lines.push('');
+  lines.push('# ─── Memory ────────────────────────────────────────────────────────────────────');
+  lines.push(`# Configured: ${allNames('memory')}`);
+  lines.push('class MemoryModule:');
+  lines.push(`    """${get('memory').map(t=>t.name).join(' + ')} — stores and retrieves knowledge."""`);
+  lines.push('');
+  lines.push('    def __init__(self):');
+  if (get('memory').some(t=>t.id==='vectorDB')) lines.push('        self.vector_store = []  # TODO: replace with FAISS/Chroma/Pinecone');
+  if (get('memory').some(t=>t.id==='episodic')) lines.push('        self.episode_buffer: List = []  # experience replay buffer');
+  if (get('memory').some(t=>t.id==='working'))  lines.push('        self.working_memory: List[str] = []  # in-context scratchpad');
+  if (get('memory').some(t=>t.id==='kg'))        lines.push('        self.knowledge_graph: Dict = {}  # entity→relations map');
+  lines.push('');
+  lines.push('    def store(self, item: Any) -> None:');
+  lines.push('        # TODO: embed and store item in appropriate memory store');
+  lines.push('        pass');
+  lines.push('');
+  lines.push('    def retrieve(self, query: Any, top_k: int = 5) -> List:');
+  lines.push('        # TODO: semantic search / retrieval from memory');
+  lines.push('        return []');
+  lines.push('');
+
+  // ── Reasoning
+  lines.push('');
+  lines.push('# ─── Reasoning Engine ──────────────────────────────────────────────────────────');
+  lines.push(`# Configured: ${allNames('reasoning')}`);
+  lines.push('class ReasoningEngine:');
+  lines.push(`    """${get('reasoning').map(t=>t.name).join(' + ')} — core decision-making brain."""`);
+  lines.push('');
+  if (usesLLM && get('reasoning').some(t=>t.id==='llm')) {
+    lines.push('    def __init__(self):');
+    lines.push('        # self.client = Anthropic()  # TODO: set ANTHROPIC_API_KEY env var');
+    lines.push('        self.model = "claude-sonnet-5"');
+    if (get('reasoning').some(t=>t.id==='cot')) {
+      lines.push('        self.cot_prompt = (');
+      lines.push('            "Think step by step before giving your final answer. "');
+      lines.push('            "Reason through the problem carefully."');
+      lines.push('        )');
+    }
+    lines.push('');
+    lines.push('    def reason(self, state: Any, memory_context: List, goal: str) -> str:');
+    lines.push('        system = f"You are an AI agent. Goal: {goal}"');
+    if (get('reasoning').some(t=>t.id==='cot')) lines.push('        system += " " + self.cot_prompt');
+    lines.push('        # TODO: call self.client.messages.create(model=self.model, ...)');
+    lines.push('        return "reasoning_output_placeholder"');
+  } else {
+    lines.push('    def reason(self, state: Any, memory_context: List, goal: str) -> Any:');
+    lines.push('        # TODO: implement reasoning logic (MDP policy / Bayesian / Rule engine)');
+    lines.push('        return state');
+  }
+  lines.push('');
+
+  // ── Planning
+  lines.push('');
+  lines.push('# ─── Planning ──────────────────────────────────────────────────────────────────');
+  lines.push(`# Configured: ${allNames('planning')}`);
+  lines.push('class PlanningModule:');
+  lines.push(`    """${get('planning').map(t=>t.name).join(' + ')} — decomposes goals into action sequences."""`);
+  lines.push('');
+  if (get('planning').some(t=>t.id==='minimax')) {
+    lines.push('    def plan(self, state: Any, goal: str, depth: int = 4) -> List[str]:');
+    lines.push('        # Minimax: adversarial game tree search');
+    lines.push('        # TODO: implement minimax with alpha-beta pruning');
+    lines.push('        # max_val = self._minimax(state, depth, True, float(\'-inf\'), float(\'inf\'))');
+    lines.push('        return []  # TODO: return optimal action sequence');
+  } else if (get('planning').some(t=>t.id==='mcts')) {
+    lines.push('    def plan(self, state: Any, goal: str, simulations: int = 1000) -> List[str]:');
+    lines.push('        # MCTS: Monte Carlo Tree Search');
+    lines.push('        # TODO: implement select → expand → simulate → backprop loop');
+    lines.push('        return []');
+  } else {
+    lines.push('    def plan(self, state: Any, goal: str) -> List[str]:');
+    lines.push('        # TODO: decompose goal into ordered action steps');
+    lines.push('        return []');
+  }
+  lines.push('');
+
+  // ── Value (optional)
+  if (get('value').length) {
+    lines.push('');
+    lines.push('# ─── Value / Critic ────────────────────────────────────────────────────────────');
+    lines.push(`# Configured: ${allNames('value')}`);
+    lines.push('class ValueCritic:');
+    lines.push(`    """${get('value').map(t=>t.name).join(' + ')} — estimates state/action desirability."""`);
+    lines.push('');
+    lines.push('    def estimate(self, state: Any, action: Any = None) -> float:');
+    if (get('value').some(t=>t.id==='qFunc')) {
+      lines.push('        # Q(s,a): expected reward of taking action a in state s');
+      lines.push('        # TODO: implement Q-network or Q-table lookup');
+    } else {
+      lines.push('        # V(s): expected cumulative reward from state s');
+      lines.push('        # TODO: implement value function approximation');
+    }
+    lines.push('        return 0.0');
+    lines.push('');
+  }
+
+  // ── Exploration (optional)
+  if (get('exploration').length) {
+    lines.push('');
+    lines.push('# ─── Exploration Strategy ──────────────────────────────────────────────────────');
+    lines.push(`# Configured: ${allNames('exploration')}`);
+    lines.push('class ExplorationStrategy:');
+    lines.push(`    """${get('exploration').map(t=>t.name).join(' + ')} — balances exploitation vs exploration."""`);
+    lines.push('');
+    if (get('exploration').some(t=>t.id==='thompson')) {
+      lines.push('    def __init__(self, n_actions: int):');
+      lines.push('        # Thompson Sampling: Beta(alpha, beta) posterior per action');
+      lines.push('        self.alpha = [1.0] * n_actions');
+      lines.push('        self.beta  = [1.0] * n_actions');
+      lines.push('');
+      lines.push('    def select_action(self, actions: List) -> Any:');
+      lines.push('        # Sample from posterior; select action with highest sample');
+      lines.push('        # TODO: import scipy.stats.beta; samples = [beta.rvs(a,b) for a,b in zip(self.alpha,self.beta)]');
+      lines.push('        return actions[0] if actions else None');
+      lines.push('');
+      lines.push('    def update(self, action_idx: int, reward: float) -> None:');
+      lines.push('        self.alpha[action_idx] += reward');
+      lines.push('        self.beta[action_idx]  += (1 - reward)');
+    } else if (get('exploration').some(t=>t.id==='ucb')) {
+      lines.push('    def __init__(self, n_actions: int, c: float = 1.41):');
+      lines.push('        self.counts  = [0] * n_actions');
+      lines.push('        self.values  = [0.0] * n_actions');
+      lines.push('        self.t = 0');
+      lines.push('        self.c = c');
+      lines.push('');
+      lines.push('    def select_action(self, actions: List) -> Any:');
+      lines.push('        import math');
+      lines.push('        self.t += 1');
+      lines.push('        ucb_vals = [');
+      lines.push('            self.values[i] + self.c * math.sqrt(math.log(self.t) / (self.counts[i] + 1e-8))');
+      lines.push('            for i in range(len(actions))');
+      lines.push('        ]');
+      lines.push('        return actions[ucb_vals.index(max(ucb_vals))]');
+    } else {
+      lines.push('    def __init__(self, epsilon: float = 0.1):');
+      lines.push('        self.epsilon = epsilon');
+      lines.push('');
+      lines.push('    def select_action(self, actions: List, q_values: List[float]) -> Any:');
+      lines.push('        import random');
+      lines.push('        if random.random() < self.epsilon:');
+      lines.push('            return random.choice(actions)');
+      lines.push('        return actions[q_values.index(max(q_values))]');
+    }
+    lines.push('');
+  }
+
+  // ── Action
+  lines.push('');
+  lines.push('# ─── Action Layer ──────────────────────────────────────────────────────────────');
+  lines.push(`# Configured: ${allNames('action')}`);
+  lines.push('class ActionLayer:');
+  lines.push(`    """${get('action').map(t=>t.name).join(' + ')} — executes decisions on the world."""`);
+  lines.push('');
+  lines.push('    def execute(self, action: Any, state: AgentState) -> Tuple[Any, float]:');
+  lines.push('        """Execute action; return (observation, reward)."""');
+  if (get('action').some(t=>t.id==='toolUse')) {
+    lines.push('        # Tool Use / MCP function calling');
+    lines.push('        # TODO: dispatch to registered tools based on action spec');
+    lines.push('        # e.g. result = self.tool_registry[action["tool"]](**action["params"])');
+  } else if (get('action').some(t=>t.id==='apiCall')) {
+    lines.push('        # API Call');
+    lines.push('        # TODO: make HTTP request; e.g. requests.post(url, json=action)');
+  }
+  lines.push('        observation = None  # TODO: implement');
+  lines.push('        reward = 0.0        # TODO: implement');
+  lines.push('        return observation, reward');
+  lines.push('');
+
+  // ── Feedback
+  lines.push('');
+  lines.push('# ─── Feedback / Learning ───────────────────────────────────────────────────────');
+  lines.push(`# Configured: ${allNames('feedback')}`);
+  lines.push('class FeedbackModule:');
+  lines.push(`    """${get('feedback').map(t=>t.name).join(' + ')} — updates agent from outcomes."""`);
+  lines.push('');
+  lines.push('    def __init__(self, gamma: float = 0.99):');
+  lines.push('        self.gamma = gamma');
+  if (get('feedback').some(t=>t.id==='tdLearn')) {
+    lines.push('        self.value_estimates: Dict[Any, float] = {}');
+  }
+  lines.push('');
+  lines.push('    def update(self, state: AgentState) -> None:');
+  if (get('feedback').some(t=>t.id==='tdLearn')) {
+    lines.push('        # TD(0) update: V(s) += alpha * [r + gamma*V(s\') - V(s)]');
+    lines.push('        # TODO: implement TD error and value update');
+    lines.push('        pass');
+  } else if (get('feedback').some(t=>t.id==='polGrad')) {
+    lines.push('        # Policy Gradient: accumulate log-prob * reward for REINFORCE');
+    lines.push('        # TODO: store (log_prob, reward); update policy on episode end');
+    lines.push('        pass');
+  } else {
+    lines.push('        # TODO: process reward signal and update model');
+    lines.push('        pass');
+  }
+  lines.push('');
+
+  // ── Safety (optional)
+  if (get('safety').length) {
+    lines.push('');
+    lines.push('# ─── Safety / Guardrails ───────────────────────────────────────────────────────');
+    lines.push(`# Configured: ${allNames('safety')}`);
+    lines.push('class SafetyModule:');
+    lines.push(`    """${get('safety').map(t=>t.name).join(' + ')} — constrains harmful behaviour."""`);
+    lines.push('');
+    if (get('safety').some(t=>t.id==='polConst')) {
+      lines.push('    FORBIDDEN_ACTIONS = set()  # TODO: populate with prohibited action types');
+      lines.push('');
+    }
+    lines.push('    def check(self, action: Any, state: AgentState) -> Tuple[bool, str]:');
+    lines.push('        """Return (is_safe, reason). Block action if not safe."""');
+    if (get('safety').some(t=>t.id==='polConst')) {
+      lines.push('        if action in self.FORBIDDEN_ACTIONS:');
+      lines.push('            return False, f"Action {action} is policy-constrained"');
+    }
+    if (get('safety').some(t=>t.id==='outFilter')) {
+      lines.push('        # Output filter: classify output before execution');
+      lines.push('        # TODO: call classifier to detect unsafe outputs');
+    }
+    lines.push('        return True, "ok"');
+    lines.push('');
+  }
+
+  // ── Orchestration
+  lines.push('');
+  lines.push('# ─── Orchestration ─────────────────────────────────────────────────────────────');
+  lines.push(`# Configured: ${allNames('orchestration')}`);
+  lines.push('class OrchestrationLayer:');
+  lines.push(`    """${get('orchestration').map(t=>t.name).join(' + ')} — coordinates the full cognitive pipeline."""`);
+  lines.push('');
+  lines.push('    def __init__(self):');
+  lines.push('        self.max_steps = 50');
+  lines.push('');
+
+  if (get('orchestration').some(t=>t.id==='reactLoop')) {
+    lines.push('    def run_react_step(self, agent: "' + agentSlug + '", state: AgentState) -> AgentState:');
+    lines.push('        """Single Thought → Action → Observation ReAct iteration."""');
+    lines.push('        # Thought');
+    lines.push('        obs = agent.perception.perceive(state.raw_input)');
+    lines.push('        enc = agent.encoder.encode(obs)');
+    lines.push('        ctx = agent.memory.retrieve(enc)');
+    lines.push('        thought = agent.reasoning.reason(enc, ctx, agent.goal)');
+    lines.push('        # Action');
+    lines.push('        plan = agent.planning.plan(enc, agent.goal)');
+    lines.push('        action = plan[0] if plan else thought');
+    if (get('safety').length) {
+      lines.push('        safe, reason = agent.safety.check(action, state)');
+      lines.push('        if not safe:');
+      lines.push('            logger.warning(f"Action blocked by safety: {reason}")');
+      lines.push('            action = None');
+    }
+    lines.push('        obs2, reward = agent.action_layer.execute(action, state)');
+    lines.push('        # Observation');
+    lines.push('        state.raw_input = obs2');
+    lines.push('        state.reward = reward');
+    lines.push('        state.step += 1');
+    lines.push('        agent.feedback.update(state)');
+    lines.push('        agent.memory.store({"step": state.step, "action": action, "reward": reward})');
+    lines.push('        return state');
+  } else {
+    lines.push('    def run_step(self, agent: "' + agentSlug + '", state: AgentState) -> AgentState:');
+    lines.push('        """Single perceive → encode → reason → plan → act → learn iteration."""');
+    lines.push('        state.raw_input   = agent.perception.perceive(state.raw_input)');
+    lines.push('        state.encoded_state = agent.encoder.encode(state.raw_input)');
+    lines.push('        state.memory_context = agent.memory.retrieve(state.encoded_state)');
+    lines.push('        state.reasoning_output = agent.reasoning.reason(state.encoded_state, state.memory_context, agent.goal)');
+    lines.push('        state.plan = agent.planning.plan(state.encoded_state, agent.goal)');
+    lines.push('        state.action = state.plan[0] if state.plan else None');
+    if (get('safety').length) {
+      lines.push('        safe, reason = agent.safety.check(state.action, state)');
+      lines.push('        if not safe:');
+      lines.push('            logger.warning(f"Action blocked: {reason}")');
+      lines.push('            state.action = None');
+    }
+    lines.push('        _, state.reward = agent.action_layer.execute(state.action, state)');
+    lines.push('        agent.feedback.update(state)');
+    lines.push('        agent.memory.store(state)');
+    lines.push('        state.step += 1');
+    lines.push('        return state');
+  }
+  lines.push('');
+
+  // ── Main Agent class
+  lines.push('');
+  lines.push('# ─── Main Agent ────────────────────────────────────────────────────────────────');
+  lines.push(`class ${agentSlug}:`);
+  lines.push(`    """${bp.agent||'Agent'} — assembled cognitive architecture."""`);
+  lines.push(`    GOAL = "${(bp.goal||'').replace(/"/g,'\\"')}"`);
+  lines.push('');
+  lines.push('    def __init__(self):');
+  lines.push('        self.goal = self.GOAL');
+  lines.push('        self.perception    = PerceptionModule()');
+  lines.push('        self.encoder       = StateEncoder()');
+  lines.push('        self.memory        = MemoryModule()');
+  lines.push('        self.reasoning     = ReasoningEngine()');
+  lines.push('        self.planning      = PlanningModule()');
+  if (get('value').length)       lines.push('        self.critic        = ValueCritic()');
+  if (get('exploration').length) {
+    const nActs = 'n_actions=10  # TODO: set to actual action space size';
+    lines.push(`        self.exploration   = ExplorationStrategy(${nActs})`);
+  }
+  lines.push('        self.action_layer  = ActionLayer()');
+  lines.push('        self.feedback      = FeedbackModule()');
+  if (get('safety').length)      lines.push('        self.safety        = SafetyModule()');
+  lines.push('        self.orchestration = OrchestrationLayer()');
+  lines.push('        logger.info(f"Initialised {self.__class__.__name__}")');
+  lines.push('');
+  lines.push('    def run(self, initial_input: Any, max_steps: Optional[int] = None) -> AgentState:');
+  lines.push('        """Run the agent loop from an initial input."""');
+  lines.push('        state = AgentState(raw_input=initial_input)');
+  lines.push('        steps = max_steps or self.orchestration.max_steps');
+  lines.push('        for _ in range(steps):');
+  if (get('orchestration').some(t=>t.id==='reactLoop')) {
+    lines.push('            state = self.orchestration.run_react_step(self, state)');
+  } else {
+    lines.push('            state = self.orchestration.run_step(self, state)');
+  }
+  lines.push('            if self._is_done(state):');
+  lines.push('                break');
+  lines.push('        return state');
+  lines.push('');
+  lines.push('    def _is_done(self, state: AgentState) -> bool:');
+  lines.push('        # TODO: implement termination condition');
+  lines.push('        return False');
+  lines.push('');
+
+  // ── Main
+  lines.push('');
+  lines.push('# ─── Entry Point ───────────────────────────────────────────────────────────────');
+  lines.push('if __name__ == "__main__":');
+  lines.push(`    agent = ${agentSlug}()`);
+  lines.push('    initial_input = "Hello, I need to negotiate a vendor contract."  # TODO: replace');
+  lines.push('    result = agent.run(initial_input)');
+  lines.push('    print(f"Done after {result.step} steps. Final reward: {result.reward:.3f}")');
+
+  return lines.join('\n');
+}
+
+function generateRequirements() {
+  const allIds = Object.values(BLUEPRINT.selections).flat().map(t=>t.id);
+  const lines = ['# requirements.txt — ' + (BLUEPRINT.agent||'Agent'), '# Generated by Agent Brain Platform', ''];
+  const usesLLM = allIds.some(id=>techById(id)?.framework==='LLM');
+  const usesRL = allIds.some(id=>['RL','MDP'].includes(techById(id)?.framework));
+  const usesBayes = allIds.some(id=>techById(id)?.framework==='Bayesian');
+  if (usesLLM)  { lines.push('anthropic>=0.40.0'); lines.push('openai>=1.0.0  # optional alternative'); }
+  if (usesRL)   { lines.push('numpy>=1.26.0'); lines.push('torch>=2.0.0   # for deep RL'); }
+  if (usesBayes){ lines.push('scipy>=1.11.0'); lines.push('scikit-learn>=1.3.0'); }
+  lines.push('faiss-cpu>=1.7.4   # vector store for RAG/memory');
+  lines.push('chromadb>=0.4.0    # alternative vector store');
+  lines.push('requests>=2.31.0   # HTTP API calls');
+  lines.push('python-dotenv>=1.0 # env var management');
+  return lines.join('\n');
+}
+
+function generateAgentReadme() {
+  const bp = BLUEPRINT;
+  const now = new Date().toISOString().split('T')[0];
+  return `# ${bp.agent||'Agent'} — README
+Generated: ${now}
+
+## Goal
+${bp.goal||'Not specified'}
+
+## Cognitive Architecture
+| Slot | Techniques |
+|---|---|
+${Object.entries(SLOT_META).map(([id,s])=>`| ${s.icon} ${s.label} | ${(bp.selections[id]||[]).map(t=>t.name).join(', ')||'—'} |`).join('\n')}
+
+## Active Dimensions
+${Object.entries(bp.dims||{}).filter(([,v])=>v).map(([k])=>`- ${DIM_LABELS[k]}`).join('\n')||'None'}
+
+## Quick Start
+\`\`\`bash
+pip install -r requirements.txt
+cp .env.example .env   # add ANTHROPIC_API_KEY etc.
+python agent.py
+\`\`\`
+
+## Files
+- \`agent.py\` — main agent scaffold (fill in # TODO sections)
+- \`requirements.txt\` — dependencies
+- This README
+
+Generated by Agent Brain Platform · Phase 5 Code Scaffold Generator
+`;
+}
+
+// ── EXPORTS ───────────────────────────────────────────────────────────────────
+function buildBlueprintJSON() {
+  const techMap = {};
+  ALL_TECHNIQUES.forEach(t => { techMap[t.id]=t; });
+  return {
+    agent: BLUEPRINT.agent||'Agent',
+    goal: BLUEPRINT.goal||'',
+    generated: new Date().toISOString(),
+    dimensions: Object.entries(BLUEPRINT.dims||{}).filter(([,v])=>v).map(([k])=>k),
+    blueprint: Object.fromEntries(
+      Object.entries(SLOT_META).map(([id,s])=>([id,{
+        slot:s.label, required:s.required,
+        techniques:(BLUEPRINT.selections[id]||[]).map(t=>({
+          id:t.id, name:t.name, framework:t.framework||techMap[t.id]?.framework,
+          rank:t.rank||(techMap[t.id]?effectiveRank(techMap[t.id]):null),
+        })),
+      }]))
+    ),
+  };
+}
+
+function exportJSON() {
+  const json = JSON.stringify(buildBlueprintJSON(), null, 2);
+  download(json, 'text/json', (BLUEPRINT.agent||'blueprint').replace(/\s+/g,'_')+'.json');
+}
+
+function copyJSON() {
+  navigator.clipboard.writeText(JSON.stringify(buildBlueprintJSON(),null,2))
+    .then(()=>{const b=event.target;b.textContent='✓ Copied';setTimeout(()=>b.textContent='Copy JSON',1500);});
+}
+
+function exportMarkdown() {
+  const bp = BLUEPRINT;
+  const techMap={}; ALL_TECHNIQUES.forEach(t=>{techMap[t.id]=t;});
+  let md = `# Cognitive Blueprint: ${bp.agent||'Agent'}\n\n`;
+  md += `**Goal:** ${bp.goal||'—'}\n\n`;
+  md += `**Generated:** ${new Date().toISOString().split('T')[0]}\n\n`;
+  md += `**Dimensions:** ${Object.entries(bp.dims||{}).filter(([,v])=>v).map(([k])=>DIM_LABELS[k]).join(', ')||'None'}\n\n`;
+  md += `## Component Configuration\n\n`;
+  md += `| Slot | Required | Technique(s) | Framework | Rank |\n|---|---|---|---|---|\n`;
+  Object.entries(SLOT_META).forEach(([id,s])=>{
+    const techs = bp.selections[id]||[];
+    if (!techs.length) { md+=`| ${s.icon} ${s.label} | ${s.required?'Yes':'No'} | — | — | — |\n`; return; }
+    techs.forEach((t,i)=>{
+      const full=techMap[t.id];
+      const rank=full?effectiveRank(full):(t.rank||'?');
+      md+=`| ${i===0?s.icon+' '+s.label:''} | ${i===0?(s.required?'Yes':'No'):''} | ${t.name} | ${t.framework||full?.framework||''} | ${rank}/5 |\n`;
+    });
+  });
+  md+=`\n## Rationale\n\n`;
+  Object.entries(SLOT_META).forEach(([id,s])=>{
+    (bp.selections[id]||[]).forEach(t=>{
+      const full=techMap[t.id];
+      if (!full) return;
+      md+=`### ${s.label} — ${full.name}\n${full.description}\n\n`;
+      if (full.theory_note) md+=`> ${full.theory_note}\n\n`;
+      if (full.example_use_case) md+=`**Example:** ${full.example_use_case}\n\n`;
+    });
+  });
+  md+=`\n*Generated by Agent Brain Platform · ${new Date().toLocaleDateString()}*\n`;
+  download(md, 'text/markdown', (bp.agent||'blueprint').replace(/\s+/g,'_')+'_blueprint.md');
+}
+
+function downloadScaffold() {
+  download(generatePythonScaffold(), 'text/plain', 'agent.py');
+}
+function downloadRequirements() {
+  download(generateRequirements(), 'text/plain', 'requirements.txt');
+}
+
+function download(content, mime, filename) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([content],{type:mime}));
+  a.download = filename; a.click();
+}
+
+function copyCode(id) {
+  const el = document.getElementById(id);
+  navigator.clipboard.writeText(el.textContent)
+    .then(()=>{const b=event.target;b.textContent='✓';setTimeout(()=>b.textContent='Copy',1500);});
+}
+
+function goToBridge() {
+  if (BLUEPRINT) {
+    localStorage.setItem('abp_blueprint_payload', JSON.stringify(BLUEPRINT));
+    window.location.href = '../bridge/index.html';
+  }
+}
+
+// ── TABS ──────────────────────────────────────────────────────────────────────
+function setTab(name, el) {
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('pane-'+name).classList.add('active');
+}
+
+// ── BOOT ──────────────────────────────────────────────────────────────────────
+init();
+</script>
+</body>
+</html>

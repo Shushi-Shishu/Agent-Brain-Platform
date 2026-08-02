@@ -148,20 +148,52 @@ Current registry spans:
 | **5** | Architecture compiler and one runtime adapter | ⬜ |
 | **6** | Guided visual workbench | ⬜ |
 
+## Visual Tooling (POC Build — Phases 1–6)
+
+The following tooling was built as a visual POC layer. It implements the original canvas vision and can serve as a front-end reference once the research gates above are cleared.
+
+| Phase | Deliverable | Status |
+|---|---|---|
+| **1** | Technique Registry schema + seed data | ✅ Done |
+| **2** | Component Canvas — visual slot configuration | ✅ Done |
+| **3** | Goal Encoder — scoring + auto-ranking engine | ✅ Done |
+| **4** | Blueprint Generator — per-slot rationale + export | ✅ Done |
+| **5** | Python Scaffold Generator — agent.py skeleton | ✅ Done |
+| **6** | Runtime Bridge — n8n · LangGraph · SAP BTP | ✅ Done |
+
 ---
 
 ## Project Structure
 
 ```
 Agent-Brain-Platform/
-├── README.md          ← This file — project definition
-├── VISION.md          ← Full vision document
-├── POC.html           ← Interactive single-file POC (open in browser)
-├── registry/          ← Technique Registry (Phase 1)
-├── canvas/            ← Canvas UI (Phase 2)
-├── encoder/           ← Goal Encoder engine (Phase 3)
-├── generator/         ← Blueprint + scaffold generator (Phase 4-5)
-└── bridge/            ← Runtime bridge (Phase 6)
+├── README.md                  ← This file — project definition
+├── VISION.md                  ← Full vision document
+├── POC.html                   ← Interactive single-file POC (open in browser)
+├── registry/                  ← Phase 1 ✅ Technique Registry
+│   ├── schema.md              ← Data model specification
+│   ├── techniques.json        ← 51 seed technique records
+│   └── index.html             ← Standalone browser UI for the registry
+├── canvas/                    ← Phase 2 ✅ Component Canvas
+│   └── index.html             ← Visual slot-configuration canvas
+├── encoder/                   ← Phase 3 ✅ Goal Encoder
+│   └── index.html             ← NL goal → dimension scoring → ranked recommendations
+├── generator/                 ← Phase 4+5 ✅ Blueprint Generator + Python Scaffold
+│   └── index.html             ← Cognitive Blueprint viewer + Python agent.py generator
+└── bridge/                    ← Phase 6 ✅ Runtime Bridge
+    └── index.html             ← n8n workflow · LangGraph graph · SAP BTP · Deploy guide
+```
+
+## End-to-End Flow
+
+```
+Goal Encoder  →  Canvas  →  Full Blueprint  →  Runtime Bridge
+(encoder/)      (canvas/)   (generator/)        (bridge/)
+     ↓               ↓            ↓                  ↓
+NL goal         Configure     Download:          Export to:
+→ dim detect    11 slots      • Markdown BP      • n8n workflow.json
+→ ranked recs   → picker      • JSON config      • LangGraph graph.py
+→ Send →        → Send →      • agent.py         • SAP AI Core / Joule
 ```
 
 ---

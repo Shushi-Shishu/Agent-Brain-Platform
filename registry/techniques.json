@@ -1,0 +1,2093 @@
+{
+  "_meta": {
+    "schema_version": "1.0",
+    "created": "2026-08-02",
+    "technique_count": 46,
+    "description": "Agent Brain Platform — Technique Registry seed data"
+  },
+  "techniques": [
+    {
+      "id": "rag",
+      "name": "RAG",
+      "full_name": "Retrieval-Augmented Generation",
+      "slot": [
+        "perception"
+      ],
+      "framework": "LLM",
+      "description": "Fetches relevant documents from a vector store at query time and injects them into the LLM context, grounding responses in retrieved knowledge.",
+      "theory_note": "Reduces hallucination by anchoring generation to retrieved evidence; separates parametric (model weights) from non-parametric (retrieval) memory.",
+      "tags": [
+        "retrieval",
+        "LLM",
+        "grounding",
+        "semantic-search"
+      ],
+      "complexity": 3,
+      "interpretability": 4,
+      "sample_efficiency": 5,
+      "base_rank": 5,
+      "goal_boosts": {
+        "adversarial": 0,
+        "realtime": 0,
+        "long_horizon": 1,
+        "data_scarce": 2,
+        "multi_agent": 0,
+        "interpretable": 1,
+        "partial_obs": 0
+      },
+      "conflicts_with": [],
+      "pairs_well_with": [
+        "vectorDB",
+        "llm",
+        "working"
+      ],
+      "requires": [],
+      "example_use_case": "SAP Joule agent retrieves relevant ERP config docs before answering a business process question.",
+      "references": [
+        "Lewis et al. 2020 — Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks"
+      ]
+    },
+    {
+      "id": "apiPoll",
+      "name": "API Polling",
+      "full_name": "API Polling",
+      "slot": [
+        "perception"
+      ],
+      "framework": "symbolic",
+      "description": "Periodically fetches live state from external APIs — REST, SOAP, GraphQL — to keep the agent's world model current.",
+      "theory_note": "Simple but effective for event-driven perception where push-based streaming is unavailable.",
+      "tags": [
+        "real-time",
+        "integration",
+        "REST",
+        "external-data"
+      ],
+      "complexity": 2,
+      "interpretability": 5,
+      "sample_efficiency": 5,
+      "base_rank": 3,
+      "goal_boosts": {
+        "adversarial": 0,
+        "realtime": 2,
+        "long_horizon": 0,
+        "data_scarce": 0,
+        "multi_agent": 0,
+        "interpretable": 1,
+        "partial_obs": 1
+      },
+      "conflicts_with": [],
+      "pairs_well_with": [
+        "working",
+        "toolUse"
+      ],
+      "requires": [],
+      "example_use_case": "Procurement agent polls SAP Ariba API every 30 seconds to track live bid status.",
+      "references": []
+    },
+    {
+      "id": "docParse",
+      "name": "Document Parser",
+      "full_name": "Document Parser",
+      "slot": [
+        "perception"
+      ],
+      "framework": "symbolic",
+      "description": "Extracts structured information from PDFs, tables, HTML, Word docs, and other document formats.",
+      "theory_note": "Transforms unstructured documents into machine-readable facts the reasoning layer can operate on.",
+      "tags": [
+        "NLP",
+        "structured",
+        "extraction",
+        "PDF"
+      ],
+      "complexity": 2,
+      "interpretability": 5,
+      "sample_efficiency": 5,
+      "base_rank": 3,
+      "goal_boosts": {
+        "adversarial": 0,
+        "realtime": 0,
+        "long_horizon": 0,
+        "data_scarce": 0,
+        "multi_agent": 0,
+        "interpretable": 2,
+        "partial_obs": 0
+      },
+      "conflicts_with": [],
+      "pairs_well_with": [
+        "rag",
+        "kg"
+      ],
+      "requires": [],
+      "example_use_case": "Contract review agent parses uploaded PDF contracts and extracts clause-level facts.",
+      "references": []
+    },
+    {
+      "id": "sensorFusion",
+      "name": "Sensor Fusion",
+      "full_name": "Sensor Fusion",
+      "slot": [
+        "perception"
+      ],
+      "framework": "control",
+      "description": "Combines multiple heterogeneous sensor streams — camera, lidar, IMU, microphone — into a unified perceptual representation.",
+      "theory_note": "Kalman filter and particle filter variants are standard; reduces uncertainty via multi-modal redundancy.",
+      "tags": [
+        "multimodal",
+        "robotics",
+        "embodied",
+        "fusion"
+      ],
+      "complexity": 4,
+      "interpretability": 3,
+      "sample_efficiency": 3,
+      "base_rank": 2,
+      "goal_boosts": {
+        "adversarial": 0,
+        "realtime": 1,
+        "long_horizon": 0,
+        "data_scarce": 1,
+        "multi_agent": 0,
+        "interpretable": 0,
+        "partial_obs": 3
+      },
+      "conflicts_with": [],
+      "pairs_well_with": [
+        "belief",
+        "markov"
+      ],
+      "requires": [],
+      "example_use_case": "Warehouse robot fuses camera + lidar + proximity sensors to navigate safely.",
+      "references": [
+        "Kalman 1960 — A New Approach to Linear Filtering and Prediction Problems"
+      ]
+    },
+    {
+      "id": "webScrape",
+      "name": "Web Scraper",
+      "full_name": "Web Scraper",
+      "slot": [
+        "perception"
+      ],
+      "framework": "symbolic",
+      "description": "Extracts live data from web pages via HTML parsing, headless browsers, or structured APIs.",
+      "tags": [
+        "real-time",
+        "web",
+        "scraping",
+        "live-data"
+      ],
+      "complexity": 2,
+      "interpretability": 4,
+      "sample_efficiency": 5,
+      "base_rank": 2,
+      "goal_boosts": {
+        "adversarial": 0,
+        "realtime": 1,
+        "long_horizon": 0,
+        "data_scarce": 0,
+        "multi_agent": 0,
+        "interpretable": 0,
+        "partial_obs": 1
+      },
+      "conflicts_with": [],
+      "pairs_well_with": [
+        "rag",
+        "working"
+      ],
+      "requires": [],
+      "example_use_case": "Competitive intelligence agent monitors competitor pricing pages daily.",
+      "references": []
+    },
+    {
+      "id": "markov",
+      "name": "Markov State",
+      "full_name": "Markov State Representation",
+      "slot": [
+        "stateEncoder"
+      ],
+      "framework": "MDP",
+      "description": "Compresses raw observation history into a compact sufficient statistic such that future states are conditionally independent of the past given the present state.",
+      "theory_note": "Satisfies the Markov Property: P(s_{t+1}|s_t) = P(s_{t+1}|s_t,s_{t-1},...). Required for MDP/Q-learning to be theoretically valid.",
+      "tags": [
+        "RL",
+        "MDP",
+        "theory",
+        "state-representation"
+      ],
+      "complexity": 2,
+      "interpretability": 5,
+      "sample_efficiency": 4,
+      "base_rank": 5,
+      "goal_boosts": {
+        "adversarial": 0,
+        "realtime": 1,
+        "long_horizon": 0,
+        "data_scarce": 0,
+        "multi_agent": 0,
+        "interpretable": 2,
+        "partial_obs": -1
+      },
+      "conflicts_with": [
+        "belief"
+      ],
+      "pairs_well_with": [
+        "mdpPolicy",
+        "qFunc",
+        "vFunc"
+      ],
+      "requires": [],
+      "example_use_case": "Chess engine compresses full board state into a 64-cell feature vector satisfying Markov Property.",
+      "references": [
+        "Sutton & Barto 2018 — Reinforcement Learning: An Introduction, Ch.3"
+      ]
+    },
+    {
+      "id": "rnn",
+      "name": "RNN / LSTM",
+      "full_name": "Recurrent Neural Network / Long Short-Term Memory",
+      "slot": [
+        "stateEncoder"
+      ],
+      "framework": "RL",
+      "description": "Learns a compressed recurrent hidden state from raw sequential observations, handling partial observability by remembering relevant history.",
+      "theory_note": "LSTM gates prevent vanishing gradients; particularly effective in POMDPs where the state cannot be observed directly.",
+      "tags": [
+        "deep-RL",
+        "POMDP",
+        "recurrent",
+        "sequential"
+      ],
+      "complexity": 4,
+      "interpretability": 2,
+      "sample_efficiency": 2,
+      "base_rank": 4,
+      "goal_boosts": {
+        "adversarial": 0,
+        "realtime": 0,
+        "long_horizon": 2,
+        "data_scarce": -1,
+        "multi_agent": 0,
+        "interpretable": -1,
+        "partial_obs": 3
+      },
+      "conflicts_with": [],
+      "pairs_well_with": [
+        "belief",
+        "polGrad"
+      ],
+      "requires": [],
+      "example_use_case": "Trading agent encodes the last 60 price ticks into a hidden state for position-sizing decisions.",
+      "references": [
+        "Hochreiter & Schmidhuber 1997 — Long Short-Term Memory"
+      ]
+    },
+    {
+      "id": "belief",
+      "name": "Belief State (Bayesian)",
+      "full_name": "Bayesian Belief State",
+      "slot": [
+        "stateEncoder"
+      ],
+      "framework": "Bayesian",
+      "description": "Maintains a probability distribution over all possible world states, updated via Bayes rule upon each new observation. The standard formulation for POMDPs.",
+      "theory_note": "b'(s') = P(o|s',a) * sum_{s} P(s'|s,a)*b(s) / P(o|a,b). Exact update is exponential; particle filters approximate it.",
+      "tags": [
+        "Bayesian",
+        "POMDP",
+        "probabilistic",
+        "uncertainty"
+      ],
+      "complexity": 4,
+      "interpretability": 3,
+      "sample_efficiency": 4,
+      "base_rank": 4,
+      "goal_boosts": {
+        "adversarial": 1,
+        "realtime": -1,
+        "long_horizon": 1,
+        "data_scarce": 2,
+        "multi_agent": 1,
+        "interpretable": 1,
+        "partial_obs": 3
+      },
+      "conflicts_with": [
+        "markov"
+      ],
+      "pairs_well_with": [
+        "thompson",
+        "bayes"
+      ],
+      "requires": [],
+      "example_use_case": "Search-and-rescue drone maintains belief over survivor locations given noisy sensor readings.",
+      "references": [
+        "Kaelbling et al. 1998 — Planning and Acting in Partially Observable Stochastic Domains"
+      ]
+    },
+    {
+      "id": "attention",
+      "name": "Attention Mechanism",
+      "full_name": "Transformer Attention State Encoder",
+      "slot": [
+        "stateEncoder"
+      ],
+      "framework": "LLM",
+      "description": "Uses multi-head self-attention over input history tokens to selectively weight relevant observations, producing a contextual state representation.",
+      "theory_note": "Attention(Q,K,V) = softmax(QK^T/sqrt(d_k))V. Handles long sequences without vanishing gradients.",
+      "tags": [
+        "transformer",
+        "LLM",
+        "attention",
+        "contextual"
+      ],
+      "complexity": 4,
+      "interpretability": 2,
+      "sample_efficiency": 2,
+      "base_rank": 3,
+      "goal_boosts": {
+        "adversarial": 0,
+        "realtime": 0,
+        "long_horizon": 2,
+        "data_scarce": -1,
+        "multi_agent": 1,
+        "interpretable": 0,
+        "partial_obs": 2
+      },
+      "conflicts_with": [],
+      "pairs_well_with": [
+        "llm",
+        "working"
+      ],
+      "requires": [],
+      "example_use_case": "Document Q&A agent attends over a 10k-token context to answer questions about specific clauses.",
+      "references": [
+        "Vaswani et al. 2017 — Attention Is All You Need"
+      ]
+    },
+    {
+      "id": "vectorDB",
+      "name": "Vector DB",
+      "full_name": "Vector Database (Semantic Memory)",
+      "slot": [
+        "memory"
+      ],
+      "framework": "LLM",
+      "description": "Stores embeddings of past interactions, documents, and facts. Retrieves the most semantically similar records via approximate nearest-neighbor search.",
+      "theory_note": "Enables long-term declarative memory without token budget constraints. FAISS, Pinecone, Chroma are common implementations.",
+      "tags": [
+        "RAG",
+        "long-term",
+        "embeddings",
+        "semantic-search"
+      ],
+      "complexity": 3,
+      "interpretability": 3,
+      "sample_efficiency": 5,
+      "base_rank": 5,
+      "goal_boosts": {
+        "adversarial": 0,
+        "realtime": 0,
+        "long_horizon": 2,
+        "data_scarce": 2,
+        "multi_agent": 1,
+        "interpretable": 1,
+        "partial_obs": 0
+      },
+      "conflicts_with": [],
+      "pairs_well_with": [
+        "rag",
+        "llm",
+        "episodic"
+      ],
+      "requires": [],
+      "example_use_case": "Customer service agent retrieves the 5 most similar past resolved tickets to inform its response.",
+      "references": [
+        "Johnson et al. 2019 — Billion-scale similarity search with GPUs (FAISS)"
+      ]
+    },
+    {
+      "id": "episodic",
+      "name": "Episodic Buffer",
+      "full_name": "Episodic Memory Buffer",
+      "slot": [
+        "memory"
+      ],
+      "framework": "RL",
+      "description": "Stores complete interaction episodes (state-action-reward sequences) that can be replayed for offline learning or contextual reference.",
+      "theory_note": "Experience replay (DQN) samples mini-batches from the episodic buffer to break temporal correlation during training.",
+      "tags": [
+        "RL",
+        "experience-replay",
+        "long-term",
+        "episodes"
+      ],
+      "complexity": 3,
+      "interpretability": 3,
+      "sample_efficiency": 3,
+      "base_rank": 4,
+      "goal_boosts": {
+        "adversarial": 1,
+        "realtime": 0,
+        "long_horizon": 2,
+        "data_scarce": 2,
+        "multi_agent": 0,
+        "interpretable": 1,
+        "partial_obs": 0
+      },
+      "conflicts_with": [],
+      "pairs_well_with": [
+        "tdLearn",
+        "polGrad",
+        "qFunc"
+      ],
+      "requires": [],
+      "example_use_case": "Game-playing agent replays its last 1M steps to improve Q-network without re-running the game.",
+      "references": [
+        "Mnih et al. 2015 — Human-level control through deep reinforcement learning (DQN)"
+      ]
+    },
+    {
+      "id": "working",
+      "name": "Working Memory",
+      "full_name": "Working Memory (In-Context Buffer)",
+      "slot": [
+        "memory"
+      ],
+      "framework": "LLM",
+      "description": "Maintains a short-term scratchpad of current task state, intermediate results, and tool outputs within the LLM's active context window.",
+      "theory_note": "Analogous to human working memory — limited capacity, fast access, used for multi-step reasoning chains.",
+      "tags": [
+        "LLM",
+        "context",
+        "scratchpad",
+        "short-term"
+      ],
+      "complexity": 1,
+      "interpretability": 5,
+      "sample_efficiency": 5,
+      "base_rank": 4,
+      "goal_boosts": {
+        "adversarial": 0,
+        "realtime": 2,
+        "long_horizon": -1,
+        "data_scarce": 0,
+        "multi_agent": 0,
+        "interpretable": 2,
+        "partial_obs": 0
+      },
+      "conflicts_with": [],
+      "pairs_well_with": [
+        "llm",
+        "cot",
+        "toolUse"
+      ],
+      "requires": [],
+      "example_use_case": "Coding agent keeps track of the current file, error message, and attempted fixes in its scratchpad.",
+      "references": []
+    },
+    {
+      "id": "kg",
+      "name": "Knowledge Graph",
+      "full_name": "Knowledge Graph",
+      "slot": [
+        "memory"
+      ],
+      "framework": "symbolic",
+      "description": "Stores factual knowledge as a structured graph of entities and typed relations, enabling multi-hop reasoning and logical queries.",
+      "theory_note": "Combines symbolic precision with traversal-based reasoning. SPARQL / Cypher enable structured retrieval.",
+      "tags": [
+        "structured",
+        "reasoning",
+        "graph",
+        "entities"
+      ],
+      "complexity": 4,
+      "interpretability": 5,
+      "sample_efficiency": 4,
+      "base_rank": 3,
+      "goal_boosts": {
+        "adversarial": 0,
+        "realtime": -1,
+        "long_horizon": 1,
+        "data_scarce": 1,
+        "multi_agent": 1,
+        "interpretable": 3,
+        "partial_obs": 0
+      },
+      "conflicts_with": [],
+      "pairs_well_with": [
+        "bayes",
+        "rules",
+        "docParse"
+      ],
+      "requires": [],
+      "example_use_case": "SAP ERP agent navigates a knowledge graph of business objects (PO → Vendor → Contract → GR) to answer cross-entity queries.",
+      "references": []
+    },
+    {
+      "id": "llm",
+      "name": "LLM",
+      "full_name": "Large Language Model Reasoning",
+      "slot": [
+        "reasoning"
+      ],
+      "framework": "LLM",
+      "description": "Uses a large language model as the core reasoning engine — interprets state, integrates memory, generates decisions and plans in natural language.",
+      "theory_note": "Emergent few-shot and zero-shot reasoning from scale. Strengths: language understanding, generalization. Weaknesses: hallucination, latency.",
+      "tags": [
+        "LLM",
+        "general",
+        "zero-shot",
+        "flexible"
+      ],
+      "complexity": 2,
+      "interpretability": 3,
+      "sample_efficiency": 5,
+      "base_rank": 5,
+      "goal_boosts": {
+        "adversarial": 0,
+        "realtime": -1,
+        "long_horizon": 1,
+        "data_scarce": 3,
+        "multi_agent": 0,
+        "interpretable": 0,
+        "partial_obs": 1
+      },
+      "conflicts_with": [],
+      "pairs_well_with": [
+        "rag",
+        "working",
+        "cot",
+        "llmPlan"
+      ],
+      "requires": [],
+      "example_use_case": "SAP order processing agent interprets a purchase order email and decides whether to auto-approve or escalate.",
+      "references": [
+        "Brown et al. 2020 — Language Models are Few-Shot Learners"
+      ]
+    },
+    {
+      "id": "mdpPolicy",
+      "name": "MDP Policy",
+      "full_name": "Markov Decision Process Policy",
+      "slot": [
+        "reasoning"
+      ],
+      "framework": "MDP",
+      "description": "A formal state-to-action mapping derived by solving the Bellman equations — either via value iteration, policy iteration, or Q-learning.",
+      "theory_note": "Optimal policy pi*(s) = argmax_a Q*(s,a). Requires known or learned transition and reward models. Guarantees optimality under the Markov assumption.",
+      "tags": [
+        "RL",
+        "MDP",
+        "theory",
+        "Bellman",
+        "optimal"
+      ],
+      "complexity": 3,
+      "interpretability": 4,
+      "sample_efficiency": 3,
+      "base_rank": 4,
+      "goal_boosts": {
+        "adversarial": 1,
+        "realtime": 1,
+        "long_horizon": 2,
+        "data_scarce": 0,
+        "multi_agent": 0,
+        "interpretable": 2,
+        "partial_obs": -1
+      },
+      "conflicts_with": [],
+      "pairs_well_with": [
+        "vFunc",
+        "qFunc",
+        "markov",
+        "tdLearn"
+      ],
+      "requires": [
+        "markov"
+      ],
+      "example_use_case": "Inventory reorder agent derives optimal order-quantity policy from learned demand transition model.",
+      "references": [
+        "Bellman 1957 — A Markovian Decision Process",
+        "Sutton & Barto 2018 Ch.4"
+      ]
+    },
+    {
+      "id": "cot",
+      "name": "Chain-of-Thought",
+      "full_name": "Chain-of-Thought Reasoning",
+      "slot": [
+        "reasoning"
+      ],
+      "framework": "LLM",
+      "description": "Prompts the LLM to reason step-by-step through a problem before producing the final answer, significantly improving accuracy on complex tasks.",
+      "theory_note": "Empirically shown to improve arithmetic, symbolic, and commonsense reasoning in LLMs at sufficient scale (>100B params).",
+      "tags": [
+        "LLM",
+        "reasoning",
+        "step-by-step",
+        "prompting"
+      ],
+      "complexity": 1,
+      "interpretability": 5,
+      "sample_efficiency": 5,
+      "base_rank": 4,
+      "goal_boosts": {
+        "adversarial": 0,
+        "realtime": -1,
+        "long_horizon": 1,
+        "data_scarce": 2,
+        "multi_agent": 0,
+        "interpretable": 3,
+        "partial_obs": 0
+      },
+      "conflicts_with": [],
+      "pairs_well_with": [
+        "llm",
+        "working",
+        "llmPlan"
+      ],
+      "requires": [
+        "llm"
+      ],
+      "example_use_case": "Contract compliance agent reasons step-by-step through each clause before issuing a risk rating.",
+      "references": [
+        "Wei et al. 2022 — Chain-of-Thought Prompting Elicits Reasoning in Large Language Models"
+      ]
+    },
+    {
+      "id": "bayes",
+      "name": "Bayesian Inference",
+      "full_name": "Bayesian Inference Engine",
+      "slot": [
+        "reasoning"
+      ],
+      "framework": "Bayesian",
+      "description": "Reasons under uncertainty by maintaining and updating probability distributions over hypotheses using Bayes' theorem: P(H|D) ∝ P(D|H)P(H).",
+      "theory_note": "Principled uncertainty quantification. Sample-efficient but computationally expensive for high-dimensional state spaces.",
+      "tags": [
+        "Bayesian",
+        "uncertainty",
+        "probabilistic",
+        "inference"
+      ],
+      "complexity": 4,
+      "interpretability": 4,
+      "sample_efficiency": 4,
+      "base_rank": 3,
+      "goal_boosts": {
+        "adversarial": 1,
+        "realtime": -1,
+        "long_horizon": 1,
+        "data_scarce": 3,
+        "multi_agent": 1,
+        "interpretable": 2,
+        "partial_obs": 2
+      },
+      "conflicts_with": [],
+      "pairs_well_with": [
+        "belief",
+        "thompson",
+        "kg"
+      ],
+      "requires": [],
+      "example_use_case": "Fraud detection agent updates its probability estimate of fraud given each new transaction signal.",
+      "references": [
+        "Ghahramani 2015 — Probabilistic machine learning and artificial intelligence"
+      ]
+    },
+    {
+      "id": "rules",
+      "name": "Rule Engine",
+      "full_name": "Rule-Based Decision Engine",
+      "slot": [
+        "reasoning"
+      ],
+      "framework": "symbolic",
+      "description": "Executes explicit if-then-else rules to produce decisions deterministically. No learning required — behavior is fully specified by the rule set.",
+      "theory_note": "Zero uncertainty, fully auditable, zero training data needed. Brittle to edge cases not covered by rules.",
+      "tags": [
+        "symbolic",
+        "deterministic",
+        "rule-based",
+        "auditable"
+      ],
+      "complexity": 1,
+      "interpretability": 5,
+      "sample_efficiency": 5,
+      "base_rank": 2,
+      "goal_boosts": {
+        "adversarial": -1,
+        "realtime": 2,
+        "long_horizon": -1,
+        "data_scarce": 3,
+        "multi_agent": 0,
+        "interpretable": 4,
+        "partial_obs": -1
+      },
+      "conflicts_with": [],
+      "pairs_well_with": [
+        "kg",
+        "polConst",
+        "outFilter"
+      ],
+      "requires": [],
+      "example_use_case": "Credit approval agent applies regulatory compliance rules (Tier-1 capital ratio, KYC status) before any ML scoring.",
+      "references": []
+    },
+    {
+      "id": "mcts",
+      "name": "MCTS",
+      "full_name": "Monte Carlo Tree Search",
+      "slot": [
+        "planning"
+      ],
+      "framework": "RL",
+      "description": "Builds a search tree via stochastic simulation rollouts, balancing exploration of new branches (UCB) against exploitation of promising ones.",
+      "theory_note": "Four phases per iteration: Selection (UCB), Expansion, Simulation (rollout), Backpropagation. Scales to large branching factors without full lookahead.",
+      "tags": [
+        "RL",
+        "search",
+        "game",
+        "stochastic",
+        "lookahead"
+      ],
+      "complexity": 4,
+      "interpretability": 3,
+      "sample_efficiency": 2,
+      "base_rank": 4,
+      "goal_boosts": {
+        "adversarial": 2,
+        "realtime": -1,
+        "long_horizon": 2,
+        "data_scarce": -1,
+        "multi_agent": 2,
+        "interpretable": 1,
+        "partial_obs": 1
+      },
+      "conflicts_with": [],
+      "pairs_well_with": [
+        "vFunc",
+        "ucb",
+        "multiAgent"
+      ],
+      "requires": [],
+      "example_use_case": "Bidding strategy agent simulates thousands of auction outcomes to determine optimal bid price.",
+      "references": [
+        "Browne et al. 2012 — A Survey of Monte Carlo Tree Search Methods",
+        "Silver et al. 2016 — AlphaGo"
+      ]
+    },
+    {
+      "id": "minimax",
+      "name": "Minimax",
+      "full_name": "Minimax Game Tree Search",
+      "slot": [
+        "planning"
+      ],
+      "framework": "game-theory",
+      "description": "Searches an adversarial game tree assuming the opponent plays optimally — maximizes own score while minimizing the opponent's best response.",
+      "theory_note": "Minimax theorem (Von Neumann): in zero-sum games, max(min(V)) = min(max(V)). Alpha-beta pruning reduces complexity from O(b^d) to O(b^{d/2}).",
+      "tags": [
+        "game-theory",
+        "adversarial",
+        "zero-sum",
+        "optimal"
+      ],
+      "complexity": 3,
+      "interpretability": 4,
+      "sample_efficiency": 4,
+      "base_rank": 3,
+      "goal_boosts": {
+        "adversarial": 4,
+        "realtime": -1,
+        "long_horizon": 1,
+        "data_scarce": 2,
+        "multi_agent": 3,
+        "interpretable": 2,
+        "partial_obs": -1
+      },
+      "conflicts_with": [],
+      "pairs_well_with": [
+        "vFunc",
+        "advantage"
+      ],
+      "requires": [],
+      "example_use_case": "Vendor negotiation agent models the counterparty as a rational adversary and plans optimal counter-offers.",
+      "references": [
+        "Von Neumann & Morgenstern 1944 — Theory of Games and Economic Behavior"
+      ]
+    },
+    {
+      "id": "mdpPlan",
+      "name": "MDP Planning",
+      "full_name": "MDP Value/Policy Iteration Planning",
+      "slot": [
+        "planning"
+      ],
+      "framework": "MDP",
+      "description": "Computes an optimal policy over a known state-transition model using value iteration or policy iteration, solving the Bellman optimality equations.",
+      "theory_note": "Value iteration: V_{k+1}(s) = max_a [R(s,a) + γ * sum_{s'} P(s'|s,a)*V_k(s')]. Converges to V* for finite MDPs.",
+      "tags": [
+        "RL",
+        "MDP",
+        "theory",
+        "Bellman",
+        "value-iteration"
+      ],
+      "complexity": 3,
+      "interpretability": 4,
+      "sample_efficiency": 3,
+      "base_rank": 4,
+      "goal_boosts": {
+        "adversarial": 0,
+        "realtime": 0,
+        "long_horizon": 3,
+        "data_scarce": 1,
+        "multi_agent": 0,
+        "interpretable": 3,
+        "partial_obs": -1
+      },
+      "conflicts_with": [],
+      "pairs_well_with": [
+        "markov",
+        "vFunc",
+        "qFunc",
+        "reward"
+      ],
+      "requires": [
+        "markov"
+      ],
+      "example_use_case": "Supply chain routing agent solves an MDP over warehouse-to-customer delivery states to minimize expected cost.",
+      "references": [
+        "Sutton & Barto 2018 — Reinforcement Learning: An Introduction, Ch.4"
+      ]
+    },
+    {
+      "id": "llmPlan",
+      "name": "LLM Planner",
+      "full_name": "LLM-Based Task Planner",
+      "slot": [
+        "planning"
+      ],
+      "framework": "LLM",
+      "description": "Uses an LLM to decompose a high-level goal into an ordered sequence of sub-tasks in natural language, optionally with tool specifications.",
+      "theory_note": "ReAct and HuggingGPT patterns. Flexible but non-optimal — quality depends on prompt engineering and model capability.",
+      "tags": [
+        "LLM",
+        "flexible",
+        "decomposition",
+        "zero-shot"
+      ],
+      "complexity": 1,
+      "interpretability": 4,
+      "sample_efficiency": 5,
+      "base_rank": 4,
+      "goal_boosts": {
+        "adversarial": -1,
+        "realtime": 0,
+        "long_horizon": 1,
+        "data_scarce": 3,
+        "multi_agent": 1,
+        "interpretable": 2,
+        "partial_obs": 1
+      },
+      "conflicts_with": [],
+      "pairs_well_with": [
+        "llm",
+        "cot",
+        "toolUse",
+        "reactLoop"
+      ],
+      "requires": [
+        "llm"
+      ],
+      "example_use_case": "HR onboarding agent plans a multi-day new-hire checklist: create AD account → assign licenses → schedule orientation.",
+      "references": [
+        "Yao et al. 2022 — ReAct: Synergizing Reasoning and Acting in Language Models"
+      ]
+    },
+    {
+      "id": "hierRL",
+      "name": "Hierarchical RL",
+      "full_name": "Hierarchical Reinforcement Learning",
+      "slot": [
+        "planning"
+      ],
+      "framework": "RL",
+      "description": "Decomposes a long-horizon task into a hierarchy of sub-goals. A high-level policy selects sub-goals; low-level policies execute them.",
+      "theory_note": "Options framework (Sutton et al.) formalizes sub-policies with initiation sets and termination conditions. Reduces temporal credit assignment problem.",
+      "tags": [
+        "RL",
+        "hierarchical",
+        "sub-goals",
+        "long-horizon"
+      ],
+      "complexity": 5,
+      "interpretability": 3,
+      "sample_efficiency": 3,
+      "base_rank": 3,
+      "goal_boosts": {
+        "adversarial": 0,
+        "realtime": 0,
+        "long_horizon": 4,
+        "data_scarce": 0,
+        "multi_agent": 2,
+        "interpretable": 1,
+        "partial_obs": 1
+      },
+      "conflicts_with": [],
+      "pairs_well_with": [
+        "hierOrch",
+        "vFunc",
+        "advantage"
+      ],
+      "requires": [],
+      "example_use_case": "Autonomous procurement agent decomposes 'source a component' into sub-goals: RFQ → evaluate bids → negotiate → PO.",
+      "references": [
+        "Sutton et al. 1999 — Between MDPs and Semi-MDPs: A Framework for Temporal Abstraction in RL"
+      ]
+    },
+    {
+      "id": "aStar",
+      "name": "A* Search",
+      "full_name": "A* Heuristic Graph Search",
+      "slot": [
+        "planning"
+      ],
+      "framework": "symbolic",
+      "description": "Finds the optimal path in a graph by combining actual path cost g(n) with an admissible heuristic estimate h(n) of remaining cost.",
+      "theory_note": "Optimal and complete when h(n) is admissible (never overestimates). f(n) = g(n) + h(n). Standard in pathfinding and PDDL planners.",
+      "tags": [
+        "search",
+        "deterministic",
+        "optimal",
+        "heuristic"
+      ],
+      "complexity": 2,
+      "interpretability": 5,
+      "sample_efficiency": 5,
+      "base_rank": 2,
+      "goal_boosts": {
+        "adversarial": 0,
+        "realtime": 1,
+        "long_horizon": 0,
+        "data_scarce": 3,
+        "multi_agent": 0,
+        "interpretable": 4,
+        "partial_obs": -2
+      },
+      "conflicts_with": [],
+      "pairs_well_with": [
+        "markov",
+        "rules"
+      ],
+      "requires": [],
+      "example_use_case": "Logistics agent finds the optimal delivery route across a city graph given time-window constraints.",
+      "references": [
+        "Hart et al. 1968 — A Formal Basis for the Heuristic Determination of Minimum Cost Paths"
+      ]
+    },
+    {
+      "id": "vFunc",
+      "name": "Value Function V(s)",
+      "full_name": "State Value Function",
+      "slot": [
+        "value"
+      ],
+      "framework": "RL",
+      "description": "Estimates the expected cumulative discounted reward from state s onwards under the current policy: V(s) = E[sum γ^t * r_t | s_0=s].",
+      "theory_note": "Central to policy evaluation in RL. Bootstraps TD learning and drives policy improvement via the Bellman equations.",
+      "tags": [
+        "RL",
+        "theory",
+        "value-function",
+        "Bellman"
+      ],
+      "complexity": 3,
+      "interpretability": 4,
+      "sample_efficiency": 3,
+      "base_rank": 5,
+      "goal_boosts": {
+        "adversarial": 0,
+        "realtime": 0,
+        "long_horizon": 2,
+        "data_scarce": 0,
+        "multi_agent": 0,
+        "interpretable": 1,
+        "partial_obs": 0
+      },
+      "conflicts_with": [],
+      "pairs_well_with": [
+        "mdpPolicy",
+        "tdLearn",
+        "advantage"
+      ],
+      "requires": [],
+      "example_use_case": "Portfolio management agent estimates the long-term value of holding each asset position.",
+      "references": [
+        "Sutton & Barto 2018 — Reinforcement Learning: An Introduction, Ch.3"
+      ]
+    },
+    {
+      "id": "qFunc",
+      "name": "Q-Function Q(s,a)",
+      "full_name": "Action-Value Function",
+      "slot": [
+        "value"
+      ],
+      "framework": "RL",
+      "description": "Estimates the expected cumulative reward of taking action a in state s: Q(s,a) = E[sum γ^t * r_t | s_0=s, a_0=a].",
+      "theory_note": "Q-learning (Watkins 1989) learns Q* off-policy via TD updates. Deep Q-Networks (DQN) approximate it with a neural network.",
+      "tags": [
+        "RL",
+        "Q-learning",
+        "action-value",
+        "DQN"
+      ],
+      "complexity": 3,
+      "interpretability": 4,
+      "sample_efficiency": 3,
+      "base_rank": 4,
+      "goal_boosts": {
+        "adversarial": 1,
+        "realtime": 1,
+        "long_horizon": 1,
+        "data_scarce": 0,
+        "multi_agent": 1,
+        "interpretable": 1,
+        "partial_obs": 0
+      },
+      "conflicts_with": [],
+      "pairs_well_with": [
+        "mdpPolicy",
+        "episodic",
+        "tdLearn"
+      ],
+      "requires": [],
+      "example_use_case": "Customer churn agent learns Q(customer_state, intervention) to pick the most valuable retention action.",
+      "references": [
+        "Watkins 1989 — Learning from Delayed Rewards",
+        "Mnih et al. 2015 — DQN"
+      ]
+    },
+    {
+      "id": "advantage",
+      "name": "Advantage A(s,a)",
+      "full_name": "Advantage Function",
+      "slot": [
+        "value"
+      ],
+      "framework": "RL",
+      "description": "Measures how much better action a is relative to the average action from state s: A(s,a) = Q(s,a) - V(s).",
+      "theory_note": "Reduces variance in policy gradient estimates. Central to Actor-Critic (A3C, A2C, PPO) algorithms.",
+      "tags": [
+        "RL",
+        "actor-critic",
+        "variance-reduction",
+        "PPO"
+      ],
+      "complexity": 3,
+      "interpretability": 3,
+      "sample_efficiency": 3,
+      "base_rank": 4,
+      "goal_boosts": {
+        "adversarial": 1,
+        "realtime": 0,
+        "long_horizon": 1,
+        "data_scarce": 0,
+        "multi_agent": 2,
+        "interpretable": 0,
+        "partial_obs": 0
+      },
+      "conflicts_with": [],
+      "pairs_well_with": [
+        "polGrad",
+        "criticUp",
+        "vFunc",
+        "qFunc"
+      ],
+      "requires": [
+        "vFunc"
+      ],
+      "example_use_case": "Robot manipulation agent uses advantage to identify which specific joint movement improved the task outcome.",
+      "references": [
+        "Mnih et al. 2016 — Asynchronous Methods for Deep RL (A3C)"
+      ]
+    },
+    {
+      "id": "rlhfReward",
+      "name": "RLHF Reward Model",
+      "full_name": "RLHF Human Preference Reward Model",
+      "slot": [
+        "value"
+      ],
+      "framework": "LLM",
+      "description": "A learned reward model trained from human pairwise preferences, replacing the hand-engineered reward signal with a model of human intent.",
+      "theory_note": "Reward model r_θ(x,y) is trained on preference data; the policy is then fine-tuned via PPO to maximize r_θ. Enables aligning to subtle human values.",
+      "tags": [
+        "RLHF",
+        "alignment",
+        "human-feedback",
+        "preference"
+      ],
+      "complexity": 5,
+      "interpretability": 2,
+      "sample_efficiency": 2,
+      "base_rank": 3,
+      "goal_boosts": {
+        "adversarial": 0,
+        "realtime": 0,
+        "long_horizon": 1,
+        "data_scarce": -1,
+        "multi_agent": 0,
+        "interpretable": 1,
+        "partial_obs": 0
+      },
+      "conflicts_with": [],
+      "pairs_well_with": [
+        "rlhfFeed",
+        "polGrad"
+      ],
+      "requires": [],
+      "example_use_case": "Content moderation agent trained on human moderator preference data to flag borderline content accurately.",
+      "references": [
+        "Ouyang et al. 2022 — Training language models to follow instructions with human feedback (InstructGPT)"
+      ]
+    },
+    {
+      "id": "thompson",
+      "name": "Thompson Sampling",
+      "full_name": "Thompson Sampling (Posterior Sampling)",
+      "slot": [
+        "exploration"
+      ],
+      "framework": "Bayesian",
+      "description": "Samples an action by drawing from the posterior distribution of expected rewards, naturally balancing exploration and exploitation.",
+      "theory_note": "Bayesian-optimal for the multi-armed bandit. Regret: O(sqrt(KT log K)) — matches information-theoretic lower bounds.",
+      "tags": [
+        "Bayesian",
+        "bandit",
+        "posterior-sampling",
+        "optimal"
+      ],
+      "complexity": 3,
+      "interpretability": 3,
+      "sample_efficiency": 5,
+      "base_rank": 5,
+      "goal_boosts": {
+        "adversarial": 1,
+        "realtime": 0,
+        "long_horizon": 1,
+        "data_scarce": 3,
+        "multi_agent": 1,
+        "interpretable": 1,
+        "partial_obs": 2
+      },
+      "conflicts_with": [],
+      "pairs_well_with": [
+        "belief",
+        "bayes",
+        "ucb"
+      ],
+      "requires": [],
+      "example_use_case": "A/B test agent dynamically allocates traffic to the better-performing variant without pre-committing sample sizes.",
+      "references": [
+        "Russo et al. 2018 — A Tutorial on Thompson Sampling"
+      ]
+    },
+    {
+      "id": "ucb",
+      "name": "UCB",
+      "full_name": "Upper Confidence Bound",
+      "slot": [
+        "exploration"
+      ],
+      "framework": "RL",
+      "description": "Selects actions with the highest upper confidence bound on expected reward: UCB = mean_reward + c * sqrt(ln(t) / n_pulls). Optimistic in the face of uncertainty.",
+      "theory_note": "Achieves O(log T) regret — logarithmically optimal. UCB1 variant is parameter-free.",
+      "tags": [
+        "bandit",
+        "theory",
+        "optimism",
+        "confidence-bound"
+      ],
+      "complexity": 2,
+      "interpretability": 4,
+      "sample_efficiency": 4,
+      "base_rank": 4,
+      "goal_boosts": {
+        "adversarial": 0,
+        "realtime": 0,
+        "long_horizon": 2,
+        "data_scarce": 2,
+        "multi_agent": 0,
+        "interpretable": 3,
+        "partial_obs": 1
+      },
+      "conflicts_with": [],
+      "pairs_well_with": [
+        "mcts",
+        "qFunc"
+      ],
+      "requires": [],
+      "example_use_case": "Ad placement agent uses UCB to balance showing proven high-CTR ads against testing new creatives.",
+      "references": [
+        "Auer et al. 2002 — Finite-time Analysis of the Multiarmed Bandit Problem"
+      ]
+    },
+    {
+      "id": "eGreedy",
+      "name": "ε-Greedy",
+      "full_name": "Epsilon-Greedy Exploration",
+      "slot": [
+        "exploration"
+      ],
+      "framework": "RL",
+      "description": "Exploits the best-known action with probability 1-ε and explores uniformly at random with probability ε.",
+      "theory_note": "Simplest exploration strategy. Works but is inefficient — uniform random exploration is wasteful. Decaying ε-schedule improves convergence.",
+      "tags": [
+        "RL",
+        "simple",
+        "epsilon",
+        "explore-exploit"
+      ],
+      "complexity": 1,
+      "interpretability": 5,
+      "sample_efficiency": 2,
+      "base_rank": 3,
+      "goal_boosts": {
+        "adversarial": 0,
+        "realtime": 2,
+        "long_horizon": 0,
+        "data_scarce": -1,
+        "multi_agent": 0,
+        "interpretable": 4,
+        "partial_obs": 0
+      },
+      "conflicts_with": [],
+      "pairs_well_with": [
+        "qFunc",
+        "tdLearn"
+      ],
+      "requires": [],
+      "example_use_case": "Recommendation system explores new content with 5% probability, exploits known-good picks otherwise.",
+      "references": [
+        "Sutton & Barto 2018 — Ch.2 Multi-Armed Bandits"
+      ]
+    },
+    {
+      "id": "curiosity",
+      "name": "Curiosity-Driven Exploration",
+      "full_name": "Intrinsic Curiosity Module",
+      "slot": [
+        "exploration"
+      ],
+      "framework": "RL",
+      "description": "Generates an intrinsic reward signal proportional to prediction error on a forward model — the agent is rewarded for visiting surprising states.",
+      "theory_note": "ICM: r_i = ||f(s_t, a_t) - s_{t+1}||^2. Allows exploration in sparse-reward environments without extrinsic signal.",
+      "tags": [
+        "RL",
+        "intrinsic-reward",
+        "curiosity",
+        "sparse-reward"
+      ],
+      "complexity": 4,
+      "interpretability": 2,
+      "sample_efficiency": 3,
+      "base_rank": 3,
+      "goal_boosts": {
+        "adversarial": 0,
+        "realtime": 0,
+        "long_horizon": 3,
+        "data_scarce": 2,
+        "multi_agent": 0,
+        "interpretable": 0,
+        "partial_obs": 2
+      },
+      "conflicts_with": [],
+      "pairs_well_with": [
+        "rnn",
+        "polGrad"
+      ],
+      "requires": [],
+      "example_use_case": "Robot exploration agent maps an unknown factory floor using curiosity-driven path selection.",
+      "references": [
+        "Pathak et al. 2017 — Curiosity-driven Exploration by Self-Supervised Prediction"
+      ]
+    },
+    {
+      "id": "boltzmann",
+      "name": "Boltzmann / Softmax",
+      "full_name": "Boltzmann (Softmax) Action Selection",
+      "slot": [
+        "exploration"
+      ],
+      "framework": "RL",
+      "description": "Selects actions proportionally to exponentiated Q-values: P(a|s) = exp(Q(s,a)/τ) / sum_b exp(Q(s,b)/τ), where τ is temperature.",
+      "theory_note": "Temperature τ → 0 is greedy; τ → ∞ is uniform. Gradient-based temperature annealing possible.",
+      "tags": [
+        "RL",
+        "stochastic",
+        "temperature",
+        "softmax"
+      ],
+      "complexity": 1,
+      "interpretability": 3,
+      "sample_efficiency": 3,
+      "base_rank": 2,
+      "goal_boosts": {
+        "adversarial": 0,
+        "realtime": 1,
+        "long_horizon": 0,
+        "data_scarce": 0,
+        "multi_agent": 1,
+        "interpretable": 1,
+        "partial_obs": 0
+      },
+      "conflicts_with": [],
+      "pairs_well_with": [
+        "qFunc",
+        "advantage"
+      ],
+      "requires": [],
+      "example_use_case": "Dialogue agent softmax-samples response styles, producing varied conversation while preferring higher-scored options.",
+      "references": []
+    },
+    {
+      "id": "toolUse",
+      "name": "Tool Use",
+      "full_name": "LLM Tool / Function Calling",
+      "slot": [
+        "action"
+      ],
+      "framework": "LLM",
+      "description": "Invokes external tools — functions, APIs, MCP servers — via structured function calls parsed from LLM output.",
+      "theory_note": "Standard mechanism for grounding LLM agents in real-world effects. Anthropic MCP standardizes tool schemas.",
+      "tags": [
+        "LLM",
+        "MCP",
+        "function-calling",
+        "integration"
+      ],
+      "complexity": 2,
+      "interpretability": 4,
+      "sample_efficiency": 5,
+      "base_rank": 5,
+      "goal_boosts": {
+        "adversarial": 0,
+        "realtime": 1,
+        "long_horizon": 0,
+        "data_scarce": 0,
+        "multi_agent": 1,
+        "interpretable": 2,
+        "partial_obs": 0
+      },
+      "conflicts_with": [],
+      "pairs_well_with": [
+        "llm",
+        "llmPlan",
+        "reactLoop",
+        "working"
+      ],
+      "requires": [
+        "llm"
+      ],
+      "example_use_case": "SAP Joule agent calls BAPI_PO_CREATE to create a purchase order after reasoning through the approval chain.",
+      "references": [
+        "Anthropic MCP Spec 2024"
+      ]
+    },
+    {
+      "id": "apiCall",
+      "name": "API Call",
+      "full_name": "Direct API Call",
+      "slot": [
+        "action"
+      ],
+      "framework": "symbolic",
+      "description": "Executes direct HTTP/REST/SOAP/GraphQL calls to external systems with structured payloads.",
+      "tags": [
+        "integration",
+        "REST",
+        "HTTP",
+        "external-systems"
+      ],
+      "complexity": 2,
+      "interpretability": 5,
+      "sample_efficiency": 5,
+      "base_rank": 4,
+      "goal_boosts": {
+        "adversarial": 0,
+        "realtime": 2,
+        "long_horizon": 0,
+        "data_scarce": 0,
+        "multi_agent": 0,
+        "interpretable": 3,
+        "partial_obs": 0
+      },
+      "conflicts_with": [],
+      "pairs_well_with": [
+        "apiPoll",
+        "rules"
+      ],
+      "requires": [],
+      "example_use_case": "ERP agent calls SAP S/4HANA OData API to update inventory levels after goods receipt.",
+      "references": []
+    },
+    {
+      "id": "codeExec",
+      "name": "Code Execution",
+      "full_name": "Sandboxed Code Execution",
+      "slot": [
+        "action"
+      ],
+      "framework": "LLM",
+      "description": "Generates and executes code in a sandboxed environment, allowing the agent to perform arbitrary computation as an action.",
+      "tags": [
+        "autonomous",
+        "code",
+        "sandbox",
+        "computation"
+      ],
+      "complexity": 3,
+      "interpretability": 4,
+      "sample_efficiency": 5,
+      "base_rank": 3,
+      "goal_boosts": {
+        "adversarial": 0,
+        "realtime": 0,
+        "long_horizon": 1,
+        "data_scarce": 0,
+        "multi_agent": 0,
+        "interpretable": 2,
+        "partial_obs": 0
+      },
+      "conflicts_with": [],
+      "pairs_well_with": [
+        "llm",
+        "cot"
+      ],
+      "requires": [],
+      "example_use_case": "Data analysis agent writes and runs Python to aggregate a CSV before summarizing results.",
+      "references": []
+    },
+    {
+      "id": "rpa",
+      "name": "RPA",
+      "full_name": "Robotic Process Automation",
+      "slot": [
+        "action"
+      ],
+      "framework": "symbolic",
+      "description": "Automates UI-level interactions with legacy systems that lack APIs — mouse clicks, form fills, screen reading.",
+      "tags": [
+        "automation",
+        "legacy",
+        "UI",
+        "screen-scraping"
+      ],
+      "complexity": 3,
+      "interpretability": 4,
+      "sample_efficiency": 5,
+      "base_rank": 3,
+      "goal_boosts": {
+        "adversarial": 0,
+        "realtime": 0,
+        "long_horizon": 0,
+        "data_scarce": 0,
+        "multi_agent": 0,
+        "interpretable": 2,
+        "partial_obs": 0
+      },
+      "conflicts_with": [],
+      "pairs_well_with": [
+        "rules",
+        "singleLoop"
+      ],
+      "requires": [],
+      "example_use_case": "Finance agent uses RPA to extract monthly report data from a legacy SAP GUI transaction (SE16).",
+      "references": []
+    },
+    {
+      "id": "actuator",
+      "name": "Physical Actuator",
+      "full_name": "Physical Actuator Control",
+      "slot": [
+        "action"
+      ],
+      "framework": "control",
+      "description": "Sends control signals to physical hardware — motors, grippers, valves, industrial controllers.",
+      "tags": [
+        "robotics",
+        "embodied",
+        "hardware",
+        "control"
+      ],
+      "complexity": 5,
+      "interpretability": 4,
+      "sample_efficiency": 1,
+      "base_rank": 2,
+      "goal_boosts": {
+        "adversarial": 0,
+        "realtime": 3,
+        "long_horizon": 0,
+        "data_scarce": 0,
+        "multi_agent": 0,
+        "interpretable": 1,
+        "partial_obs": 2
+      },
+      "conflicts_with": [],
+      "pairs_well_with": [
+        "sensorFusion",
+        "markov"
+      ],
+      "requires": [],
+      "example_use_case": "Warehouse pick-and-place robot sends joint angles to arm controller after vision-based object localization.",
+      "references": []
+    },
+    {
+      "id": "reward",
+      "name": "Reward Signal",
+      "full_name": "Scalar Reward Signal",
+      "slot": [
+        "feedback"
+      ],
+      "framework": "RL",
+      "description": "A scalar R_t returned from the environment after each action, serving as the primary training signal for the RL agent.",
+      "theory_note": "Reward hypothesis: all goals and purposes of an agent can be framed as maximization of cumulative reward. R_t must be designed to avoid reward hacking.",
+      "tags": [
+        "RL",
+        "theory",
+        "reward",
+        "signal"
+      ],
+      "complexity": 2,
+      "interpretability": 4,
+      "sample_efficiency": 3,
+      "base_rank": 5,
+      "goal_boosts": {
+        "adversarial": 1,
+        "realtime": 1,
+        "long_horizon": 0,
+        "data_scarce": 0,
+        "multi_agent": 1,
+        "interpretable": 2,
+        "partial_obs": 0
+      },
+      "conflicts_with": [],
+      "pairs_well_with": [
+        "tdLearn",
+        "polGrad",
+        "vFunc",
+        "qFunc"
+      ],
+      "requires": [],
+      "example_use_case": "Customer satisfaction score at end of service interaction used as reward to train the service agent.",
+      "references": [
+        "Sutton & Barto 2018 — Reinforcement Learning: An Introduction, Ch.1"
+      ]
+    },
+    {
+      "id": "tdLearn",
+      "name": "TD Learning",
+      "full_name": "Temporal-Difference Learning",
+      "slot": [
+        "feedback"
+      ],
+      "framework": "RL",
+      "description": "Updates value estimates incrementally after each step using the TD error: δ_t = r_t + γ*V(s_{t+1}) - V(s_t). Bootstraps from incomplete episodes.",
+      "theory_note": "Unifies Monte Carlo (full episode) and dynamic programming (known model) approaches. TD(0), TD(λ), and Q-learning are all TD methods.",
+      "tags": [
+        "RL",
+        "online",
+        "bootstrapping",
+        "TD-error"
+      ],
+      "complexity": 3,
+      "interpretability": 3,
+      "sample_efficiency": 3,
+      "base_rank": 4,
+      "goal_boosts": {
+        "adversarial": 0,
+        "realtime": 2,
+        "long_horizon": 2,
+        "data_scarce": 0,
+        "multi_agent": 0,
+        "interpretable": 1,
+        "partial_obs": 0
+      },
+      "conflicts_with": [],
+      "pairs_well_with": [
+        "vFunc",
+        "qFunc",
+        "episodic",
+        "reward"
+      ],
+      "requires": [],
+      "example_use_case": "Stock trading agent updates its value estimates after each trade without waiting for the full portfolio evaluation cycle.",
+      "references": [
+        "Sutton 1988 — Learning to Predict by the Methods of Temporal Differences"
+      ]
+    },
+    {
+      "id": "polGrad",
+      "name": "Policy Gradient",
+      "full_name": "Policy Gradient (REINFORCE / PPO)",
+      "slot": [
+        "feedback"
+      ],
+      "framework": "RL",
+      "description": "Directly optimizes the policy parameters by ascending the gradient of expected return: ∇J(θ) = E[∇log π_θ(a|s) * Q(s,a)].",
+      "theory_note": "REINFORCE (Williams 1992) is high variance; Actor-Critic and PPO reduce variance with baseline subtraction. Standard for continuous action spaces.",
+      "tags": [
+        "RL",
+        "deep-RL",
+        "PPO",
+        "policy-optimization"
+      ],
+      "complexity": 4,
+      "interpretability": 2,
+      "sample_efficiency": 2,
+      "base_rank": 4,
+      "goal_boosts": {
+        "adversarial": 1,
+        "realtime": 0,
+        "long_horizon": 2,
+        "data_scarce": -1,
+        "multi_agent": 1,
+        "interpretable": 0,
+        "partial_obs": 1
+      },
+      "conflicts_with": [],
+      "pairs_well_with": [
+        "advantage",
+        "criticUp",
+        "vFunc",
+        "rlhfReward"
+      ],
+      "requires": [],
+      "example_use_case": "Dialog agent fine-tuned with PPO using human preference reward model to improve response quality.",
+      "references": [
+        "Schulman et al. 2017 — Proximal Policy Optimization Algorithms"
+      ]
+    },
+    {
+      "id": "rlhfFeed",
+      "name": "RLHF",
+      "full_name": "Reinforcement Learning from Human Feedback",
+      "slot": [
+        "feedback"
+      ],
+      "framework": "LLM",
+      "description": "Collects human pairwise preference ratings on outputs, trains a reward model, then fine-tunes the policy via PPO to align with human values.",
+      "theory_note": "Three-phase: supervised fine-tuning → reward model training on human preferences → PPO optimization of policy against reward model.",
+      "tags": [
+        "alignment",
+        "human-feedback",
+        "preference-learning",
+        "PPO"
+      ],
+      "complexity": 5,
+      "interpretability": 2,
+      "sample_efficiency": 2,
+      "base_rank": 3,
+      "goal_boosts": {
+        "adversarial": 0,
+        "realtime": -1,
+        "long_horizon": 1,
+        "data_scarce": -1,
+        "multi_agent": 0,
+        "interpretable": 2,
+        "partial_obs": 0
+      },
+      "conflicts_with": [],
+      "pairs_well_with": [
+        "rlhfReward",
+        "polGrad"
+      ],
+      "requires": [],
+      "example_use_case": "Customer-facing LLM agent aligned to enterprise tone-of-voice guidelines via RLHF on agent-reviewer ratings.",
+      "references": [
+        "Ouyang et al. 2022 — InstructGPT",
+        "Christiano et al. 2017 — Deep RL from Human Preferences"
+      ]
+    },
+    {
+      "id": "criticUp",
+      "name": "Critic Update",
+      "full_name": "Actor-Critic Value Network Update",
+      "slot": [
+        "feedback"
+      ],
+      "framework": "RL",
+      "description": "Updates the critic (value) network from rollout data so it more accurately estimates V(s) or Q(s,a), providing a lower-variance baseline for the actor.",
+      "theory_note": "Alternates actor (policy) and critic (value) gradient updates. A3C, A2C, SAC, TD3 all implement actor-critic loops.",
+      "tags": [
+        "RL",
+        "actor-critic",
+        "value-network",
+        "A3C"
+      ],
+      "complexity": 4,
+      "interpretability": 2,
+      "sample_efficiency": 3,
+      "base_rank": 3,
+      "goal_boosts": {
+        "adversarial": 1,
+        "realtime": 0,
+        "long_horizon": 1,
+        "data_scarce": 0,
+        "multi_agent": 2,
+        "interpretable": 0,
+        "partial_obs": 0
+      },
+      "conflicts_with": [],
+      "pairs_well_with": [
+        "advantage",
+        "polGrad",
+        "vFunc"
+      ],
+      "requires": [
+        "vFunc"
+      ],
+      "example_use_case": "Multi-robot coordination system maintains separate critic per agent, sharing value estimates for cooperative task.",
+      "references": [
+        "Mnih et al. 2016 — Asynchronous Methods for Deep RL (A3C)"
+      ]
+    },
+    {
+      "id": "constAI",
+      "name": "Constitutional AI",
+      "full_name": "Constitutional AI (CAI)",
+      "slot": [
+        "safety"
+      ],
+      "framework": "safety",
+      "description": "Uses a set of principle rules (a 'constitution') to guide the agent in critiquing and revising its own outputs — self-critique loop for alignment.",
+      "theory_note": "Developed by Anthropic: RLHF from AI feedback (RLAIF) where the AI itself rates outputs against constitutional principles, reducing human labeling burden.",
+      "tags": [
+        "alignment",
+        "Anthropic",
+        "self-critique",
+        "principles"
+      ],
+      "complexity": 4,
+      "interpretability": 4,
+      "sample_efficiency": 4,
+      "base_rank": 4,
+      "goal_boosts": {
+        "adversarial": 1,
+        "realtime": -1,
+        "long_horizon": 1,
+        "data_scarce": 2,
+        "multi_agent": 0,
+        "interpretable": 3,
+        "partial_obs": 0
+      },
+      "conflicts_with": [],
+      "pairs_well_with": [
+        "llm",
+        "rlhfFeed",
+        "polConst"
+      ],
+      "requires": [
+        "llm"
+      ],
+      "example_use_case": "Enterprise AI assistant applies a constitution of data privacy and compliance rules before each user-facing response.",
+      "references": [
+        "Bai et al. 2022 — Constitutional AI: Harmlessness from AI Feedback"
+      ]
+    },
+    {
+      "id": "rewardShap",
+      "name": "Reward Shaping",
+      "full_name": "Reward Shaping",
+      "slot": [
+        "safety"
+      ],
+      "framework": "RL",
+      "description": "Adds auxiliary reward terms that guide the agent away from unsafe states or toward safe behaviors, without changing the optimal policy.",
+      "theory_note": "Potential-based reward shaping F(s,a,s') = γΦ(s') - Φ(s) preserves the optimal policy while accelerating convergence and steering behavior.",
+      "tags": [
+        "RL",
+        "safety",
+        "auxiliary-reward",
+        "potential-based"
+      ],
+      "complexity": 3,
+      "interpretability": 3,
+      "sample_efficiency": 3,
+      "base_rank": 4,
+      "goal_boosts": {
+        "adversarial": 0,
+        "realtime": 0,
+        "long_horizon": 1,
+        "data_scarce": 0,
+        "multi_agent": 0,
+        "interpretable": 2,
+        "partial_obs": 0
+      },
+      "conflicts_with": [],
+      "pairs_well_with": [
+        "reward",
+        "vFunc",
+        "polGrad"
+      ],
+      "requires": [
+        "reward"
+      ],
+      "example_use_case": "Surgical robot's RL policy receives negative reward shaping for proximity to critical anatomy structures.",
+      "references": [
+        "Ng et al. 1999 — Policy Invariance Under Reward Transformations"
+      ]
+    },
+    {
+      "id": "polConst",
+      "name": "Policy Constraints",
+      "full_name": "Hard Policy Constraints",
+      "slot": [
+        "safety"
+      ],
+      "framework": "symbolic",
+      "description": "Applies hard constraints on the agent's action space — certain actions are categorically prohibited regardless of the policy's preference.",
+      "theory_note": "Constrained MDP (CMDP) formalism: maximize expected reward subject to constraint E[sum C_t] <= d. Lagrangian relaxation converts to unconstrained problem.",
+      "tags": [
+        "safety",
+        "deterministic",
+        "hard-constraints",
+        "CMDP"
+      ],
+      "complexity": 2,
+      "interpretability": 5,
+      "sample_efficiency": 5,
+      "base_rank": 3,
+      "goal_boosts": {
+        "adversarial": 0,
+        "realtime": 1,
+        "long_horizon": 0,
+        "data_scarce": 2,
+        "multi_agent": 0,
+        "interpretable": 4,
+        "partial_obs": 0
+      },
+      "conflicts_with": [],
+      "pairs_well_with": [
+        "rules",
+        "constAI",
+        "outFilter"
+      ],
+      "requires": [],
+      "example_use_case": "Finance agent is hard-constrained from initiating any transaction above €1M without dual approval.",
+      "references": [
+        "Altman 1999 — Constrained Markov Decision Processes"
+      ]
+    },
+    {
+      "id": "outFilter",
+      "name": "Output Filtering",
+      "full_name": "Post-Hoc Output Filter",
+      "slot": [
+        "safety"
+      ],
+      "framework": "safety",
+      "description": "Classifies and blocks unsafe, off-policy, or non-compliant agent outputs before they are executed or shown to users.",
+      "theory_note": "Defense-in-depth layer. Does not improve the policy but catches edge cases and provides a hard safety net at execution time.",
+      "tags": [
+        "guardrail",
+        "safety",
+        "filter",
+        "classification"
+      ],
+      "complexity": 2,
+      "interpretability": 5,
+      "sample_efficiency": 5,
+      "base_rank": 3,
+      "goal_boosts": {
+        "adversarial": 1,
+        "realtime": 1,
+        "long_horizon": 0,
+        "data_scarce": 0,
+        "multi_agent": 0,
+        "interpretable": 3,
+        "partial_obs": 0
+      },
+      "conflicts_with": [],
+      "pairs_well_with": [
+        "polConst",
+        "constAI",
+        "rules"
+      ],
+      "requires": [],
+      "example_use_case": "HR chatbot output filtered to prevent disclosure of salary ranges or legal advice before user response.",
+      "references": []
+    },
+    {
+      "id": "singleLoop",
+      "name": "Single-Agent Loop",
+      "full_name": "Single-Agent Perceive-Reason-Act Loop",
+      "slot": [
+        "orchestration"
+      ],
+      "framework": "RL",
+      "description": "Classic perceive → encode → reason → plan → act → observe loop for a single autonomous agent.",
+      "theory_note": "The agent loop is the foundational execution pattern. All other orchestration patterns extend or compose it.",
+      "tags": [
+        "simple",
+        "RL",
+        "loop",
+        "fundamental"
+      ],
+      "complexity": 1,
+      "interpretability": 5,
+      "sample_efficiency": 5,
+      "base_rank": 4,
+      "goal_boosts": {
+        "adversarial": 0,
+        "realtime": 2,
+        "long_horizon": 0,
+        "data_scarce": 0,
+        "multi_agent": -2,
+        "interpretable": 3,
+        "partial_obs": 0
+      },
+      "conflicts_with": [
+        "multiAgent"
+      ],
+      "pairs_well_with": [
+        "working",
+        "reactLoop"
+      ],
+      "requires": [],
+      "example_use_case": "Simple approval routing agent: perceive email → classify request → decide approve/reject → send response.",
+      "references": []
+    },
+    {
+      "id": "multiAgent",
+      "name": "Multi-Agent Coordination",
+      "full_name": "Multi-Agent System Orchestration",
+      "slot": [
+        "orchestration"
+      ],
+      "framework": "multi-agent",
+      "description": "Coordinates multiple specialized agents that communicate, share observations, and divide task responsibility.",
+      "theory_note": "Cooperative: maximize joint reward. Competitive: Nash equilibrium strategies. Communication protocols (MARL, DIAL) enable emergent coordination.",
+      "tags": [
+        "multi-agent",
+        "complex",
+        "coordination",
+        "MARL"
+      ],
+      "complexity": 5,
+      "interpretability": 2,
+      "sample_efficiency": 2,
+      "base_rank": 4,
+      "goal_boosts": {
+        "adversarial": 1,
+        "realtime": 0,
+        "long_horizon": 1,
+        "data_scarce": 0,
+        "multi_agent": 4,
+        "interpretable": 0,
+        "partial_obs": 1
+      },
+      "conflicts_with": [
+        "singleLoop"
+      ],
+      "pairs_well_with": [
+        "hierOrch",
+        "multiAgent",
+        "hierRL"
+      ],
+      "requires": [],
+      "example_use_case": "Procurement suite: Sourcing Agent, Negotiation Agent, and Compliance Agent coordinate via shared message bus.",
+      "references": [
+        "Lowe et al. 2017 — Multi-Agent Actor-Critic for Mixed Cooperative-Competitive Environments"
+      ]
+    },
+    {
+      "id": "hierOrch",
+      "name": "Hierarchical Orchestration",
+      "full_name": "Hierarchical Multi-Agent Orchestration",
+      "slot": [
+        "orchestration"
+      ],
+      "framework": "multi-agent",
+      "description": "A manager agent decomposes a complex task into sub-tasks and dispatches them to specialized worker agents, collecting and integrating results.",
+      "theory_note": "Mirrors hierarchical RL in the cognitive layer. Manager operates on abstract sub-goal space; workers on concrete action space.",
+      "tags": [
+        "hierarchical",
+        "enterprise",
+        "manager-worker",
+        "decomposition"
+      ],
+      "complexity": 4,
+      "interpretability": 3,
+      "sample_efficiency": 3,
+      "base_rank": 3,
+      "goal_boosts": {
+        "adversarial": 0,
+        "realtime": -1,
+        "long_horizon": 3,
+        "data_scarce": 0,
+        "multi_agent": 2,
+        "interpretable": 2,
+        "partial_obs": 0
+      },
+      "conflicts_with": [],
+      "pairs_well_with": [
+        "hierRL",
+        "multiAgent",
+        "llmPlan"
+      ],
+      "requires": [],
+      "example_use_case": "Order-to-Cash orchestration: Manager agent routes sub-tasks to Credit Check Agent, Fulfillment Agent, and Invoice Agent.",
+      "references": []
+    },
+    {
+      "id": "reactLoop",
+      "name": "ReAct Loop",
+      "full_name": "ReAct (Reasoning + Acting) Loop",
+      "slot": [
+        "orchestration"
+      ],
+      "framework": "LLM",
+      "description": "Interleaves LLM reasoning traces with tool-use actions — the agent alternates between Thought, Action, and Observation steps.",
+      "theory_note": "ReAct (Yao et al. 2022) outperforms pure chain-of-thought and pure action approaches on knowledge-intensive tasks by grounding reasoning in observations.",
+      "tags": [
+        "LLM",
+        "tool-use",
+        "ReAct",
+        "interleaved"
+      ],
+      "complexity": 2,
+      "interpretability": 5,
+      "sample_efficiency": 5,
+      "base_rank": 4,
+      "goal_boosts": {
+        "adversarial": 0,
+        "realtime": 0,
+        "long_horizon": 1,
+        "data_scarce": 2,
+        "multi_agent": 0,
+        "interpretable": 3,
+        "partial_obs": 1
+      },
+      "conflicts_with": [],
+      "pairs_well_with": [
+        "llm",
+        "toolUse",
+        "llmPlan",
+        "working"
+      ],
+      "requires": [
+        "llm"
+      ],
+      "example_use_case": "Research agent alternates between reasoning about what to look up and calling search/retrieval tools to gather evidence.",
+      "references": [
+        "Yao et al. 2022 — ReAct: Synergizing Reasoning and Acting in Language Models"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agent Brain Platform — Technique Registry</title>
+<style>
+  :root {
+    --bg: #0d1117; --surface: #161b22; --surface2: #21262d; --surface3: #2d333b;
+    --border: #30363d; --accent: #58a6ff; --accent2: #3fb950;
+    --warn: #d29922; --danger: #f85149; --purple: #bc8cff; --teal: #39d353;
+    --text: #c9d1d9; --text2: #8b949e; --text3: #6e7681;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; font-size: 13px; min-height: 100vh; }
+
+  /* ── Header ── */
+  .header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 14px 24px; display: flex; align-items: center; gap: 16px; position: sticky; top: 0; z-index: 50; }
+  .logo { font-size: 15px; font-weight: 700; color: var(--accent); letter-spacing: -0.3px; white-space: nowrap; }
+  .logo-sub { font-size: 12px; color: var(--text3); font-weight: 400; }
+  .header-sep { width: 1px; height: 20px; background: var(--border); }
+  .stat-pill { background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; padding: 3px 10px; font-size: 11px; color: var(--text2); }
+  .stat-pill span { color: var(--accent); font-weight: 600; }
+  .header-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+  .search-wrap { position: relative; }
+  .search-input { background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 6px 10px 6px 30px; border-radius: 8px; font-size: 12px; width: 220px; outline: none; }
+  .search-input:focus { border-color: var(--accent); }
+  .search-icon { position: absolute; left: 9px; top: 50%; transform: translateY(-50%); color: var(--text3); font-size: 12px; pointer-events: none; }
+  .view-toggle { display: flex; gap: 4px; }
+  .view-btn { background: var(--surface2); border: 1px solid var(--border); color: var(--text3); padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 11px; transition: all 0.15s; }
+  .view-btn.active { background: var(--accent); border-color: var(--accent); color: #000; font-weight: 600; }
+
+  /* ── Layout ── */
+  .layout { display: flex; min-height: calc(100vh - 52px); }
+
+  /* ── Sidebar ── */
+  .sidebar { width: 220px; background: var(--surface); border-right: 1px solid var(--border); padding: 16px 0; flex-shrink: 0; position: sticky; top: 52px; height: calc(100vh - 52px); overflow-y: auto; }
+  .sidebar-section { margin-bottom: 6px; }
+  .sidebar-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text3); padding: 6px 16px 4px; }
+  .sidebar-item { display: flex; align-items: center; justify-content: space-between; padding: 6px 16px; cursor: pointer; border-radius: 0; transition: background 0.1s; user-select: none; }
+  .sidebar-item:hover { background: var(--surface2); }
+  .sidebar-item.active { background: rgba(88,166,255,0.1); color: var(--accent); border-left: 2px solid var(--accent); }
+  .sidebar-item-label { font-size: 12px; }
+  .sidebar-count { font-size: 10px; color: var(--text3); background: var(--surface2); border-radius: 10px; padding: 1px 6px; }
+  .sidebar-item.active .sidebar-count { background: rgba(88,166,255,0.2); color: var(--accent); }
+  .sidebar-divider { height: 1px; background: var(--border); margin: 8px 16px; }
+
+  /* ── Dimension filter ── */
+  .dim-grid { padding: 4px 16px 8px; display: flex; flex-direction: column; gap: 5px; }
+  .dim-chip { display: flex; align-items: center; gap: 7px; cursor: pointer; padding: 4px 6px; border-radius: 6px; transition: background 0.1s; }
+  .dim-chip:hover { background: var(--surface2); }
+  .dim-chip input[type=checkbox] { accent-color: var(--accent); width: 13px; height: 13px; cursor: pointer; }
+  .dim-chip-label { font-size: 11px; color: var(--text2); }
+  .dim-chip.active .dim-chip-label { color: var(--accent); }
+
+  /* ── Framework filter ── */
+  .fw-list { padding: 4px 16px 8px; display: flex; flex-direction: column; gap: 4px; }
+  .fw-chip { display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 4px 6px; border-radius: 6px; transition: background 0.1s; }
+  .fw-chip:hover { background: var(--surface2); }
+  .fw-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .fw-chip-label { font-size: 11px; color: var(--text2); }
+  .fw-chip.active .fw-chip-label { color: var(--text); font-weight: 600; }
+  .fw-chip.active { background: var(--surface2); }
+  .clear-filters { margin: 4px 16px 8px; font-size: 11px; color: var(--accent); cursor: pointer; }
+  .clear-filters:hover { text-decoration: underline; }
+
+  /* ── Main content ── */
+  .main { flex: 1; padding: 20px 24px; overflow: auto; }
+  .results-bar { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+  .results-count { font-size: 12px; color: var(--text2); }
+  .sort-select { background: var(--surface2); border: 1px solid var(--border); color: var(--text2); padding: 4px 8px; border-radius: 6px; font-size: 11px; outline: none; cursor: pointer; }
+
+  /* ── Card grid ── */
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px; }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; cursor: pointer; transition: all 0.15s; position: relative; }
+  .card:hover { border-color: var(--accent); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(88,166,255,0.1); }
+  .card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+  .card-name { font-size: 13px; font-weight: 700; color: var(--text); }
+  .card-full-name { font-size: 11px; color: var(--text3); margin-top: 1px; }
+  .card-rank-stars { display: flex; gap: 2px; flex-shrink: 0; }
+  .star { font-size: 11px; color: var(--text3); }
+  .star.on { color: var(--warn); }
+  .card-desc { font-size: 11px; color: var(--text2); line-height: 1.55; margin-bottom: 10px; }
+  .card-meta { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px; }
+  .meta-badge { font-size: 10px; padding: 2px 7px; border-radius: 10px; border: 1px solid; }
+  .slot-badge { border-color: var(--accent); color: var(--accent); background: rgba(88,166,255,0.08); }
+  .fw-badge { border-color: var(--border); color: var(--text3); background: var(--surface2); }
+  .card-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+  .tag { background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; padding: 2px 6px; font-size: 10px; color: var(--text3); }
+  .card-metrics { display: flex; gap: 10px; margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--border); }
+  .metric { display: flex; flex-direction: column; align-items: center; gap: 2px; flex: 1; }
+  .metric-label { font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; }
+  .metric-bar { width: 100%; height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .metric-fill { height: 100%; border-radius: 2px; transition: width 0.3s; }
+  .fill-complexity { background: var(--danger); }
+  .fill-interpret { background: var(--accent2); }
+  .fill-sample { background: var(--purple); }
+  .metric-val { font-size: 9px; color: var(--text2); }
+
+  /* ── Table view ── */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  thead th { background: var(--surface); border-bottom: 1px solid var(--border); padding: 8px 12px; text-align: left; font-size: 11px; color: var(--text2); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; cursor: pointer; user-select: none; }
+  thead th:hover { color: var(--accent); }
+  tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; cursor: pointer; }
+  tbody tr:hover { background: var(--surface2); }
+  tbody td { padding: 8px 12px; vertical-align: middle; }
+  .td-name { font-weight: 600; color: var(--text); white-space: nowrap; }
+  .td-slot-list { display: flex; flex-wrap: wrap; gap: 3px; }
+  .td-fw { font-size: 11px; }
+  .td-stars { white-space: nowrap; }
+  .td-complexity-bar, .td-interpret-bar, .td-sample-bar { width: 50px; height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; display: inline-block; vertical-align: middle; }
+  .td-tags { display: flex; flex-wrap: wrap; gap: 3px; max-width: 200px; }
+
+  /* ── Detail panel ── */
+  .detail-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 100; align-items: flex-start; justify-content: flex-end; padding: 16px; }
+  .detail-overlay.open { display: flex; }
+  .detail-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; width: 480px; max-height: calc(100vh - 32px); overflow-y: auto; display: flex; flex-direction: column; }
+  .detail-header { padding: 18px 20px 14px; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--surface); z-index: 1; }
+  .detail-name { font-size: 18px; font-weight: 700; color: var(--text); }
+  .detail-full { font-size: 12px; color: var(--text3); margin-top: 2px; }
+  .detail-close { position: absolute; top: 16px; right: 16px; cursor: pointer; color: var(--text3); font-size: 18px; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: 6px; }
+  .detail-close:hover { background: var(--surface2); color: var(--text); }
+  .detail-body { padding: 16px 20px; display: flex; flex-direction: column; gap: 16px; }
+  .detail-section-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--text3); margin-bottom: 6px; }
+  .detail-desc { font-size: 12px; color: var(--text); line-height: 1.6; }
+  .detail-theory { font-size: 11px; color: var(--text2); line-height: 1.6; font-style: italic; background: var(--surface2); border-left: 3px solid var(--accent); border-radius: 0 6px 6px 0; padding: 8px 12px; }
+  .detail-badges { display: flex; flex-wrap: wrap; gap: 5px; }
+  .detail-metric-row { display: flex; gap: 12px; }
+  .detail-metric { flex: 1; }
+  .detail-metric-label { font-size: 10px; color: var(--text3); margin-bottom: 4px; }
+  .detail-metric-track { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+  .detail-metric-fill { height: 100%; border-radius: 3px; }
+  .detail-metric-val { font-size: 11px; color: var(--text2); margin-top: 3px; }
+  .boost-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .boost-row { display: flex; align-items: center; justify-content: space-between; background: var(--surface2); border-radius: 6px; padding: 5px 8px; }
+  .boost-dim { font-size: 11px; color: var(--text2); }
+  .boost-val { font-size: 11px; font-weight: 700; }
+  .boost-pos { color: var(--accent2); }
+  .boost-neg { color: var(--danger); }
+  .boost-zero { color: var(--text3); }
+  .link-list { display: flex; flex-direction: column; gap: 4px; }
+  .link-item { font-size: 11px; color: var(--text2); background: var(--surface2); border-radius: 6px; padding: 5px 10px; }
+  .link-item strong { color: var(--text); }
+  .example-box { background: var(--surface2); border-radius: 8px; padding: 10px 12px; font-size: 12px; color: var(--text); line-height: 1.5; border-left: 3px solid var(--accent2); }
+  .ref-list { display: flex; flex-direction: column; gap: 4px; }
+  .ref-item { font-size: 11px; color: var(--text3); font-style: italic; }
+
+  /* ── Empty state ── */
+  .empty { text-align: center; padding: 60px 20px; color: var(--text3); font-size: 13px; }
+  .empty-icon { font-size: 36px; margin-bottom: 12px; }
+
+  /* ── Scrollbar ── */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text3); }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div>
+    <div class="logo">Agent Brain Platform <span style="color:var(--text3);font-weight:400">/ Registry</span></div>
+    <div class="logo-sub">Phase 1 — Technique Library v1.0</div>
+  </div>
+  <div class="header-sep"></div>
+  <div class="stat-pill" id="statTotal"><span id="countTotal">0</span> techniques</div>
+  <div class="stat-pill" id="statSlots"><span>11</span> slots</div>
+  <div class="stat-pill"><span id="countFrameworks">0</span> frameworks</div>
+  <div class="header-right">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input class="search-input" id="searchInput" placeholder="Search techniques..." oninput="applyFilters()">
+    </div>
+    <div class="view-toggle">
+      <button class="view-btn active" id="btnCard" onclick="setView('card')">⊞ Cards</button>
+      <button class="view-btn" id="btnTable" onclick="setView('table')">≡ Table</button>
+    </div>
+  </div>
+</div>
+
+<!-- Layout -->
+<div class="layout">
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+
+    <div class="sidebar-section">
+      <div class="sidebar-title">Slot</div>
+      <div class="sidebar-item active" data-slot="all" onclick="setSlotFilter('all', this)">
+        <span class="sidebar-item-label">All Slots</span>
+        <span class="sidebar-count" id="cnt-all">0</span>
+      </div>
+      <div class="sidebar-item" data-slot="perception" onclick="setSlotFilter('perception', this)">
+        <span class="sidebar-item-label">👁 Perception</span>
+        <span class="sidebar-count" id="cnt-perception">0</span>
+      </div>
+      <div class="sidebar-item" data-slot="stateEncoder" onclick="setSlotFilter('stateEncoder', this)">
+        <span class="sidebar-item-label">🔄 State Encoder</span>
+        <span class="sidebar-count" id="cnt-stateEncoder">0</span>
+      </div>
+      <div class="sidebar-item" data-slot="memory" onclick="setSlotFilter('memory', this)">
+        <span class="sidebar-item-label">🧠 Memory</span>
+        <span class="sidebar-count" id="cnt-memory">0</span>
+      </div>
+      <div class="sidebar-item" data-slot="reasoning" onclick="setSlotFilter('reasoning', this)">
+        <span class="sidebar-item-label">💡 Reasoning Engine</span>
+        <span class="sidebar-count" id="cnt-reasoning">0</span>
+      </div>
+      <div class="sidebar-item" data-slot="planning" onclick="setSlotFilter('planning', this)">
+        <span class="sidebar-item-label">🗺 Planning</span>
+        <span class="sidebar-count" id="cnt-planning">0</span>
+      </div>
+      <div class="sidebar-item" data-slot="value" onclick="setSlotFilter('value', this)">
+        <span class="sidebar-item-label">📊 Value / Critic</span>
+        <span class="sidebar-count" id="cnt-value">0</span>
+      </div>
+      <div class="sidebar-item" data-slot="exploration" onclick="setSlotFilter('exploration', this)">
+        <span class="sidebar-item-label">🔍 Exploration</span>
+        <span class="sidebar-count" id="cnt-exploration">0</span>
+      </div>
+      <div class="sidebar-item" data-slot="action" onclick="setSlotFilter('action', this)">
+        <span class="sidebar-item-label">⚡ Action Layer</span>
+        <span class="sidebar-count" id="cnt-action">0</span>
+      </div>
+      <div class="sidebar-item" data-slot="feedback" onclick="setSlotFilter('feedback', this)">
+        <span class="sidebar-item-label">🔁 Feedback</span>
+        <span class="sidebar-count" id="cnt-feedback">0</span>
+      </div>
+      <div class="sidebar-item" data-slot="safety" onclick="setSlotFilter('safety', this)">
+        <span class="sidebar-item-label">🛡 Safety</span>
+        <span class="sidebar-count" id="cnt-safety">0</span>
+      </div>
+      <div class="sidebar-item" data-slot="orchestration" onclick="setSlotFilter('orchestration', this)">
+        <span class="sidebar-item-label">🎛 Orchestration</span>
+        <span class="sidebar-count" id="cnt-orchestration">0</span>
+      </div>
+    </div>
+
+    <div class="sidebar-divider"></div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-title">Goal Dimensions</div>
+      <div class="dim-grid" id="dimGrid"></div>
+    </div>
+
+    <div class="sidebar-divider"></div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-title">Framework</div>
+      <div class="fw-list" id="fwList"></div>
+      <div class="clear-filters" onclick="clearAllFilters()">✕ Clear all filters</div>
+    </div>
+
+  </div>
+
+  <!-- Main -->
+  <div class="main">
+    <div class="results-bar">
+      <span class="results-count" id="resultsCount">Loading…</span>
+      <select class="sort-select" id="sortSelect" onchange="applyFilters()">
+        <option value="rank-desc">Sort: Rank ↓</option>
+        <option value="rank-asc">Sort: Rank ↑</option>
+        <option value="name-asc">Sort: Name A→Z</option>
+        <option value="complexity-asc">Sort: Complexity ↑</option>
+        <option value="interpretability-desc">Sort: Interpretability ↓</option>
+        <option value="sample-desc">Sort: Sample Efficiency ↓</option>
+      </select>
+    </div>
+    <div id="cardGrid" class="card-grid"></div>
+    <div id="tableWrap" class="table-wrap" style="display:none">
+      <table id="techTable">
+        <thead>
+          <tr>
+            <th onclick="setTableSort('name')">Name</th>
+            <th onclick="setTableSort('slot')">Slot(s)</th>
+            <th onclick="setTableSort('framework')">Framework</th>
+            <th onclick="setTableSort('base_rank')">Rank</th>
+            <th onclick="setTableSort('complexity')">Complexity</th>
+            <th onclick="setTableSort('interpretability')">Interpretability</th>
+            <th onclick="setTableSort('sample_efficiency')">Sample Eff.</th>
+            <th>Tags</th>
+          </tr>
+        </thead>
+        <tbody id="techTableBody"></tbody>
+      </table>
+    </div>
+    <div class="empty" id="emptyState" style="display:none">
+      <div class="empty-icon">🔬</div>
+      <div>No techniques match your filters.</div>
+    </div>
+  </div>
+</div>
+
+<!-- Detail Panel -->
+<div class="detail-overlay" id="detailOverlay" onclick="closeDetail(event)">
+  <div class="detail-panel" id="detailPanel">
+    <div class="detail-header">
+      <div class="detail-name" id="detailName"></div>
+      <div class="detail-full" id="detailFull"></div>
+      <div class="detail-close" onclick="closeDetailDirect()">✕</div>
+    </div>
+    <div class="detail-body" id="detailBody"></div>
+  </div>
+</div>
+
+<script>
+// ── Framework color map ──────────────────────────────────────────────────────
+const FW_COLORS = {
+  'RL':           '#58a6ff',
+  'MDP':          '#79c0ff',
+  'game-theory':  '#f85149',
+  'Bayesian':     '#d29922',
+  'LLM':          '#3fb950',
+  'symbolic':     '#bc8cff',
+  'control':      '#39d353',
+  'multi-agent':  '#ff7b72',
+  'safety':       '#ffa657',
+};
+
+const DIM_LABELS = {
+  adversarial:   'Adversarial',
+  realtime:      'Real-time',
+  long_horizon:  'Long Horizon',
+  data_scarce:   'Data Scarce',
+  multi_agent:   'Multi-Agent',
+  interpretable: 'Interpretable',
+  partial_obs:   'Partial Obs.',
+};
+
+const SLOT_LABELS = {
+  perception: 'Perception', stateEncoder: 'State Encoder', memory: 'Memory',
+  reasoning: 'Reasoning Engine', planning: 'Planning', value: 'Value / Critic',
+  exploration: 'Exploration', action: 'Action Layer', feedback: 'Feedback',
+  safety: 'Safety', orchestration: 'Orchestration',
+};
+
+// ── State ────────────────────────────────────────────────────────────────────
+let ALL_TECHNIQUES = [];
+let currentSlot = 'all';
+let activeDims = new Set();
+let activeFrameworks = new Set();
+let currentView = 'card';
+let tableSortKey = 'base_rank';
+let tableSortDir = -1;
+
+// ── Load data ─────────────────────────────────────────────────────────────────
+async function loadData() {
+  try {
+    const res = await fetch('techniques.json');
+    const json = await res.json();
+    ALL_TECHNIQUES = json.techniques;
+  } catch (e) {
+    // Fallback: inline stub so it works even without a server
+    ALL_TECHNIQUES = [];
+    document.getElementById('resultsCount').textContent = 'Could not load techniques.json — open via file:// or a local server.';
+    return;
+  }
+  init();
+}
+
+function init() {
+  // Counts
+  document.getElementById('countTotal').textContent = ALL_TECHNIQUES.length;
+  const frameworks = [...new Set(ALL_TECHNIQUES.map(t => t.framework))];
+  document.getElementById('countFrameworks').textContent = frameworks.length;
+
+  // Slot counts
+  Object.keys(SLOT_LABELS).forEach(slot => {
+    const el = document.getElementById('cnt-' + slot);
+    if (el) el.textContent = ALL_TECHNIQUES.filter(t => t.slot.includes(slot)).length;
+  });
+  document.getElementById('cnt-all').textContent = ALL_TECHNIQUES.length;
+
+  // Dim filters
+  const dimGrid = document.getElementById('dimGrid');
+  Object.entries(DIM_LABELS).forEach(([key, label]) => {
+    const div = document.createElement('div');
+    div.className = 'dim-chip';
+    div.id = 'dimchip-' + key;
+    div.innerHTML = `<input type="checkbox" id="dim-${key}" onchange="toggleDim('${key}')"><label for="dim-${key}" class="dim-chip-label">${label}</label>`;
+    div.querySelector('label').style.cursor = 'pointer';
+    dimGrid.appendChild(div);
+  });
+
+  // Framework filters
+  const fwList = document.getElementById('fwList');
+  frameworks.sort().forEach(fw => {
+    const cnt = ALL_TECHNIQUES.filter(t => t.framework === fw).length;
+    const div = document.createElement('div');
+    div.className = 'fw-chip';
+    div.id = 'fwchip-' + fw;
+    div.onclick = () => toggleFramework(fw);
+    div.innerHTML = `<div class="fw-dot" style="background:${FW_COLORS[fw]||'#888'}"></div><span class="fw-chip-label">${fw}</span><span class="sidebar-count" style="margin-left:auto">${cnt}</span>`;
+    fwList.appendChild(div);
+  });
+
+  applyFilters();
+}
+
+// ── Filters ──────────────────────────────────────────────────────────────────
+function setSlotFilter(slot, el) {
+  currentSlot = slot;
+  document.querySelectorAll('.sidebar-item[data-slot]').forEach(e => e.classList.remove('active'));
+  el.classList.add('active');
+  applyFilters();
+}
+
+function toggleDim(key) {
+  const cb = document.getElementById('dim-' + key);
+  const chip = document.getElementById('dimchip-' + key);
+  if (cb.checked) { activeDims.add(key); chip.classList.add('active'); }
+  else { activeDims.delete(key); chip.classList.remove('active'); }
+  applyFilters();
+}
+
+function toggleFramework(fw) {
+  const chip = document.getElementById('fwchip-' + fw);
+  if (activeFrameworks.has(fw)) { activeFrameworks.delete(fw); chip.classList.remove('active'); }
+  else { activeFrameworks.add(fw); chip.classList.add('active'); }
+  applyFilters();
+}
+
+function clearAllFilters() {
+  currentSlot = 'all';
+  activeDims.clear();
+  activeFrameworks.clear();
+  document.getElementById('searchInput').value = '';
+  document.querySelectorAll('.sidebar-item[data-slot]').forEach(e => e.classList.remove('active'));
+  document.querySelector('[data-slot="all"]').classList.add('active');
+  document.querySelectorAll('.dim-chip').forEach(c => { c.classList.remove('active'); c.querySelector('input').checked = false; });
+  document.querySelectorAll('.fw-chip').forEach(c => c.classList.remove('active'));
+  applyFilters();
+}
+
+function computeRank(tech) {
+  let r = tech.base_rank;
+  activeDims.forEach(dim => { r += (tech.goal_boosts[dim] || 0); });
+  return Math.max(1, Math.min(5, r));
+}
+
+function applyFilters() {
+  const q = document.getElementById('searchInput').value.toLowerCase().trim();
+  let results = ALL_TECHNIQUES.filter(t => {
+    if (currentSlot !== 'all' && !t.slot.includes(currentSlot)) return false;
+    if (activeFrameworks.size > 0 && !activeFrameworks.has(t.framework)) return false;
+    if (q) {
+      const haystack = [t.name, t.full_name, t.description, t.framework, ...t.tags, ...(t.slot)].join(' ').toLowerCase();
+      if (!haystack.includes(q)) return false;
+    }
+    return true;
+  });
+
+  // Sort
+  const sortVal = document.getElementById('sortSelect').value;
+  results = results.sort((a, b) => {
+    if (sortVal === 'rank-desc') return computeRank(b) - computeRank(a);
+    if (sortVal === 'rank-asc') return computeRank(a) - computeRank(b);
+    if (sortVal === 'name-asc') return a.name.localeCompare(b.name);
+    if (sortVal === 'complexity-asc') return a.complexity - b.complexity;
+    if (sortVal === 'interpretability-desc') return b.interpretability - a.interpretability;
+    if (sortVal === 'sample-desc') return b.sample_efficiency - a.sample_efficiency;
+    return 0;
+  });
+
+  document.getElementById('resultsCount').textContent = `${results.length} technique${results.length !== 1 ? 's' : ''}`;
+  document.getElementById('emptyState').style.display = results.length === 0 ? 'block' : 'none';
+
+  if (currentView === 'card') renderCards(results);
+  else renderTable(results);
+}
+
+// ── Render Cards ─────────────────────────────────────────────────────────────
+function stars(n, total=5) {
+  return Array.from({length: total}, (_, i) =>
+    `<span class="star ${i < n ? 'on' : ''}">★</span>`).join('');
+}
+
+function renderCards(techs) {
+  const grid = document.getElementById('cardGrid');
+  grid.innerHTML = '';
+  techs.forEach(t => {
+    const rank = computeRank(t);
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.onclick = () => openDetail(t.id);
+    card.innerHTML = `
+      <div class="card-header">
+        <div>
+          <div class="card-name">${t.name}</div>
+          <div class="card-full-name">${t.full_name !== t.name ? t.full_name : ''}</div>
+        </div>
+        <div class="card-rank-stars">${stars(rank)}</div>
+      </div>
+      <div class="card-desc">${t.description.substring(0, 120)}${t.description.length > 120 ? '…' : ''}</div>
+      <div class="card-meta">
+        ${t.slot.map(s => `<span class="meta-badge slot-badge">${SLOT_LABELS[s] || s}</span>`).join('')}
+        <span class="meta-badge fw-badge" style="border-color:${FW_COLORS[t.framework]||'#888'};color:${FW_COLORS[t.framework]||'#888'}">${t.framework}</span>
+      </div>
+      <div class="card-tags">${t.tags.slice(0,4).map(tag => `<span class="tag">${tag}</span>`).join('')}</div>
+      <div class="card-metrics">
+        <div class="metric">
+          <div class="metric-label">Complexity</div>
+          <div class="metric-bar"><div class="metric-fill fill-complexity" style="width:${t.complexity*20}%"></div></div>
+          <div class="metric-val">${t.complexity}/5</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Interpretability</div>
+          <div class="metric-bar"><div class="metric-fill fill-interpret" style="width:${t.interpretability*20}%"></div></div>
+          <div class="metric-val">${t.interpretability}/5</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Sample Eff.</div>
+          <div class="metric-bar"><div class="metric-fill fill-sample" style="width:${t.sample_efficiency*20}%"></div></div>
+          <div class="metric-val">${t.sample_efficiency}/5</div>
+        </div>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+// ── Render Table ──────────────────────────────────────────────────────────────
+function setTableSort(key) {
+  if (tableSortKey === key) tableSortDir *= -1;
+  else { tableSortKey = key; tableSortDir = -1; }
+  applyFilters();
+}
+
+function renderTable(techs) {
+  if (tableSortKey !== 'base_rank') {
+    techs = [...techs].sort((a, b) => {
+      let va = a[tableSortKey], vb = b[tableSortKey];
+      if (typeof va === 'string') return tableSortDir * va.localeCompare(vb);
+      if (Array.isArray(va)) return tableSortDir * (va[0]||'').localeCompare(vb[0]||'');
+      return tableSortDir * (va - vb);
+    });
+  }
+  const tbody = document.getElementById('techTableBody');
+  tbody.innerHTML = '';
+  techs.forEach(t => {
+    const rank = computeRank(t);
+    const tr = document.createElement('tr');
+    tr.onclick = () => openDetail(t.id);
+    tr.innerHTML = `
+      <td class="td-name">${t.name}</td>
+      <td><div class="td-slot-list">${t.slot.map(s => `<span class="meta-badge slot-badge" style="font-size:10px">${SLOT_LABELS[s]||s}</span>`).join('')}</div></td>
+      <td class="td-fw"><span style="color:${FW_COLORS[t.framework]||'#888'}">${t.framework}</span></td>
+      <td class="td-stars">${stars(rank)}</td>
+      <td><div class="td-complexity-bar"><div class="metric-fill fill-complexity" style="width:${t.complexity*20}%;height:100%;border-radius:3px"></div></div> ${t.complexity}</td>
+      <td><div class="td-interpret-bar"><div class="metric-fill fill-interpret" style="width:${t.interpretability*20}%;height:100%;border-radius:3px"></div></div> ${t.interpretability}</td>
+      <td><div class="td-sample-bar"><div class="metric-fill fill-sample" style="width:${t.sample_efficiency*20}%;height:100%;border-radius:3px"></div></div> ${t.sample_efficiency}</td>
+      <td><div class="td-tags">${t.tags.slice(0,3).map(tag => `<span class="tag">${tag}</span>`).join('')}</div></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// ── View toggle ───────────────────────────────────────────────────────────────
+function setView(v) {
+  currentView = v;
+  document.getElementById('btnCard').classList.toggle('active', v === 'card');
+  document.getElementById('btnTable').classList.toggle('active', v === 'table');
+  document.getElementById('cardGrid').style.display = v === 'card' ? 'grid' : 'none';
+  document.getElementById('tableWrap').style.display = v === 'table' ? 'block' : 'none';
+  applyFilters();
+}
+
+// ── Detail panel ──────────────────────────────────────────────────────────────
+function openDetail(id) {
+  const t = ALL_TECHNIQUES.find(x => x.id === id);
+  if (!t) return;
+  const rank = computeRank(t);
+
+  document.getElementById('detailName').textContent = t.name;
+  document.getElementById('detailFull').textContent = t.full_name !== t.name ? t.full_name : '';
+
+  const body = document.getElementById('detailBody');
+
+  // Build boost rows
+  const boostRows = Object.entries(DIM_LABELS).map(([key, label]) => {
+    const v = t.goal_boosts[key] || 0;
+    const cls = v > 0 ? 'boost-pos' : v < 0 ? 'boost-neg' : 'boost-zero';
+    const sign = v > 0 ? '+' : '';
+    return `<div class="boost-row"><span class="boost-dim">${label}</span><span class="boost-val ${cls}">${sign}${v}</span></div>`;
+  }).join('');
+
+  // Pairs / conflicts / requires
+  const findName = id2 => (ALL_TECHNIQUES.find(x => x.id === id2) || {name: id2}).name;
+
+  body.innerHTML = `
+    <div>
+      <div class="detail-section-title">Description</div>
+      <div class="detail-desc">${t.description}</div>
+    </div>
+    ${t.theory_note ? `<div>
+      <div class="detail-section-title">Theory Note</div>
+      <div class="detail-theory">${t.theory_note}</div>
+    </div>` : ''}
+    <div>
+      <div class="detail-section-title">Classification</div>
+      <div class="detail-badges">
+        ${t.slot.map(s => `<span class="meta-badge slot-badge">${SLOT_LABELS[s]||s}</span>`).join('')}
+        <span class="meta-badge fw-badge" style="border-color:${FW_COLORS[t.framework]||'#888'};color:${FW_COLORS[t.framework]||'#888'}">${t.framework}</span>
+        ${t.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+      </div>
+    </div>
+    <div>
+      <div class="detail-section-title">Quality Metrics</div>
+      <div class="detail-metric-row">
+        <div class="detail-metric">
+          <div class="detail-metric-label">Effective Rank (current dims)</div>
+          <div class="detail-metric-track"><div class="detail-metric-fill fill-interpret" style="width:${rank*20}%"></div></div>
+          <div class="detail-metric-val">${rank} / 5</div>
+        </div>
+      </div>
+      <div class="detail-metric-row" style="margin-top:8px">
+        <div class="detail-metric">
+          <div class="detail-metric-label">Complexity</div>
+          <div class="detail-metric-track"><div class="detail-metric-fill fill-complexity" style="width:${t.complexity*20}%"></div></div>
+          <div class="detail-metric-val">${t.complexity} / 5</div>
+        </div>
+        <div class="detail-metric">
+          <div class="detail-metric-label">Interpretability</div>
+          <div class="detail-metric-track"><div class="detail-metric-fill fill-interpret" style="width:${t.interpretability*20}%"></div></div>
+          <div class="detail-metric-val">${t.interpretability} / 5</div>
+        </div>
+        <div class="detail-metric">
+          <div class="detail-metric-label">Sample Efficiency</div>
+          <div class="detail-metric-track"><div class="detail-metric-fill fill-sample" style="width:${t.sample_efficiency*20}%"></div></div>
+          <div class="detail-metric-val">${t.sample_efficiency} / 5</div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="detail-section-title">Goal Dimension Boosts</div>
+      <div class="boost-grid">${boostRows}</div>
+    </div>
+    ${t.example_use_case ? `<div>
+      <div class="detail-section-title">Example Use Case</div>
+      <div class="example-box">${t.example_use_case}</div>
+    </div>` : ''}
+    ${(t.pairs_well_with.length || t.conflicts_with.length || t.requires.length) ? `<div>
+      <div class="detail-section-title">Relationships</div>
+      <div class="link-list">
+        ${t.requires.length ? `<div class="link-item"><strong>Requires: </strong>${t.requires.map(findName).join(', ')}</div>` : ''}
+        ${t.pairs_well_with.length ? `<div class="link-item"><strong>Pairs with: </strong>${t.pairs_well_with.map(findName).join(', ')}</div>` : ''}
+        ${t.conflicts_with.length ? `<div class="link-item"><strong style="color:var(--danger)">Conflicts: </strong>${t.conflicts_with.map(findName).join(', ')}</div>` : ''}
+      </div>
+    </div>` : ''}
+    ${t.references && t.references.length ? `<div>
+      <div class="detail-section-title">References</div>
+      <div class="ref-list">${t.references.map(r => `<div class="ref-item">• ${r}</div>`).join('')}</div>
+    </div>` : ''}
+  `;
+
+  document.getElementById('detailOverlay').classList.add('open');
+}
+
+function closeDetail(e) {
+  if (e.target === document.getElementById('detailOverlay')) closeDetailDirect();
+}
+function closeDetailDirect() {
+  document.getElementById('detailOverlay').classList.remove('open');
+}
+
+// Keyboard close
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDetailDirect(); });
+
+// ── Boot ──────────────────────────────────────────────────────────────────────
+loadData();
+</script>
+</body>
+</html>

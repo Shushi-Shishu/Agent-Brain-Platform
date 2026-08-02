@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agent Brain Platform — Runtime Bridge</title>
+<style>
+  :root {
+    --bg:#0d1117;--surface:#161b22;--surface2:#21262d;--surface3:#2d333b;
+    --border:#30363d;--accent:#58a6ff;--accent2:#3fb950;
+    --warn:#d29922;--danger:#f85149;--purple:#bc8cff;--orange:#ffa657;
+    --text:#c9d1d9;--text2:#8b949e;--text3:#6e7681;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;font-size:13px;min-height:100vh;display:flex;flex-direction:column;}
+
+  .hdr{background:var(--surface);border-bottom:1px solid var(--border);padding:9px 24px;display:flex;align-items:center;gap:12px;flex-shrink:0;}
+  .hdr-logo{font-size:14px;font-weight:700;color:var(--accent);}
+  .hdr-logo span{color:var(--text3);font-weight:400;font-size:12px;}
+  .hdr-sep{width:1px;height:18px;background:var(--border);}
+  .hdr-right{margin-left:auto;display:flex;gap:8px;align-items:center;}
+  .btn{padding:5px 13px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--text);cursor:pointer;font-size:11px;transition:all .15s;white-space:nowrap;}
+  .btn:hover{border-color:var(--accent);color:var(--accent);}
+  .btn-primary{background:var(--accent);border-color:var(--accent);color:#000;font-weight:600;}
+  .btn-primary:hover{background:#79c0ff;color:#000;}
+  .btn-success{background:var(--accent2);border-color:var(--accent2);color:#000;font-weight:600;}
+  .nav-link{font-size:11px;color:var(--text3);text-decoration:none;padding:4px 8px;border-radius:5px;}
+  .nav-link:hover{background:var(--surface2);color:var(--text);}
+
+  /* Target tabs */
+  .tabs{background:var(--surface);border-bottom:1px solid var(--border);display:flex;padding:0 24px;flex-shrink:0;}
+  .tab{padding:10px 18px;font-size:12px;font-weight:600;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;user-select:none;}
+  .tab:hover{color:var(--text2);}
+  .tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+
+  .main{flex:1;overflow:auto;padding:24px;}
+  .tab-pane{display:none;}
+  .tab-pane.active{display:block;}
+
+  /* Agent summary bar */
+  .agent-bar{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 18px;margin-bottom:20px;display:flex;align-items:flex-start;gap:18px;max-width:1100px;}
+  .ab-name{font-size:16px;font-weight:700;color:var(--text);}
+  .ab-goal{font-size:11px;color:var(--text2);margin-top:2px;line-height:1.45;}
+  .ab-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px;}
+  .dim-chip{padding:2px 9px;border-radius:10px;font-size:10px;font-weight:600;background:rgba(88,166,255,.1);border:1px solid var(--accent);color:var(--accent);}
+  .ab-right{margin-left:auto;text-align:right;}
+  .ab-stat{font-size:11px;color:var(--text3);}
+  .ab-stat b{color:var(--accent);}
+
+  /* Layout: sidebar + code */
+  .bridge-layout{display:grid;grid-template-columns:280px 1fr;gap:20px;max-width:1100px;}
+  @media(max-width:900px){.bridge-layout{grid-template-columns:1fr;}}
+
+  /* Sidebar */
+  .sidebar-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:14px;}
+  .sc-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);margin-bottom:10px;}
+
+  /* Slot mapping list */
+  .mapping-row{display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);}
+  .mapping-row:last-child{border-bottom:none;}
+  .mr-slot{font-size:11px;font-weight:600;color:var(--text2);width:110px;flex-shrink:0;}
+  .mr-techs{font-size:11px;color:var(--accent2);flex:1;line-height:1.5;}
+  .mr-empty{color:var(--text3);font-style:italic;}
+
+  /* Options panel */
+  .opt-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+  .opt-lbl{font-size:12px;color:var(--text2);}
+  select.opt-sel{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:4px 8px;border-radius:6px;font-size:11px;outline:none;cursor:pointer;}
+  select.opt-sel:focus{border-color:var(--accent);}
+  .checkbox-row{display:flex;align-items:center;gap:6px;margin-bottom:6px;}
+  .checkbox-row input{accent-color:var(--accent);width:13px;height:13px;cursor:pointer;}
+  .checkbox-row label{font-size:11px;color:var(--text2);cursor:pointer;}
+
+  /* Code blocks */
+  .code-block-wrap{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:14px;}
+  .code-block-hdr{padding:9px 14px;background:var(--surface2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px;}
+  .cbh-left{display:flex;align-items:center;gap:10px;}
+  .code-block-title{font-size:12px;font-weight:600;color:var(--text);}
+  .code-block-sub{font-size:10px;color:var(--text3);}
+  .copy-btn{font-size:10px;padding:3px 9px;border-radius:5px;border:1px solid var(--border);background:transparent;color:var(--text3);cursor:pointer;transition:all .15s;}
+  .copy-btn:hover{border-color:var(--accent);color:var(--accent);}
+  .dl-btn{font-size:10px;padding:3px 9px;border-radius:5px;border:1px solid var(--border);background:transparent;color:var(--text3);cursor:pointer;transition:all .15s;}
+  .dl-btn:hover{border-color:var(--accent2);color:var(--accent2);}
+  pre.code{background:var(--bg);padding:16px;font-family:'Consolas','Courier New',monospace;font-size:11px;color:var(--text2);overflow-x:auto;white-space:pre;line-height:1.6;max-height:560px;overflow-y:auto;}
+
+  /* Integration cards */
+  .integration-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px;}
+  .int-card{background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:14px 16px;cursor:pointer;transition:all .15s;}
+  .int-card:hover{border-color:var(--accent);transform:translateY(-1px);}
+  .int-card.active{border-color:var(--accent);background:rgba(88,166,255,.05);}
+  .ic-header{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .ic-logo{font-size:22px;}
+  .ic-name{font-size:13px;font-weight:700;color:var(--text);}
+  .ic-badge{font-size:9px;padding:2px 6px;border-radius:8px;font-weight:600;}
+  .badge-flow{background:rgba(255,166,87,.15);color:var(--orange);border:1px solid var(--orange);}
+  .badge-code{background:rgba(188,140,255,.15);color:var(--purple);border:1px solid var(--purple);}
+  .badge-sap{background:rgba(88,166,255,.15);color:var(--accent);border:1px solid var(--accent);}
+  .ic-desc{font-size:11px;color:var(--text2);line-height:1.45;}
+
+  /* Deployment steps */
+  .deploy-steps{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;}
+  .deploy-step{display:flex;align-items:flex-start;gap:10px;background:var(--surface2);border-radius:8px;padding:8px 12px;}
+  .ds-num{width:20px;height:20px;border-radius:50%;background:var(--accent);color:#000;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+  .ds-text{font-size:12px;color:var(--text2);line-height:1.5;}
+  .ds-text b{color:var(--text);}
+  .ds-text code{background:var(--surface3);padding:1px 5px;border-radius:3px;font-size:10px;font-family:'Consolas',monospace;}
+
+  /* Empty */
+  .empty{text-align:center;padding:60px 20px;color:var(--text3);}
+  .empty-icon{font-size:40px;margin-bottom:12px;}
+
+  ::-webkit-scrollbar{width:5px;height:5px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-logo">Agent Brain Platform <span>/ Runtime Bridge</span></div>
+  <div class="hdr-sep"></div>
+  <a class="nav-link" href="../generator/index.html">← Generator</a>
+  <a class="nav-link" href="../canvas/index.html">Canvas</a>
+  <div class="hdr-right">
+    <button class="btn" onclick="loadDemo()">Load Demo</button>
+    <button class="btn btn-success" onclick="downloadAll()">↓ Download All</button>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="setTab('n8n',this)">n8n Workflow</div>
+  <div class="tab" onclick="setTab('langgraph',this)">LangGraph</div>
+  <div class="tab" onclick="setTab('sap',this)">SAP Joule / BTP</div>
+  <div class="tab" onclick="setTab('deploy',this)">Deployment Guide</div>
+</div>
+
+<div class="main">
+
+  <!-- n8n tab -->
+  <div class="tab-pane active" id="pane-n8n">
+    <div id="n8n-empty" class="empty" style="display:none">
+      <div class="empty-icon">⚙</div>
+      <div>Load a blueprint to generate the n8n workflow.</div>
+      <button class="btn btn-primary" style="margin-top:12px" onclick="loadDemo()">Load Demo</button>
+    </div>
+    <div id="n8n-content">
+      <div class="bridge-layout">
+        <div>
+          <div class="sidebar-card">
+            <div class="sc-title">Blueprint → n8n Mapping</div>
+            <div id="n8n-mapping"></div>
+          </div>
+          <div class="sidebar-card">
+            <div class="sc-title">Options</div>
+            <div class="opt-row"><span class="opt-lbl">Trigger</span>
+              <select class="opt-sel" id="n8n-trigger" onchange="renderN8n()">
+                <option value="webhook">Webhook</option>
+                <option value="schedule">Schedule</option>
+                <option value="manual">Manual</option>
+              </select>
+            </div>
+            <div class="opt-row"><span class="opt-lbl">Memory node</span>
+              <select class="opt-sel" id="n8n-memory" onchange="renderN8n()">
+                <option value="inmemory">In-Memory</option>
+                <option value="redis">Redis</option>
+                <option value="postgres">Postgres</option>
+              </select>
+            </div>
+            <div class="checkbox-row"><input type="checkbox" id="n8n-safety" checked onchange="renderN8n()"><label for="n8n-safety">Include Safety node</label></div>
+            <div class="checkbox-row"><input type="checkbox" id="n8n-error" checked onchange="renderN8n()"><label for="n8n-error">Include Error handler</label></div>
+          </div>
+          <div class="sidebar-card">
+            <div class="sc-title">Deploy Steps</div>
+            <div class="deploy-steps">
+              <div class="deploy-step"><div class="ds-num">1</div><div class="ds-text">Import <code>workflow.json</code> into n8n via <b>Import Workflow</b></div></div>
+              <div class="deploy-step"><div class="ds-num">2</div><div class="ds-text">Set credentials: <code>ANTHROPIC_API_KEY</code>, vector store connection</div></div>
+              <div class="deploy-step"><div class="ds-num">3</div><div class="ds-text">Activate workflow; test via Webhook URL or Manual trigger</div></div>
+              <div class="deploy-step"><div class="ds-num">4</div><div class="ds-text">Fill <code>// TODO</code> nodes with domain-specific logic</div></div>
+            </div>
+          </div>
+        </div>
+        <div id="n8n-code-area"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LangGraph tab -->
+  <div class="tab-pane" id="pane-langgraph">
+    <div id="lg-content">
+      <div class="bridge-layout">
+        <div>
+          <div class="sidebar-card">
+            <div class="sc-title">Blueprint → LangGraph Mapping</div>
+            <div id="lg-mapping"></div>
+          </div>
+          <div class="sidebar-card">
+            <div class="sc-title">Options</div>
+            <div class="opt-row"><span class="opt-lbl">Checkpointer</span>
+              <select class="opt-sel" id="lg-ckpt" onchange="renderLangGraph()">
+                <option value="memory">MemorySaver</option>
+                <option value="sqlite">SQLite</option>
+                <option value="postgres">AsyncPostgres</option>
+              </select>
+            </div>
+            <div class="checkbox-row"><input type="checkbox" id="lg-streaming" checked onchange="renderLangGraph()"><label for="lg-streaming">Streaming mode</label></div>
+            <div class="checkbox-row"><input type="checkbox" id="lg-human" onchange="renderLangGraph()"><label for="lg-human">Human-in-the-loop interrupt</label></div>
+          </div>
+          <div class="sidebar-card">
+            <div class="sc-title">Deploy Steps</div>
+            <div class="deploy-steps">
+              <div class="deploy-step"><div class="ds-num">1</div><div class="ds-text"><code>pip install langgraph langchain-anthropic</code></div></div>
+              <div class="deploy-step"><div class="ds-num">2</div><div class="ds-text">Set <code>ANTHROPIC_API_KEY</code> in environment</div></div>
+              <div class="deploy-step"><div class="ds-num">3</div><div class="ds-text">Run <code>python graph.py</code> — LangGraph Studio auto-discovers</div></div>
+              <div class="deploy-step"><div class="ds-num">4</div><div class="ds-text">Deploy via <code>langgraph deploy</code> for production</div></div>
+            </div>
+          </div>
+        </div>
+        <div id="lg-code-area"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SAP tab -->
+  <div class="tab-pane" id="pane-sap">
+    <div class="bridge-layout">
+      <div>
+        <div class="sidebar-card">
+          <div class="sc-title">SAP Integration Points</div>
+          <div class="deploy-steps" style="gap:8px">
+            <div class="deploy-step"><div class="ds-num" style="background:var(--orange)">J</div><div class="ds-text"><b>Joule Studio</b> — embed as a custom skill node in Joule's agentic pipeline via the Skill SDK</div></div>
+            <div class="deploy-step"><div class="ds-num" style="background:var(--accent)">B</div><div class="ds-text"><b>SAP BTP AI Core</b> — deploy the scaffold as a serverless inference endpoint via AI Core's serving infrastructure</div></div>
+            <div class="deploy-step"><div class="ds-num" style="background:var(--accent2)">n</div><div class="ds-text"><b>n8n on BTP</b> — SAP's $5.2B n8n investment (May 2026) embeds n8n natively in Joule Studio; import workflow.json directly</div></div>
+          </div>
+        </div>
+        <div class="sidebar-card">
+          <div class="sc-title">Relevant SAP APIs</div>
+          <div id="sap-apis"></div>
+        </div>
+      </div>
+      <div id="sap-code-area"></div>
+    </div>
+  </div>
+
+  <!-- Deploy tab -->
+  <div class="tab-pane" id="pane-deploy">
+    <div style="max-width:800px">
+      <div class="integration-grid">
+        <div class="int-card active" onclick="setDeployTarget('n8n',this)">
+          <div class="ic-header"><span class="ic-logo">⚙</span><div><div class="ic-name">n8n</div><span class="ic-badge badge-flow">Visual Flow</span></div></div>
+          <div class="ic-desc">Import workflow.json for a no-code/low-code deployment. Best for enterprise workflow automation teams. SAP-embedded via Joule Studio.</div>
+        </div>
+        <div class="int-card" onclick="setDeployTarget('langgraph',this)">
+          <div class="ic-header"><span class="ic-logo">🕸</span><div><div class="ic-name">LangGraph</div><span class="ic-badge badge-code">Python SDK</span></div></div>
+          <div class="ic-desc">Full Python control over the agent graph. Built-in checkpointing, streaming, and human-in-the-loop. Best for engineering teams.</div>
+        </div>
+        <div class="int-card" onclick="setDeployTarget('sap',this)">
+          <div class="ic-header"><span class="ic-logo">🟦</span><div><div class="ic-name">SAP BTP / Joule</div><span class="ic-badge badge-sap">SAP Native</span></div></div>
+          <div class="ic-desc">Deploy to SAP AI Core or Joule Studio. Direct integration with S/4HANA, Ariba, SuccessFactors via OData/BAPI.</div>
+        </div>
+        <div class="int-card" onclick="setDeployTarget('standalone',this)">
+          <div class="ic-header"><span class="ic-logo">🐍</span><div><div class="ic-name">Standalone Python</div><span class="ic-badge badge-code">Python SDK</span></div></div>
+          <div class="ic-desc">Run agent.py directly. No orchestration framework dependency. Best for prototyping or embedding in existing Python services.</div>
+        </div>
+      </div>
+      <div id="deploy-guide"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────────
+const SLOT_META = {
+  perception:    {label:'Perception',          icon:'👁'},
+  stateEncoder:  {label:'State Encoder',        icon:'🔄'},
+  memory:        {label:'Memory',               icon:'🧠'},
+  reasoning:     {label:'Reasoning Engine',     icon:'💡'},
+  planning:      {label:'Planning',             icon:'🗺'},
+  value:         {label:'Value / Critic',       icon:'📊'},
+  exploration:   {label:'Exploration',          icon:'🔍'},
+  action:        {label:'Action Layer',         icon:'⚡'},
+  feedback:      {label:'Feedback / Learning',  icon:'🔁'},
+  safety:        {label:'Safety / Guardrails',  icon:'🛡'},
+  orchestration: {label:'Orchestration',        icon:'🎛'},
+};
+const DIM_LABELS = {adversarial:'Adversarial',realtime:'Real-time',long_horizon:'Long Horizon',data_scarce:'Data Scarce',multi_agent:'Multi-Agent',interpretable:'Interpretable',partial_obs:'Partial Obs.'};
+
+const SAP_APIS = [
+  {api:'OData /sap/opu/odata/sap/API_PURCHASEORDER_PROCESS_SRV', desc:'Purchase Order CRUD (Ariba/MM)'},
+  {api:'BAPI_PO_CREATE1', desc:'Create Purchase Order via RFC'},
+  {api:'OData /sap/opu/odata/sap/API_SALES_ORDER_SRV', desc:'Sales Order processing (SD)'},
+  {api:'AI Core REST /v2/inference/deployments', desc:'SAP AI Core model serving endpoint'},
+  {api:'Joule Skill SDK /skills/register', desc:'Register custom skill in Joule Studio'},
+];
+
+let BLUEPRINT = null;
+let deployTarget = 'n8n';
+
+// ── LOAD ──────────────────────────────────────────────────────────────────────
+function init() {
+  const raw = localStorage.getItem('abp_blueprint_payload');
+  if (raw) {
+    try { BLUEPRINT = JSON.parse(raw); localStorage.removeItem('abp_blueprint_payload'); }
+    catch(e) {}
+  }
+  if (!BLUEPRINT) { loadDemo(); return; }
+  renderAll();
+}
+
+function loadDemo() {
+  BLUEPRINT = {
+    agent:'Vendor Negotiation Agent',
+    goal:'Autonomously negotiate vendor contracts in adversarial settings with compliance audit trail',
+    dims:{adversarial:true,interpretable:true,long_horizon:true},
+    selections:{
+      perception:    [{id:'rag',name:'RAG',framework:'LLM'},{id:'apiPoll',name:'API Polling',framework:'symbolic'}],
+      stateEncoder:  [{id:'markov',name:'Markov State',framework:'MDP'}],
+      memory:        [{id:'vectorDB',name:'Vector DB',framework:'LLM'},{id:'kg',name:'Knowledge Graph',framework:'symbolic'}],
+      reasoning:     [{id:'llm',name:'LLM',framework:'LLM'},{id:'cot',name:'Chain-of-Thought',framework:'LLM'}],
+      planning:      [{id:'minimax',name:'Minimax',framework:'game-theory'},{id:'llmPlan',name:'LLM Planner',framework:'LLM'}],
+      value:         [{id:'advantage',name:'Advantage A(s,a)',framework:'RL'}],
+      exploration:   [{id:'thompson',name:'Thompson Sampling',framework:'Bayesian'}],
+      action:        [{id:'toolUse',name:'Tool Use',framework:'LLM'}],
+      feedback:      [{id:'reward',name:'Reward Signal',framework:'RL'},{id:'rlhfFeed',name:'RLHF',framework:'LLM'}],
+      safety:        [{id:'constAI',name:'Constitutional AI',framework:'safety'},{id:'polConst',name:'Policy Constraints',framework:'symbolic'}],
+      orchestration: [{id:'reactLoop',name:'ReAct Loop',framework:'LLM'}],
+    },
+  };
+  renderAll();
+}
+
+function renderAll() {
+  renderAgentBar();
+  renderMapping('n8n-mapping');
+  renderMapping('lg-mapping');
+  renderSAPApis();
+  renderN8n();
+  renderLangGraph();
+  renderSAP();
+  renderDeployGuide(deployTarget);
+}
+
+// ── AGENT BAR ─────────────────────────────────────────────────────────────────
+function renderAgentBar() {
+  const bar = document.getElementById('n8n-content');
+  // Already rendered inline — just ensure visible
+}
+
+// ── MAPPING ───────────────────────────────────────────────────────────────────
+function renderMapping(elId) {
+  const el = document.getElementById(elId);
+  if (!el || !BLUEPRINT) return;
+  el.innerHTML = Object.entries(SLOT_META).map(([id, s]) => {
+    const techs = (BLUEPRINT.selections[id]||[]).map(t=>t.name).join(', ');
+    return `<div class="mapping-row">
+      <div class="mr-slot">${s.icon} ${s.label}</div>
+      <div class="mr-techs ${techs?'':'mr-empty'}">${techs||'—'}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderSAPApis() {
+  const el = document.getElementById('sap-apis');
+  if (!el) return;
+  el.innerHTML = SAP_APIS.map(a =>
+    `<div style="margin-bottom:8px"><div style="font-size:10px;font-family:Consolas,monospace;color:var(--accent);margin-bottom:2px">${a.api}</div><div style="font-size:11px;color:var(--text2)">${a.desc}</div></div>`
+  ).join('');
+}
+
+// ── N8N WORKFLOW ──────────────────────────────────────────────────────────────
+function renderN8n() {
+  if (!BLUEPRINT) return;
+  const bp = BLUEPRINT;
+  const trigger = document.getElementById('n8n-trigger')?.value || 'webhook';
+  const memory  = document.getElementById('n8n-memory')?.value  || 'inmemory';
+  const safety  = document.getElementById('n8n-safety')?.checked ?? true;
+  const errorH  = document.getElementById('n8n-error')?.checked  ?? true;
+  const agentSlug = (bp.agent||'Agent').replace(/\s+/g,'-').replace(/[^a-zA-Z0-9-]/g,'').toLowerCase();
+
+  const get = slot => (bp.selections[slot]||[]);
+  const usesLLM = Object.values(bp.selections).flat().some(t=>t.framework==='LLM');
+  const allTechs = Object.values(bp.selections).flat().map(t=>t.name);
+
+  // Build n8n JSON workflow
+  let nodeId = 1;
+  const nodes = [];
+  const connections = {};
+  const addNode = (type, name, params={}, pos=[0,0]) => {
+    const id = String(nodeId++);
+    nodes.push({id, name, type, typeVersion:1, position:pos, parameters:params});
+    return id;
+  };
+  const connect = (from, to) => {
+    if (!connections[from]) connections[from]={main:[[]]};
+    connections[from].main[0].push({node:to,type:'main',index:0});
+  };
+
+  const triggerNode = trigger==='webhook'
+    ? addNode('n8n-nodes-base.webhook','Trigger',{httpMethod:'POST',path:agentSlug,responseMode:'responseNode'},[0,200])
+    : trigger==='schedule'
+    ? addNode('n8n-nodes-base.scheduleTrigger','Trigger',{rule:{interval:[{field:'minutes',minutesInterval:5}]}},[0,200])
+    : addNode('n8n-nodes-base.manualTrigger','Trigger',{},[0,200]);
+
+  const perceptionNode = addNode('n8n-nodes-base.httpRequest','Perception',{
+    method:'POST',url:'={{$json["input"]}}',
+    notes:`Techniques: ${get('perception').map(t=>t.name).join(', ')||'None'}`,
+  },[200,200]);
+  connect(triggerNode, perceptionNode);
+
+  const memNode = addNode('n8n-nodes-base.httpRequest', `Memory (${memory})`, {
+    notes:`Technique: ${get('memory').map(t=>t.name).join(', ')||'None'}\nStore type: ${memory}`,
+    method:'POST', url:'http://localhost:8000/memory/retrieve',
+  },[400,200]);
+  connect(perceptionNode, memNode);
+
+  const reasonNode = usesLLM
+    ? addNode('@n8n/n8n-nodes-langchain.lmChatAnthropic','Reasoning Engine',{
+        model:'claude-sonnet-5',
+        messages:{messageType:'auto'},
+        notes:`Techniques: ${get('reasoning').map(t=>t.name).join(', ')||'None'}`,
+      },[600,200])
+    : addNode('n8n-nodes-base.code','Reasoning Engine',{
+        jsCode:`// Techniques: ${get('reasoning').map(t=>t.name).join(', ')||'None'}\n// TODO: implement reasoning\nreturn [{json: {reasoning: $input.all()[0].json}}];`,
+        mode:'runOnceForAllItems',
+      },[600,200]);
+  connect(memNode, reasonNode);
+
+  const planNode = addNode('n8n-nodes-base.code','Planning',{
+    jsCode:`// Techniques: ${get('planning').map(t=>t.name).join(', ')||'None'}\n// TODO: implement planning\nconst reasoning = $input.all()[0].json;\nreturn [{json:{plan:['step_1','step_2'], reasoning}}];`,
+    mode:'runOnceForAllItems',
+  },[800,200]);
+  connect(reasonNode, planNode);
+
+  if (safety && get('safety').length) {
+    const safetyNode = addNode('n8n-nodes-base.if','Safety Check',{
+      conditions:{options:{caseSensitive:true},conditions:[{leftValue:'={{$json["safe"]}}',rightValue:true,operator:{type:'boolean',operation:'equals'}}]},
+      notes:`Techniques: ${get('safety').map(t=>t.name).join(', ')}`,
+    },[1000,200]);
+    connect(planNode, safetyNode);
+    const actionNode = addNode('n8n-nodes-base.httpRequest','Action Layer',{
+      method:'POST', url:'={{$json["action_endpoint"]}}',
+      notes:`Techniques: ${get('action').map(t=>t.name).join(', ')||'None'}`,
+    },[1200,200]);
+    connect(safetyNode, actionNode);
+  } else {
+    const actionNode = addNode('n8n-nodes-base.httpRequest','Action Layer',{
+      method:'POST', url:'={{$json["action_endpoint"]}}',
+      notes:`Techniques: ${get('action').map(t=>t.name).join(', ')||'None'}`,
+    },[1000,200]);
+    connect(planNode, actionNode);
+  }
+
+  const feedbackNode = addNode('n8n-nodes-base.code','Feedback / Learning',{
+    jsCode:`// Techniques: ${get('feedback').map(t=>t.name).join(', ')||'None'}\n// TODO: process reward and update model\nreturn $input.all();`,
+    mode:'runOnceForAllItems',
+  },[1400,200]);
+
+  if (errorH) {
+    addNode('n8n-nodes-base.errorTrigger','Error Handler',{notes:'Catches workflow errors'},[700,400]);
+  }
+
+  const workflow = {
+    name:`${bp.agent||'Agent'} — Cognitive Pipeline`,
+    nodes,
+    connections,
+    active:false,
+    settings:{executionOrder:'v1'},
+    meta:{
+      instanceId:'abp-generated',
+      templateCredsSetupCompleted:true,
+      notes:`Generated by Agent Brain Platform\nGoal: ${bp.goal||''}\nTechniques: ${allTechs.join(', ')}`,
+    },
+  };
+
+  const json = JSON.stringify(workflow, null, 2);
+  const area = document.getElementById('n8n-code-area');
+  area.innerHTML = `
+    <div style="margin-bottom:12px;padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:8px;font-size:11px;color:var(--text2)">
+      <b style="color:var(--text)">Generated n8n workflow</b> — ${nodes.length} nodes covering all configured cognitive slots.
+      Import into n8n via <b>Settings → Import Workflow</b>.
+    </div>
+    <div class="code-block-wrap">
+      <div class="code-block-hdr">
+        <div class="cbh-left"><span class="code-block-title">workflow.json</span><span class="code-block-sub">${nodes.length} nodes · n8n v1 format</span></div>
+        <div style="display:flex;gap:6px">
+          <button class="copy-btn" onclick="copyEl('n8n-json')">Copy</button>
+          <button class="dl-btn" onclick="dlFile('workflow.json','application/json',document.getElementById('n8n-json').textContent)">↓ Download</button>
+        </div>
+      </div>
+      <pre class="code" id="n8n-json">${escHtml(json)}</pre>
+    </div>
+  `;
+}
+
+// ── LANGGRAPH ─────────────────────────────────────────────────────────────────
+function renderLangGraph() {
+  if (!BLUEPRINT) return;
+  const bp = BLUEPRINT;
+  const ckpt = document.getElementById('lg-ckpt')?.value || 'memory';
+  const streaming = document.getElementById('lg-streaming')?.checked ?? true;
+  const humanInLoop = document.getElementById('lg-human')?.checked ?? false;
+  const agentSlug = (bp.agent||'Agent').replace(/\s+/g,'').replace(/[^a-zA-Z0-9]/g,'');
+  const get = slot => (bp.selections[slot]||[]);
+  const allTechs = Object.values(bp.selections).flat().map(t=>t.name);
+
+  let lines = [];
+  lines.push(`"""
+${agentSlug} — LangGraph Implementation
+Generated by Agent Brain Platform
+
+Goal: ${bp.goal||'Not specified'}
+Techniques: ${allTechs.join(', ')}
+"""
+`);
+  lines.push('from __future__ import annotations');
+  lines.push('from typing import Annotated, TypedDict, List, Optional');
+  lines.push('from langgraph.graph import StateGraph, END, START');
+  lines.push('from langgraph.checkpoint.memory import MemorySaver' + (ckpt==='sqlite' ? '\nfrom langgraph.checkpoint.sqlite import SqliteSaver' : ckpt==='postgres' ? '\nfrom langgraph.checkpoint.postgres.aio import AsyncPostgresSaver' : ''));
+  lines.push('from langchain_anthropic import ChatAnthropic');
+  lines.push('from langchain_core.messages import HumanMessage, AIMessage, SystemMessage');
+  if (humanInLoop) lines.push('from langgraph.prebuilt import ToolNode');
+  lines.push('import logging');
+  lines.push('');
+  lines.push('logger = logging.getLogger(__name__)');
+  lines.push('');
+
+  lines.push('# ── State ────────────────────────────────────────────────────────────────────');
+  lines.push('class AgentState(TypedDict):');
+  lines.push('    """Shared state flowing through the LangGraph nodes."""');
+  lines.push('    messages:        Annotated[List, "append"]');
+  lines.push('    raw_input:       str');
+  lines.push('    encoded_state:   Optional[dict]');
+  lines.push('    memory_context:  List[str]');
+  lines.push('    plan:            List[str]');
+  lines.push('    action:          Optional[str]');
+  lines.push('    reward:          float');
+  lines.push('    step:            int');
+  lines.push('    is_done:         bool');
+  lines.push('');
+
+  lines.push('# ── LLM ─────────────────────────────────────────────────────────────────────');
+  lines.push('llm = ChatAnthropic(model="claude-sonnet-5", temperature=0)');
+  lines.push('');
+
+  // Node functions
+  const slotToNode = {
+    perception:'perception_node', stateEncoder:'encode_state_node',
+    memory:'memory_node', reasoning:'reasoning_node', planning:'planning_node',
+    action:'action_node', feedback:'feedback_node', safety:'safety_node',
+    orchestration:'orchestration_node',
+  };
+
+  lines.push('# ── Nodes ────────────────────────────────────────────────────────────────────');
+  lines.push('');
+
+  // Perception
+  lines.push(`def perception_node(state: AgentState) -> AgentState:`);
+  lines.push(`    """Perception — ${get('perception').map(t=>t.name).join(', ')||'None'}"""`);
+  if (get('perception').some(t=>t.id==='rag')) {
+    lines.push('    # RAG: retrieve relevant docs for input');
+    lines.push('    # TODO: embed state["raw_input"], search vector store, inject into messages');
+  }
+  lines.push('    logger.info("Perception: processing input")');
+  lines.push('    return {**state, "messages": state["messages"] + [HumanMessage(content=state["raw_input"])]}');
+  lines.push('');
+
+  // State encoder
+  lines.push('def encode_state_node(state: AgentState) -> AgentState:');
+  lines.push(`    """State Encoder — ${get('stateEncoder').map(t=>t.name).join(', ')||'None'}"""`);
+  if (get('stateEncoder').some(t=>t.id==='belief')) {
+    lines.push('    # Bayesian belief update');
+    lines.push('    # TODO: update belief distribution from new observation');
+  }
+  lines.push('    encoded = {"raw": state["raw_input"], "step": state["step"]}  # TODO: implement');
+  lines.push('    return {**state, "encoded_state": encoded}');
+  lines.push('');
+
+  // Memory
+  lines.push('def memory_node(state: AgentState) -> AgentState:');
+  lines.push(`    """Memory — ${get('memory').map(t=>t.name).join(', ')||'None'}"""`);
+  lines.push('    # TODO: retrieve from vector store / knowledge graph');
+  lines.push('    context = []  # TODO: semantic search over memory store');
+  lines.push('    return {**state, "memory_context": context}');
+  lines.push('');
+
+  // Reasoning
+  lines.push('def reasoning_node(state: AgentState) -> AgentState:');
+  lines.push(`    """Reasoning Engine — ${get('reasoning').map(t=>t.name).join(', ')||'None'}"""`);
+  const sysPrompt = `You are ${bp.agent||'an AI agent'}. Goal: ${bp.goal||''}. ${get('reasoning').some(t=>t.id==='cot')?'Think step by step before responding.':''}`.trim();
+  lines.push(`    system = "${sysPrompt.replace(/"/g,'\\"')}"`);
+  lines.push('    context_str = "\\n".join(state["memory_context"]) if state["memory_context"] else ""');
+  lines.push('    msgs = [SystemMessage(content=system)]');
+  lines.push('    if context_str:');
+  lines.push('        msgs.append(SystemMessage(content=f"Relevant context:\\n{context_str}"))');
+  lines.push('    msgs += state["messages"]');
+  lines.push('    response = llm.invoke(msgs)');
+  lines.push('    return {**state, "messages": state["messages"] + [response]}');
+  lines.push('');
+
+  // Planning
+  lines.push('def planning_node(state: AgentState) -> AgentState:');
+  lines.push(`    """Planning — ${get('planning').map(t=>t.name).join(', ')||'None'}"""`);
+  if (get('planning').some(t=>t.id==='minimax')) {
+    lines.push('    # Minimax planning — adversarial lookahead');
+    lines.push('    # TODO: implement minimax with alpha-beta pruning');
+  } else if (get('planning').some(t=>t.id==='llmPlan')) {
+    lines.push('    plan_prompt = f"Break the following goal into ordered steps: {state[\'raw_input\']}"');
+    lines.push('    plan_response = llm.invoke([HumanMessage(content=plan_prompt)])');
+    lines.push('    plan = [line.strip() for line in plan_response.content.split("\\n") if line.strip()]');
+    lines.push('    return {**state, "plan": plan}');
+  } else {
+    lines.push('    # TODO: implement planning logic');
+  }
+  lines.push('    return {**state, "plan": state.get("plan", [])}');
+  lines.push('');
+
+  // Safety (optional)
+  if (get('safety').length) {
+    lines.push('def safety_node(state: AgentState) -> AgentState:');
+    lines.push(`    """Safety — ${get('safety').map(t=>t.name).join(', ')}"""`);
+    lines.push('    # TODO: check action against policy constraints / constitutional AI');
+    lines.push('    action = state.get("action")');
+    lines.push('    if action is None:');
+    lines.push('        return state');
+    lines.push('    # Placeholder: all actions pass');
+    lines.push('    return state');
+    lines.push('');
+  }
+
+  // Action
+  lines.push('def action_node(state: AgentState) -> AgentState:');
+  lines.push(`    """Action Layer — ${get('action').map(t=>t.name).join(', ')||'None'}"""`);
+  if (get('action').some(t=>t.id==='toolUse')) {
+    lines.push('    # Tool Use: parse LLM output for tool calls');
+    lines.push('    last_msg = state["messages"][-1]');
+    lines.push('    action = last_msg.content if hasattr(last_msg,"content") else str(last_msg)');
+  } else {
+    lines.push('    action = state["plan"][0] if state["plan"] else None  # TODO: implement');
+  }
+  lines.push('    reward = 0.0  # TODO: get from environment');
+  lines.push('    return {**state, "action": action, "reward": reward}');
+  lines.push('');
+
+  // Feedback
+  lines.push('def feedback_node(state: AgentState) -> AgentState:');
+  lines.push(`    """Feedback / Learning — ${get('feedback').map(t=>t.name).join(', ')||'None'}"""`);
+  lines.push('    # TODO: process reward signal, update value estimates / policy');
+  lines.push('    logger.info(f"Step {state[\'step\']} reward: {state[\'reward\']:.3f}")');
+  lines.push('    return {**state, "step": state["step"] + 1}');
+  lines.push('');
+
+  // Should continue
+  lines.push('def should_continue(state: AgentState) -> str:');
+  lines.push('    """Routing function: continue loop or end."""');
+  lines.push('    if state["is_done"] or state["step"] >= 20:');
+  lines.push('        return END');
+  if (humanInLoop) {
+    lines.push('    if state.get("needs_human_review"):');
+    lines.push('        return "human_review"');
+  }
+  lines.push('    return "perception_node"');
+  lines.push('');
+
+  // Build graph
+  lines.push('# ── Graph ────────────────────────────────────────────────────────────────────');
+  lines.push('def build_graph():');
+  lines.push(`    graph = StateGraph(AgentState)`);
+  lines.push('');
+  lines.push('    # Add nodes');
+  lines.push('    graph.add_node("perception_node",    perception_node)');
+  lines.push('    graph.add_node("encode_state_node",  encode_state_node)');
+  lines.push('    graph.add_node("memory_node",        memory_node)');
+  lines.push('    graph.add_node("reasoning_node",     reasoning_node)');
+  lines.push('    graph.add_node("planning_node",      planning_node)');
+  if (get('safety').length) lines.push('    graph.add_node("safety_node",       safety_node)');
+  lines.push('    graph.add_node("action_node",        action_node)');
+  lines.push('    graph.add_node("feedback_node",      feedback_node)');
+  lines.push('');
+  lines.push('    # Add edges (linear pipeline)');
+  lines.push('    graph.add_edge(START,               "perception_node")');
+  lines.push('    graph.add_edge("perception_node",   "encode_state_node")');
+  lines.push('    graph.add_edge("encode_state_node", "memory_node")');
+  lines.push('    graph.add_edge("memory_node",       "reasoning_node")');
+  lines.push('    graph.add_edge("reasoning_node",    "planning_node")');
+  if (get('safety').length) {
+    lines.push('    graph.add_edge("planning_node",    "safety_node")');
+    lines.push('    graph.add_edge("safety_node",      "action_node")');
+  } else {
+    lines.push('    graph.add_edge("planning_node",    "action_node")');
+  }
+  lines.push('    graph.add_edge("action_node",       "feedback_node")');
+  lines.push('    graph.add_conditional_edges("feedback_node", should_continue)');
+  lines.push('');
+  const ckptLine = ckpt==='memory' ? '    checkpointer = MemorySaver()'
+    : ckpt==='sqlite' ? '    checkpointer = SqliteSaver.from_conn_string(":memory:")'
+    : '    checkpointer = None  # TODO: configure AsyncPostgresSaver with connection string';
+  lines.push(ckptLine);
+  lines.push('    return graph.compile(checkpointer=checkpointer' + (humanInLoop ? ', interrupt_before=["action_node"]' : '') + ')');
+  lines.push('');
+
+  lines.push('# ── Entry Point ──────────────────────────────────────────────────────────────');
+  lines.push('app = build_graph()');
+  lines.push('');
+  lines.push('if __name__ == "__main__":');
+  lines.push('    initial_state: AgentState = {');
+  lines.push('        "messages": [], "raw_input": "Start negotiation for Q4 vendor contract.",');
+  lines.push('        "encoded_state": None, "memory_context": [], "plan": [],');
+  lines.push('        "action": None, "reward": 0.0, "step": 0, "is_done": False,');
+  lines.push('    }');
+  lines.push('    config = {"configurable": {"thread_id": "session-1"}}');
+  if (streaming) {
+    lines.push('    for event in app.stream(initial_state, config=config):');
+    lines.push('        for node, output in event.items():');
+    lines.push('            print(f"[{node}] step={output.get(\'step\',0)} reward={output.get(\'reward\',0):.3f}")');
+  } else {
+    lines.push('    result = app.invoke(initial_state, config=config)');
+    lines.push('    print(f"Done: step={result[\'step\']} reward={result[\'reward\']:.3f}")');
+  }
+
+  const code = lines.join('\n');
+  const area = document.getElementById('lg-code-area');
+  area.innerHTML = `
+    <div style="margin-bottom:12px;padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:8px;font-size:11px;color:var(--text2)">
+      <b style="color:var(--text)">Generated LangGraph implementation</b> — full StateGraph with one node per cognitive slot, checkpointing (${ckpt})${humanInLoop?', human-in-the-loop interrupt before action_node':''}.
+    </div>
+    <div class="code-block-wrap">
+      <div class="code-block-hdr">
+        <div class="cbh-left"><span class="code-block-title">graph.py</span><span class="code-block-sub">LangGraph StateGraph · ${lines.filter(l=>l.includes('def ')).length} functions</span></div>
+        <div style="display:flex;gap:6px">
+          <button class="copy-btn" onclick="copyEl('lg-code')">Copy</button>
+          <button class="dl-btn" onclick="dlFile('graph.py','text/plain',document.getElementById('lg-code').textContent)">↓ Download</button>
+        </div>
+      </div>
+      <pre class="code" id="lg-code">${escHtml(code)}</pre>
+    </div>
+  `;
+  renderMapping('lg-mapping');
+}
+
+// ── SAP ───────────────────────────────────────────────────────────────────────
+function renderSAP() {
+  if (!BLUEPRINT) return;
+  const bp = BLUEPRINT;
+  const agentSlug = (bp.agent||'Agent').replace(/\s+/g,'_').replace(/[^a-zA-Z0-9_]/g,'').toLowerCase();
+
+  const aiCoreCode = `# SAP AI Core — serving endpoint configuration
+# deploy.yaml
+apiVersion: ai.sap.com/v1alpha1
+kind: ServingTemplate
+metadata:
+  name: ${agentSlug}-serving
+  labels:
+    scenarios.ai.sap.com/id: "${agentSlug}"
+spec:
+  template:
+    spec:
+      containers:
+        - name: agent
+          image: "<your-docker-registry>/${agentSlug}:latest"
+          ports:
+            - containerPort: 8080
+          env:
+            - name: ANTHROPIC_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: agent-secrets
+                  key: anthropic-api-key
+          resources:
+            limits:
+              cpu: "2"
+              memory: "4Gi"
+---
+# Register execution via AI Core REST API
+import requests, os
+
+AI_CORE_URL = os.environ["AI_CORE_URL"]        # e.g. https://api.ai.internalprod.eu-central-1.aws.ml.hana.ondemand.com
+headers = {"Authorization": f"Bearer {os.environ['AI_CORE_TOKEN']}",
+           "Content-Type": "application/json",
+           "AI-Resource-Group": "default"}
+
+# Create execution
+resp = requests.post(
+    f"{AI_CORE_URL}/v2/inference/deployments",
+    headers=headers,
+    json={"configurationId": "${agentSlug}-config-id"}
+)
+deployment_url = resp.json()["deploymentUrl"]
+print("Deployed at:", deployment_url)`;
+
+  const jouleSKillCode = `# Joule Studio — Custom Skill Registration
+# Joule Skill SDK (Python)
+
+from joule_skill_sdk import Skill, SkillHandler, Message
+
+@Skill(
+    name="${bp.agent||'Agent'}",
+    description="${(bp.goal||'').substring(0,120)}",
+    version="1.0.0",
+)
+class ${(bp.agent||'Agent').replace(/\s+/g,'')}Skill(SkillHandler):
+    """
+    Cognitive Architecture:
+${Object.entries(SLOT_META).map(([id,s])=>{
+  const techs=(bp.selections[id]||[]).map(t=>t.name).join(', ')||'None';
+  return `    - ${s.label}: ${techs}`;
+}).join('\n')}
+    """
+    def handle(self, message: Message) -> Message:
+        # TODO: wire to agent.py or LangGraph app
+        from agent import ${(bp.agent||'Agent').replace(/\s+/g,'')}
+        agent = ${(bp.agent||'Agent').replace(/\s+/g,'')}()
+        result = agent.run(message.text)
+        return Message(text=str(result.reasoning_output))
+
+# Register skill
+if __name__ == "__main__":
+    ${(bp.agent||'Agent').replace(/\s+/g,'')}Skill.serve(port=8080)`;
+
+  const otdataCode = `# Connect Action Layer to SAP S/4HANA via OData
+import requests, os
+
+S4_BASE = os.environ.get("S4_URL", "https://my-s4hana.sap.com")
+AUTH    = (os.environ["S4_USER"], os.environ["S4_PASS"])
+
+def create_purchase_order(vendor_id: str, items: list) -> dict:
+    """Create PO via SAP Purchasing OData API."""
+    payload = {
+        "PurchasingOrganization": "1000",
+        "Supplier": vendor_id,
+        "to_PurchaseOrderItem": {
+            "results": [
+                {"PurchaseOrderItem": str(i+1).zfill(5),
+                 "Material": item["material"],
+                 "OrderQuantity": item["qty"],
+                 "NetPriceAmount": item["price"]}
+                for i, item in enumerate(items)
+            ]
+        }
+    }
+    r = requests.post(
+        f"{S4_BASE}/sap/opu/odata/sap/API_PURCHASEORDER_PROCESS_SRV/A_PurchaseOrder",
+        json=payload, auth=AUTH,
+        headers={"Accept": "application/json", "Content-Type": "application/json"}
+    )
+    r.raise_for_status()
+    return r.json()["d"]`;
+
+  const area = document.getElementById('sap-code-area');
+  area.innerHTML = `
+    <div class="code-block-wrap">
+      <div class="code-block-hdr">
+        <div class="cbh-left"><span class="code-block-title">AI Core deploy.yaml + registration</span></div>
+        <div style="display:flex;gap:6px">
+          <button class="copy-btn" onclick="copyEl('sap-aicore')">Copy</button>
+          <button class="dl-btn" onclick="dlFile('ai_core_deploy.py','text/plain',document.getElementById('sap-aicore').textContent)">↓ Download</button>
+        </div>
+      </div>
+      <pre class="code" id="sap-aicore">${escHtml(aiCoreCode)}</pre>
+    </div>
+    <div class="code-block-wrap">
+      <div class="code-block-hdr">
+        <div class="cbh-left"><span class="code-block-title">Joule Studio Skill SDK</span></div>
+        <div style="display:flex;gap:6px">
+          <button class="copy-btn" onclick="copyEl('sap-joule')">Copy</button>
+          <button class="dl-btn" onclick="dlFile('joule_skill.py','text/plain',document.getElementById('sap-joule').textContent)">↓ Download</button>
+        </div>
+      </div>
+      <pre class="code" id="sap-joule">${escHtml(jouleSKillCode)}</pre>
+    </div>
+    <div class="code-block-wrap">
+      <div class="code-block-hdr">
+        <div class="cbh-left"><span class="code-block-title">S/4HANA OData Action Layer</span></div>
+        <div style="display:flex;gap:6px">
+          <button class="copy-btn" onclick="copyEl('sap-odata')">Copy</button>
+          <button class="dl-btn" onclick="dlFile('sap_odata_actions.py','text/plain',document.getElementById('sap-odata').textContent)">↓ Download</button>
+        </div>
+      </div>
+      <pre class="code" id="sap-odata">${escHtml(otdataCode)}</pre>
+    </div>
+  `;
+}
+
+// ── DEPLOY GUIDE ──────────────────────────────────────────────────────────────
+function setDeployTarget(target, el) {
+  deployTarget = target;
+  document.querySelectorAll('.int-card').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  renderDeployGuide(target);
+}
+
+function renderDeployGuide(target) {
+  const guides = {
+    n8n: {
+      title:'n8n Deployment',
+      steps:[
+        'Install n8n: <code>npm install n8n -g</code> or use Docker: <code>docker run -it --rm --name n8n -p 5678:5678 n8nio/n8n</code>',
+        'Go to n8n → <b>Settings → Import from File</b> → select <code>workflow.json</code>',
+        'Configure credentials: set <b>Anthropic API</b> node with your <code>ANTHROPIC_API_KEY</code>',
+        'Set vector store connection (Redis / Postgres) in the <b>Memory</b> node',
+        'Click <b>Activate Workflow</b>. For webhook trigger, copy the Webhook URL.',
+        'Test via the webhook URL or Manual trigger → <b>Execute Workflow</b>',
+        'For SAP: import the same workflow.json into <b>Joule Studio → n8n Workflows</b>',
+      ],
+    },
+    langgraph: {
+      title:'LangGraph Deployment',
+      steps:[
+        '<code>pip install langgraph langchain-anthropic python-dotenv</code>',
+        'Create <code>.env</code>: <code>ANTHROPIC_API_KEY=sk-ant-...</code>',
+        'Run locally: <code>python graph.py</code>',
+        'For LangGraph Studio: open the project folder — Studio auto-discovers <code>graph.py</code>',
+        'For production: <code>pip install langgraph-cli && langgraph deploy</code>',
+        'For SAP AI Core: containerise the app and deploy via the AI Core serving template',
+        'Monitor via LangSmith: set <code>LANGSMITH_API_KEY</code> and <code>LANGSMITH_TRACING=true</code>',
+      ],
+    },
+    sap: {
+      title:'SAP BTP / Joule Deployment',
+      steps:[
+        'Package the Python scaffold as a Docker image and push to SAP container registry',
+        'Upload <code>ai_core_deploy.py</code> configuration to AI Core via the AI Core API',
+        'Register the Joule skill using <code>joule_skill.py</code> and the Skill SDK',
+        'Configure S/4HANA OData credentials in BTP Secret Store',
+        'Activate the skill in Joule Studio under <b>Custom Skills</b>',
+        'Test via Joule chat interface: type the agent goal and validate end-to-end',
+        'Monitor via SAP Alert Notification Service and AI Core metrics dashboard',
+      ],
+    },
+    standalone: {
+      title:'Standalone Python Deployment',
+      steps:[
+        '<code>pip install -r requirements.txt</code>',
+        'Set environment variables: <code>ANTHROPIC_API_KEY</code>, vector store credentials',
+        'Implement the <code># TODO</code> sections in <code>agent.py</code>',
+        'Run: <code>python agent.py</code>',
+        'Wrap in FastAPI for REST endpoint: <code>pip install fastapi uvicorn</code>',
+        'Deploy to any Python hosting: AWS Lambda, Azure Functions, GCP Cloud Run',
+        'For observability: integrate LangSmith or Weights &amp; Biases tracing',
+      ],
+    },
+  };
+
+  const g = guides[target] || guides.n8n;
+  document.getElementById('deploy-guide').innerHTML = `
+    <div class="sidebar-card" style="max-width:100%">
+      <div class="sc-title">${g.title} — Step by Step</div>
+      <div class="deploy-steps">
+        ${g.steps.map((s,i)=>`<div class="deploy-step"><div class="ds-num">${i+1}</div><div class="ds-text">${s}</div></div>`).join('')}
+      </div>
+    </div>
+  `;
+}
+
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+function escHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+function copyEl(id){
+  const el=document.getElementById(id);
+  navigator.clipboard.writeText(el.textContent)
+    .then(()=>{const b=event.target;b.textContent='✓';setTimeout(()=>b.textContent='Copy',1500);});
+}
+
+function dlFile(name,mime,content){
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([content],{type:mime}));
+  a.download=name;a.click();
+}
+
+function downloadAll(){
+  if(!BLUEPRINT)return;
+  // trigger each download with small delay
+  ['n8n-json','lg-code','sap-aicore','sap-joule','sap-odata'].forEach((id,i)=>{
+    const el=document.getElementById(id);
+    if(!el)return;
+    const names={
+      'n8n-json':'workflow.json','lg-code':'graph.py',
+      'sap-aicore':'ai_core_deploy.py','sap-joule':'joule_skill.py','sap-odata':'sap_odata_actions.py',
+    };
+    const mimes={'n8n-json':'application/json'};
+    setTimeout(()=>dlFile(names[id],mimes[id]||'text/plain',el.textContent),i*150);
+  });
+}
+
+function setTab(name,el){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('pane-'+name).classList.add('active');
+}
+
+// ── BOOT ──────────────────────────────────────────────────────────────────────
+init();
+renderDeployGuide('n8n');
+</script>
+</body>
+</html>
