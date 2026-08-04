@@ -366,7 +366,6 @@ vault provenance not required; see 2026-08-04 decision in conversation.)
   trend-marginal-stopper, confidence-marginal-stopper, evidence-critic)
 - [x] Add schema validation, duplicate detection, provenance checks, and tests.
   (registry/validate.py, registry/test_registry.py — 26 tests, all pass)
-- [ ] Add schema validation, duplicate detection, provenance checks, and tests.
 
 **Deliverable:** a versioned machine-readable registry plus a human-readable
 registry report.
