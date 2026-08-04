@@ -1,8 +1,8 @@
 {
   "schema": "poc6c-artifact-manifest-v1",
   "file_count": 370,
-  "total_bytes": 1413467,
-  "records_sha256": "F808B9C75B4940925ABDF72E62C6B106E26F6152E945A2DA421DAE31FA9C3205",
+  "total_bytes": 1444256,
+  "records_sha256": "02DE024227BD71CBD418CB321535FE91D7817A80BDECD96D9534AB1736626D91",
   "files": [
     {
       "path": "PLAN.md",
@@ -11,8 +11,8 @@
     },
     {
       "path": "PROGRESS.md",
-      "size_bytes": 14547,
-      "sha256": "458BFB4169A85BDC5E4BD3A6BC08EEFC195367A4FBDB90E675292E49C690962E"
+      "size_bytes": 17140,
+      "sha256": "00559979A645DDECD05B35949631E7D3227113C8AC2F97D7C4383D63F519B764"
     },
     {
       "path": "README.md",
@@ -41,8 +41,8 @@
     },
     {
       "path": "blinding.py",
-      "size_bytes": 13543,
-      "sha256": "4CE752AE68D8BFE0CDD98CA22F90751346CA6FDD6819D9B654857A2BB35CE69F"
+      "size_bytes": 24614,
+      "sha256": "49D3CED967E719305039D96AC4B0835BF408FD7A4AE0A7CC1ECFD100C3348AB9"
     },
     {
       "path": "confirmation/EVALUATION_RUBRIC_V1.md",
@@ -56,8 +56,8 @@
     },
     {
       "path": "confirmation/READINESS_MATRIX.md",
-      "size_bytes": 12065,
-      "sha256": "F9CDCF77B91E0F5C705B6490236414091F18C517DFC3E5ED2D6A24DB82BD90FD"
+      "size_bytes": 13882,
+      "sha256": "806758A9DD3041E958B536AC17D82105B238F69CA5BD980BB1AF7B3552AA4738"
     },
     {
       "path": "confirmation/__init__.py",
@@ -251,8 +251,8 @@
     },
     {
       "path": "readiness.py",
-      "size_bytes": 39145,
-      "sha256": "7B58EE60E8F3A072E169B0E0D7D4FB8A5AFC7FC38FCA55B3872F6CB69137C6BD"
+      "size_bytes": 40081,
+      "sha256": "CC8B510153F1FF8C72B0A40EB0E08637FA4591806831636A37932AA9F2E6A4DE"
     },
     {
       "path": "rubric.py",
@@ -281,8 +281,8 @@
     },
     {
       "path": "test_blinding.py",
-      "size_bytes": 13356,
-      "sha256": "F449385A8D15249746A4BDF2A453779E08352E873E3DF5CCA24F153CF94D496D"
+      "size_bytes": 24080,
+      "sha256": "8ABCC185FAECE900C20A03E7E43CB6C614582A9EAE963D1C00EE0F589BBC2322"
     },
     {
       "path": "test_controller.py",
@@ -306,8 +306,8 @@
     },
     {
       "path": "test_provider.py",
-      "size_bytes": 12861,
-      "sha256": "64E485DDEE84F77CD54003BBDE655734CB3065F7B74BC7796A70201C401B52AE"
+      "size_bytes": 16509,
+      "sha256": "4A70D7D6656BCFDC6FFB414D1C421A161E6820342BDDD244BA0888F274432974"
     },
     {
       "path": "test_readiness.py",

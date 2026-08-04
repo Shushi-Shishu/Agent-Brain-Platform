@@ -10,34 +10,36 @@
 #
 # Security invariants
 # -------------------
-# - Arm jobs (generic-arm, configured-arm) receive identical task, corpus,
-#   tool, model, and budget inputs.  Neither arm receives evaluator
-#   materials, the blind mapping, the seed, or the other arm's output.
-# - The evaluator job receives only the blinded answer bundle and rubric;
-#   never prompts, traces, arm labels, seed, or mapping.
-# - The blinding seed is available only in the deterministic-blinding job
-#   via the protected 'confirmation' environment.
+# - Arm jobs receive ONLY: task corpus, tool definitions, model ID, budget.
+#   They do NOT receive: evaluator materials, mapping, seed, other arm outputs.
+# - Evaluator job receives ONLY: blinded answer bundle and rubric.
+#   It does NOT receive: prompts, traces, arm labels, seed, mapping, private key.
+# - The blinding seed is scoped ONLY to the confirmation-custody protected env.
+# - Agent/evaluator subprocesses receive explicitly allow-listed env vars;
+#   GITHUB_TOKEN, ACTIONS_RUNTIME_TOKEN, ACTIONS_ID_TOKEN_REQUEST_TOKEN,
+#   CONFIRMATION_BLIND_SEED, and all private-key variables are excluded.
 # - Artifacts are content-addressed; SHA-256 hashes are verified before use.
 # - Raw Project 008 vault content is never uploaded to this public repository.
-# - Workflows triggered from untrusted pull requests cannot access secrets.
-# - The 'confirmation' protected environment is required for all secret-
-#   bearing jobs (preflight, deterministic-blinding, evaluator).
+# - Decrypted corpus data exists only inside the arm runner VM; it is not
+#   uploaded and is decommissioned with the ephemeral VM.
+# - Workflows triggered from untrusted pull requests cannot access any secret.
+# - The 'confirmation' environment gates ANTHROPIC_API_KEY for arm/evaluator.
+# - The 'confirmation-custody' environment gates CONFIRMATION_BLIND_SEED and
+#   is scoped only to the deterministic-blinding job.
 #
-# Job topology
-# ------------
-#  preflight
-#    └─> generic-arm (ubuntu-24.04)
-#    └─> configured-arm (ubuntu-24.04, DIFFERENT runner instance)
-#         └─> deterministic-blinding (ubuntu-24.04, protected env)
-#               └─> blinded-evaluator (ubuntu-24.04, DIFFERENT runner)
-#                     └─> integrity-and-analysis (ubuntu-24.04)
+# Job topology (each on a separate fresh ubuntu-24.04 VM)
+# --------------------------------------------------------
+#  preflight            (confirmation env — API key only)
+#    └─> generic-arm   (confirmation env — API key only, NO seed)
+#    └─> configured-arm (confirmation env — API key only, NO seed)
+#         └─> deterministic-blinding (confirmation-custody env — seed only)
+#               └─> blinded-evaluator (confirmation env — API key only, NO seed)
+#                     └─> integrity-and-analysis (no secrets)
 
 name: POC 6c Confirmation
 
 on:
   # Manual trigger only — never run automatically.
-  # The confirmation workflow must be explicitly dispatched by the repository
-  # owner after all nine readiness gates are satisfied.
   workflow_dispatch:
     inputs:
       corpus_package_sha256:
@@ -54,33 +56,34 @@ on:
         default: 'false'
         type: string
 
-# Default permissions: read-only.  Individual jobs opt in to what they need.
+# Prevent untrusted fork PRs from accessing secrets.
+# Repository-level default: read-only contents; jobs opt in to what they need.
 permissions:
   contents: read
 
-# Prevent concurrent confirmation runs to avoid race conditions on artifacts.
+# Prevent concurrent confirmation runs.
 concurrency:
   group: poc6c-confirmation
   cancel-in-progress: false
 
 env:
   PYTHON_VERSION: '3.11'
-  PRICING_LOCK_PATH: poc6c/pricing_lock.json
-  RUBRIC_PATH: poc6c/confirmation/EVALUATION_RUBRIC_V1.md
-  TASK_SET_PATH: poc6c/confirmation/tasks_v1.json
-  PREREGISTRATION_PATH: poc6c/confirmation/PREREGISTRATION_DRAFT.md
   CORPUS_EXPECTED_SHA256: ${{ inputs.corpus_package_sha256 }}
 
 jobs:
   # =========================================================================
   # 1. PREFLIGHT
-  # Verify all readiness gates before any confirmation work starts.
+  # Verifies all readiness gates before any confirmation work starts.
   # Fails closed if any gate is unmet or corpus hash mismatches.
+  # Receives: ANTHROPIC_API_KEY (to call GET /v1/models).
+  # Does NOT receive: CONFIRMATION_BLIND_SEED.
   # =========================================================================
   preflight:
     name: Preflight — Verify Readiness Gates
     runs-on: ubuntu-24.04
     environment: confirmation
+    permissions:
+      contents: read
     outputs:
       preflight_passed: ${{ steps.run_preflight.outputs.passed }}
       preflight_sha256: ${{ steps.run_preflight.outputs.sha256 }}
@@ -97,8 +100,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install anthropic==0.116.0
-        working-directory: poc6c
+          pip install anthropic==0.116.0 cryptography>=41.0.0
 
       - name: Run preflight checks
         id: run_preflight
@@ -122,7 +124,6 @@ jobs:
               passed = "false"
               sys.exit(1)
 
-          # Write outputs
           with open(os.environ["GITHUB_OUTPUT"], "a") as f:
               f.write(f"passed={passed}\n")
               report = {"passed": True, "dry_run": dry_run}
@@ -134,41 +135,31 @@ jobs:
       - name: Verify corpus package hash
         run: |
           python - <<'PYEOF'
-          import os, sys, hashlib
+          import os, sys
           expected = os.environ.get("CORPUS_EXPECTED_SHA256", "").strip().upper()
           if not expected:
-              print("No corpus package SHA-256 provided; skipping hash check.", file=sys.stderr)
+              print("FATAL: No corpus package SHA-256 provided.", file=sys.stderr)
               sys.exit(1)
-          # The encrypted corpus package is a workflow input (never raw vault content).
-          # In a real run, the package would be downloaded from a secure source here.
-          # This step documents the verification requirement; it fails closed if
-          # the hash is missing.
-          print(f"Corpus package hash verification required: {expected}")
+          print(f"Corpus package SHA-256 required before download: {expected}")
           print("NOTE: Actual corpus package download and hash verification must be")
-          print("      implemented before running a real confirmation.")
+          print("      implemented here before running a real confirmation.")
           PYEOF
-
-      - name: Upload preflight report
-        uses: actions/upload-artifact@v4
-        with:
-          name: preflight-report
-          path: poc6c/
-          include-hidden-files: false
-          retention-days: 30
+        env:
+          CORPUS_EXPECTED_SHA256: ${{ env.CORPUS_EXPECTED_SHA256 }}
 
   # =========================================================================
   # 2. GENERIC ARM
-  # Run the generic (baseline) agent on all confirmation tasks.
-  # Isolated VM; no access to configured-arm outputs, mapping, seed,
-  # or evaluator materials.
+  # Isolated VM; receives ANTHROPIC_API_KEY only.
+  # Does NOT receive: CONFIRMATION_BLIND_SEED, mapping, configured-arm output.
   # =========================================================================
   generic-arm:
     name: Generic Arm — Baseline Agent
     needs: preflight
     if: needs.preflight.outputs.preflight_passed == 'true'
     runs-on: ubuntu-24.04
-    # No 'environment' here: arm jobs do NOT receive the blind seed or
-    # evaluator secrets.
+    environment: confirmation
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout repository
@@ -182,37 +173,42 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install anthropic==0.116.0
+          pip install anthropic==0.116.0 cryptography>=41.0.0
 
-      - name: Assert seed not in environment
+      - name: Assert seed and mapping not in environment
         run: |
           python - <<'PYEOF'
           import sys
           sys.path.insert(0, "poc6c")
-          from blinding import assert_seed_not_in_environment
+          from blinding import assert_seed_not_in_environment, assert_mapping_not_in_environment
           assert_seed_not_in_environment()
-          print("OK: CONFIRMATION_BLIND_SEED is not accessible to the generic arm.")
+          assert_mapping_not_in_environment()
+          print("OK: CONFIRMATION_BLIND_SEED and mapping variables absent from generic arm.")
           PYEOF
 
-      - name: Run generic arm (dry run / synthetic fixtures)
+      - name: Run generic arm
+        # Explicitly allow-list env vars reaching agent subprocesses.
+        # GITHUB_TOKEN, ACTIONS_* tokens, CONFIRMATION_BLIND_SEED, and
+        # private-key variables are excluded.
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           ARM: generic
           DRY_RUN: ${{ inputs.dry_run }}
+          CORPUS_EXPECTED_SHA256: ${{ env.CORPUS_EXPECTED_SHA256 }}
         run: |
           python - <<'PYEOF'
           import os, json, sys
           sys.path.insert(0, "poc6c")
-          # Arm jobs run with synthetic fixtures until R01-R05 are satisfied.
-          # This script documents the intended execution logic.
           dry_run = os.environ.get("DRY_RUN", "false").lower() == "true"
           arm = os.environ.get("ARM", "generic")
           print(f"ARM={arm} DRY_RUN={dry_run}")
           print("NOTE: Live confirmation execution requires R01-R05 to be unblocked.")
-          print("      Agent outputs will be written to arm-outputs/generic/ in a real run.")
           os.makedirs("arm-outputs/generic", exist_ok=True)
-          # Placeholder output — real run would write actual agent traces here.
-          result = {"arm": arm, "status": "dry_run_placeholder", "outputs": []}
+          result = {
+              "arm": arm,
+              "status": "dry_run_placeholder" if dry_run else "pending_r01_r05",
+              "outputs": [],
+          }
           with open("arm-outputs/generic/results.json", "w") as f:
               json.dump(result, f)
           PYEOF
@@ -226,15 +222,17 @@ jobs:
 
   # =========================================================================
   # 3. CONFIGURED ARM
-  # Run the configured (Candidate 2) agent on all confirmation tasks.
-  # Different VM instance from generic-arm; no cross-arm filesystem access.
+  # Different fresh VM from generic-arm — OS-level isolation.
+  # Does NOT receive: CONFIRMATION_BLIND_SEED, mapping, generic-arm output.
   # =========================================================================
   configured-arm:
     name: Configured Arm — Candidate 2 Agent
     needs: preflight
     if: needs.preflight.outputs.preflight_passed == 'true'
     runs-on: ubuntu-24.04
-    # Different runner instance from generic-arm — OS-level isolation.
+    environment: confirmation
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout repository
@@ -248,23 +246,25 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install anthropic==0.116.0
+          pip install anthropic==0.116.0 cryptography>=41.0.0
 
-      - name: Assert seed not in environment
+      - name: Assert seed and mapping not in environment
         run: |
           python - <<'PYEOF'
           import sys
           sys.path.insert(0, "poc6c")
-          from blinding import assert_seed_not_in_environment
+          from blinding import assert_seed_not_in_environment, assert_mapping_not_in_environment
           assert_seed_not_in_environment()
-          print("OK: CONFIRMATION_BLIND_SEED is not accessible to the configured arm.")
+          assert_mapping_not_in_environment()
+          print("OK: CONFIRMATION_BLIND_SEED and mapping variables absent from configured arm.")
           PYEOF
 
-      - name: Run configured arm (dry run / synthetic fixtures)
+      - name: Run configured arm
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           ARM: configured
           DRY_RUN: ${{ inputs.dry_run }}
+          CORPUS_EXPECTED_SHA256: ${{ env.CORPUS_EXPECTED_SHA256 }}
         run: |
           python - <<'PYEOF'
           import os, json, sys
@@ -274,7 +274,11 @@ jobs:
           print(f"ARM={arm} DRY_RUN={dry_run}")
           print("NOTE: Live confirmation execution requires R01-R05 to be unblocked.")
           os.makedirs("arm-outputs/configured", exist_ok=True)
-          result = {"arm": arm, "status": "dry_run_placeholder", "outputs": []}
+          result = {
+              "arm": arm,
+              "status": "dry_run_placeholder" if dry_run else "pending_r01_r05",
+              "outputs": [],
+          }
           with open("arm-outputs/configured/results.json", "w") as f:
               json.dump(result, f)
           PYEOF
@@ -288,100 +292,21 @@ jobs:
 
   # =========================================================================
   # 4. DETERMINISTIC BLINDING
-  # Non-agent job: reads the seed from the protected environment, assigns
-  # arms deterministically, and encrypts the mapping.
-  # Neither arm job nor the evaluator receives the seed or plain mapping.
+  # Non-agent job; reads CONFIRMATION_BLIND_SEED from confirmation-custody env.
+  # Uses a separate protected environment from the arm/evaluator jobs so the
+  # seed is never available on the same VM as agent or evaluator code.
+  # Does NOT receive: ANTHROPIC_API_KEY.
+  # Does NOT upload raw vault content or plain mapping.
   # =========================================================================
   deterministic-blinding:
     name: Deterministic Blinding — Arm Assignment
     needs: [generic-arm, configured-arm]
     runs-on: ubuntu-24.04
-    environment: confirmation
-    # Protected environment: only this job has CONFIRMATION_BLIND_SEED.
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-
-      - name: Download arm outputs for blinding
-        uses: actions/download-artifact@v4
-        with:
-          pattern: '*-arm-outputs'
-          path: arm-outputs/
-
-      - name: Run deterministic blinding
-        env:
-          CONFIRMATION_BLIND_SEED: ${{ secrets.CONFIRMATION_BLIND_SEED }}
-        run: |
-          python - <<'PYEOF'
-          import os, json, sys, hashlib
-          sys.path.insert(0, "poc6c")
-          from blinding import (
-              read_seed_from_env, assign_arms, encrypt_mapping, generate_seed
-          )
-
-          # Read seed from protected environment (only this job has it)
-          seed = read_seed_from_env()
-          print("Seed read from protected environment.")
-
-          # Load task IDs from the frozen task set
-          task_path = "poc6c/confirmation/tasks_v1.json"
-          with open(task_path) as f:
-              tasks = json.load(f)
-          task_ids = [t["task_id"] for t in tasks]
-          print(f"Assigning {len(task_ids)} tasks to arms.")
-
-          # Deterministic arm assignment
-          mapping = assign_arms(task_ids, seed)
-          print(f"Arm assignment complete.")
-
-          # Encrypt mapping — plain mapping is never stored
-          bundle = encrypt_mapping(mapping, seed)
-          bundle_dict = bundle.to_dict()
-          bundle_json = json.dumps(bundle_dict, sort_keys=True, indent=2)
-          bundle_hash = hashlib.sha256(bundle_json.encode()).hexdigest().upper()
-          print(f"Encrypted mapping bundle hash: {bundle_hash}")
-
-          # Write bundle (no plain mapping)
-          os.makedirs("blinding-outputs", exist_ok=True)
-          with open("blinding-outputs/mapping_bundle.json", "w") as f:
-              f.write(bundle_json)
-          with open("blinding-outputs/mapping_bundle.sha256", "w") as f:
-              f.write(bundle_hash)
-
-          # Write outputs (no seed, no plain mapping)
-          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
-              f.write(f"bundle_hash={bundle_hash}\n")
-
-          print("Blinding complete. Plain mapping discarded.")
-          PYEOF
-
-      - name: Upload encrypted mapping bundle
-        uses: actions/upload-artifact@v4
-        with:
-          name: mapping-bundle
-          # Only upload encrypted bundle and hash; never plain mapping
-          path: blinding-outputs/
-          retention-days: 30
-
-  # =========================================================================
-  # 5. BLINDED EVALUATOR
-  # Scores answer bundle against rubric.
-  # Third fresh VM; no access to arm labels, mapping, seed, or traces.
-  # Receives only: blinded answer bundle + rubric.
-  # =========================================================================
-  blinded-evaluator:
-    name: Blinded Evaluator — Blind Scoring
-    needs: deterministic-blinding
-    runs-on: ubuntu-24.04
-    environment: confirmation
-    # Protected environment: evaluator needs ANTHROPIC_API_KEY for scoring.
-    # It does NOT receive CONFIRMATION_BLIND_SEED.
+    environment: confirmation-custody
+    permissions:
+      contents: read
+    outputs:
+      bundle_hash: ${{ steps.blinding.outputs.bundle_hash }}
 
     steps:
       - name: Checkout repository
@@ -395,9 +320,105 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install anthropic==0.116.0
+          pip install cryptography>=41.0.0
 
-      - name: Assert mapping and seed not in environment
+      - name: Download arm outputs for blinding
+        uses: actions/download-artifact@v4
+        with:
+          pattern: '*-arm-outputs'
+          path: arm-outputs/
+
+      - name: Run deterministic blinding
+        id: blinding
+        # Only CONFIRMATION_BLIND_SEED is available; ANTHROPIC_API_KEY is NOT.
+        env:
+          CONFIRMATION_BLIND_SEED: ${{ secrets.CONFIRMATION_BLIND_SEED }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          python - <<'PYEOF'
+          import os, json, sys, hashlib
+          sys.path.insert(0, "poc6c")
+          from blinding import (
+              read_seed_from_env, assign_arms, encrypt_mapping, generate_seed,
+              check_not_placeholder_key,
+          )
+          from pathlib import Path
+
+          dry_run = os.environ.get("DRY_RUN", "false").lower() == "true"
+          pubkey_path = Path("poc6c/custodian_public_key.pem")
+
+          if dry_run:
+              # Dry-run: synthetic seed, test-only encryption, no real API calls
+              seed = generate_seed()
+              task_ids = [f"DRY-TASK-{i:03d}" for i in range(1, 6)]
+              mapping = assign_arms(task_ids, seed)
+              bundle = encrypt_mapping(mapping, dry_run=True)
+              print("DRY-RUN: Using synthetic tasks and test-only encryption.")
+          else:
+              # Production: requires real seed from protected env and real pubkey
+              check_not_placeholder_key(pubkey_path)
+              seed = read_seed_from_env()
+              with open("poc6c/confirmation/tasks_v1.json") as f:
+                  tasks = json.load(f)
+              task_ids = [t["task_id"] for t in tasks]
+              mapping = assign_arms(task_ids, seed)
+              bundle = encrypt_mapping(mapping, pubkey_pem_path=pubkey_path, dry_run=False)
+
+          print(f"Assigning {len(task_ids)} tasks. dry_run={dry_run}")
+
+          bundle_dict = bundle.to_dict()
+          bundle_json = json.dumps(bundle_dict, sort_keys=True, indent=2)
+          bundle_hash = hashlib.sha256(bundle_json.encode()).hexdigest().upper()
+
+          os.makedirs("blinding-outputs", exist_ok=True)
+          with open("blinding-outputs/mapping_bundle.json", "w") as f:
+              f.write(bundle_json)
+          with open("blinding-outputs/mapping_bundle.sha256", "w") as f:
+              f.write(bundle_hash)
+
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+              f.write(f"bundle_hash={bundle_hash}\n")
+
+          print(f"Bundle hash: {bundle_hash}. Plain mapping discarded.")
+          PYEOF
+
+      - name: Upload encrypted mapping bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: mapping-bundle
+          path: blinding-outputs/
+          retention-days: 30
+
+  # =========================================================================
+  # 5. BLINDED EVALUATOR
+  # Third fresh VM.  Receives ANTHROPIC_API_KEY only.
+  # Does NOT receive: CONFIRMATION_BLIND_SEED, arm labels, prompts, traces,
+  #   plaintext mapping, or private-key material.
+  # Verifies the encrypted bundle hash but never decrypts it.
+  # =========================================================================
+  blinded-evaluator:
+    name: Blinded Evaluator — Blind Scoring
+    needs: deterministic-blinding
+    runs-on: ubuntu-24.04
+    environment: confirmation
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install anthropic==0.116.0 cryptography>=41.0.0
+
+      - name: Assert seed, mapping, and private-key vars absent
         run: |
           python - <<'PYEOF'
           import sys
@@ -405,34 +426,44 @@ jobs:
           from blinding import assert_seed_not_in_environment, assert_mapping_not_in_environment
           assert_seed_not_in_environment()
           assert_mapping_not_in_environment()
-          print("OK: CONFIRMATION_BLIND_SEED and BLIND_MAPPING are not accessible to the evaluator.")
+          print("OK: All custody/mapping variables absent from evaluator.")
           PYEOF
 
-      - name: Download mapping bundle (hash verification only)
+      - name: Download mapping bundle (hash verification only — never decrypt)
         uses: actions/download-artifact@v4
         with:
           name: mapping-bundle
           path: mapping-bundle/
 
-      - name: Verify mapping bundle hash
+      - name: Verify mapping bundle hash and reject dry-run bundles
         run: |
           python - <<'PYEOF'
-          import hashlib
-          # Evaluator only verifies the bundle hash — it never decrypts
+          import hashlib, json, sys
+          # Verify hash integrity
           with open("mapping-bundle/mapping_bundle.json", "rb") as f:
               data = f.read()
           actual_hash = hashlib.sha256(data).hexdigest().upper()
           with open("mapping-bundle/mapping_bundle.sha256") as f:
               expected_hash = f.read().strip().upper()
           if actual_hash != expected_hash:
-              import sys
               print(f"FATAL: Mapping bundle hash mismatch!", file=sys.stderr)
               sys.exit(1)
           print(f"Mapping bundle hash verified: {actual_hash}")
-          # Evaluator does not read or use the mapping further
+          # Reject dry-run bundles from reaching real analysis
+          sys.path.insert(0, "poc6c")
+          from blinding import check_not_dry_run_bundle
+          bundle_dict = json.loads(data.decode("utf-8"))
+          # Only fail hard on dry-run bundles in production runs
+          import os
+          dry_run = os.environ.get("DRY_RUN", "false").lower() == "true"
+          if not dry_run:
+              check_not_dry_run_bundle(bundle_dict)
+          print("Bundle accepted by evaluator (hash OK, not a dry-run bundle in prod).")
           PYEOF
+        env:
+          DRY_RUN: ${{ inputs.dry_run }}
 
-      - name: Run blinded evaluation (dry run / synthetic fixtures)
+      - name: Run blinded evaluation
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           DRY_RUN: ${{ inputs.dry_run }}
@@ -443,10 +474,14 @@ jobs:
           dry_run = os.environ.get("DRY_RUN", "false").lower() == "true"
           print(f"Evaluator DRY_RUN={dry_run}")
           print("NOTE: Evaluator receives only the blinded answer bundle and rubric.")
-          print("      It does NOT receive arm labels, traces, the seed, or the mapping.")
+          print("      It does NOT receive arm labels, traces, seed, mapping, or private key.")
           print("      Live evaluation requires R01-R05 to be unblocked.")
           os.makedirs("eval-outputs", exist_ok=True)
-          result = {"status": "dry_run_placeholder", "scores": []}
+          result = {
+              "status": "dry_run_placeholder" if dry_run else "pending_r01_r05",
+              "scores": [],
+              "dry_run": dry_run,
+          }
           result_json = json.dumps(result, sort_keys=True)
           result_hash = hashlib.sha256(result_json.encode()).hexdigest().upper()
           with open("eval-outputs/evaluation_results.json", "w") as f:
@@ -465,14 +500,15 @@ jobs:
 
   # =========================================================================
   # 6. INTEGRITY AND ANALYSIS
-  # Final job: verify all artifact hashes, check cross-arm rejection,
-  # and produce the confirmation report.
-  # Does NOT score, deblind, or merge confirmation outputs.
+  # No secrets.  Verifies all artifact hashes, runs test suite,
+  # rejects any dry-run or test-only bundles reaching analysis.
   # =========================================================================
   integrity-and-analysis:
     name: Integrity and Analysis
     needs: blinded-evaluator
     runs-on: ubuntu-24.04
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout repository
@@ -488,38 +524,50 @@ jobs:
         with:
           path: all-artifacts/
 
-      - name: Verify artifact hashes
+      - name: Verify artifact hashes and reject invalid bundles
+        env:
+          DRY_RUN: ${{ inputs.dry_run }}
         run: |
           python - <<'PYEOF'
           import hashlib, json, os, sys
           from pathlib import Path
+          sys.path.insert(0, "poc6c")
+          from blinding import check_not_dry_run_bundle, check_not_test_only_bundle
 
           errors = []
-          # Verify evaluation results hash
+          dry_run = os.environ.get("DRY_RUN", "false").lower() == "true"
+
           base = Path("all-artifacts/evaluation-results")
           result_file = base / "evaluation_results.json"
           hash_file   = base / "evaluation_results.sha256"
           if result_file.exists() and hash_file.exists():
-              actual = hashlib.sha256(result_file.read_bytes()).hexdigest().upper()
+              actual   = hashlib.sha256(result_file.read_bytes()).hexdigest().upper()
               expected = hash_file.read_text().strip().upper()
               if actual != expected:
-                  errors.append(f"evaluation_results.json hash mismatch: {actual} != {expected}")
+                  errors.append(f"evaluation_results.json hash mismatch")
               else:
                   print(f"OK: evaluation_results.json hash verified: {actual}")
           else:
               errors.append("Evaluation result files not found.")
 
-          # Verify mapping bundle hash
           base2 = Path("all-artifacts/mapping-bundle")
           bundle_file = base2 / "mapping_bundle.json"
           bhash_file  = base2 / "mapping_bundle.sha256"
           if bundle_file.exists() and bhash_file.exists():
-              actual2 = hashlib.sha256(bundle_file.read_bytes()).hexdigest().upper()
+              actual2   = hashlib.sha256(bundle_file.read_bytes()).hexdigest().upper()
               expected2 = bhash_file.read_text().strip().upper()
               if actual2 != expected2:
-                  errors.append(f"mapping_bundle.json hash mismatch: {actual2} != {expected2}")
+                  errors.append(f"mapping_bundle.json hash mismatch")
               else:
                   print(f"OK: mapping_bundle.json hash verified: {actual2}")
+              # Reject dry-run or test-only bundles from analysis in production
+              if not dry_run:
+                  try:
+                      bd = json.loads(bundle_file.read_bytes())
+                      check_not_dry_run_bundle(bd)
+                      check_not_test_only_bundle(bd)
+                  except Exception as e:
+                      errors.append(f"Bundle rejected by analysis path: {e}")
           else:
               errors.append("Mapping bundle files not found.")
 
@@ -532,29 +580,26 @@ jobs:
 
       - name: Run full test suite
         run: |
-          pip install anthropic==0.116.0 pytest
+          pip install anthropic==0.116.0 cryptography>=41.0.0 pytest
           python -m pytest poc6c/ --ignore=poc6c/workloads -q
         continue-on-error: false
 
       - name: Generate integrity report
+        env:
+          DRY_RUN: ${{ inputs.dry_run }}
         run: |
           python - <<'PYEOF'
-          import json, hashlib, os
-          from pathlib import Path
+          import json, os
           from datetime import datetime
-
           report = {
               "workflow": "poc6c-confirmation",
               "dry_run": os.environ.get("DRY_RUN", "false"),
               "timestamp_utc": datetime.utcnow().isoformat(),
               "status": "completed",
               "note": (
-                  "This is a dry-run infrastructure verification. "
                   "No confirmation answer was generated, scored, or deblinded. "
                   "R01-R05 remain blocked; Task 5 must not start."
               ),
           }
           print(json.dumps(report, indent=2))
           PYEOF
-        env:
-          DRY_RUN: ${{ inputs.dry_run }}

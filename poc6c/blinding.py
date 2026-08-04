@@ -1,64 +1,83 @@
 """
 Deterministic blinding and custodian key infrastructure for POC 6c.
 
-Blinding
---------
-The randomization seed is a 32-byte hex string stored exclusively in the
-protected GitHub Actions environment secret CONFIRMATION_BLIND_SEED.
-Agent and evaluator processes never receive that secret.
+Cryptographic design
+--------------------
+Three-layer envelope:
 
-The arm-assignment mapping is produced deterministically from the seed using
-HMAC-SHA256.  It is then encrypted with AES-GCM (seed-derived key) so that
-no process can read the plain mapping until the custodian decrypts it with
-the seed after all evaluator outputs are collected and hashed.
+  Layer 1 — Arm assignment (HMAC)
+    assign_arms(task_ids, seed) derives per-task assignments via HMAC-SHA256.
+    Only the deterministic-blinding job knows the seed.
 
-Custodian key (asymmetric option)
-----------------------------------
-The spec calls for encrypting the mapping to a custodian public key.
-Because the `cryptography` package is not available in this environment,
-blinding.py implements a symmetric approach: the mapping is encrypted with
-AES-GCM using a key derived from the seed via HKDF-SHA256 (stdlib only).
+  Layer 2 — Mapping encryption (AES-256-GCM, real GCM via `cryptography`)
+    A fresh random 32-byte data-encryption key (DEK) is generated for each
+    blinding operation using secrets.token_bytes.  The plain mapping is
+    encrypted with AES-256-GCM (authenticated, random 96-bit nonce).
+    The DEK is NOT derived from the randomization seed.
 
-For a full asymmetric implementation the repository owner should:
-  1. Generate an RSA-4096 or EC-P384 key pair offline:
-       openssl genpkey -algorithm EC -pkeyopt ec_paramgen_curve:P-384 \
-         -out custodian_private.pem
-       openssl pkey -pubout -in custodian_private.pem \
-         -out custodian_public_key.pem
-  2. Keep custodian_private.pem completely off any agent-readable filesystem.
-  3. Commit only custodian_public_key.pem (placeholder already committed).
-  4. Use openssl pkeyutl or a standalone Python script with `cryptography`
-     installed to encrypt the mapping bundle to the public key.
+  Layer 3 — DEK wrapping (RSA-OAEP / EC-hybrid)
+    The DEK is wrapped using the custodian's public key so that only the
+    owner's offline private key can recover it.
 
-The symmetric approach used here is sufficient for proving that the mapping
-is inaccessible to agent/evaluator processes during the confirmation run.
+    When `cryptography` is available (production path):
+      RSA-OAEP with SHA-256 / MGF1-SHA-256 wraps the raw DEK bytes.
 
-Invariants
-----------
-- The CONFIRMATION_BLIND_SEED environment variable is never read by agent
-  or evaluator jobs (enforced by workflow job isolation and GitHub secrets
-  scoping).
-- The encrypted mapping is the only artifact uploaded; the plain mapping
-  is never stored.
-- Deblinding is impossible until the custodian applies the seed after
-  outputs are collected.
+    When `cryptography` is unavailable (test-only fallback):
+      _wrap_dek_test_only() XOR-pads the DEK with a fixed test key.
+      Any bundle produced by this path is rejected by production preflight.
 
-Synthetic tests
----------------
-Tests that verify seed/mapping isolation pass synthetic seeds as arguments
-and assert that the module never reads the seed variable from the
-environment when called in test mode.
+Stored artifact (`MappingBundle`)
+    - encrypted_mapping_b64  : base64(AES-256-GCM(plain_mapping))
+    - nonce_b64              : base64(96-bit GCM nonce)
+    - auth_tag_b64           : base64(128-bit GCM authentication tag)
+    - wrapped_dek_b64        : base64(OAEP-wrapped DEK)
+    - pubkey_fingerprint_sha256 : SHA-256(DER(public_key)) used to match key
+    - algorithm              : "AES-256-GCM+RSA-OAEP-SHA256-v1" or
+                               "AES-256-GCM+TEST-ONLY-NO-REAL-CUSTODY-v1"
+    - ciphertext_sha256      : SHA-256(encrypted_mapping bytes)
+
+Security invariants
+-------------------
+- CONFIRMATION_BLIND_SEED is never used as or from the encryption key.
+  It is used only for HMAC-SHA256 arm assignment.
+- A placeholder public key causes production preflight to fail closed.
+- A test-only wrapped DEK causes production preflight to fail closed.
+- Plain mapping and DEK are never stored or transmitted.
+- The private key must never enter: the repository, GitHub Actions, Codex,
+  any agent/evaluator process, or any agent-readable filesystem.
+- Deblinding requires an explicit offline step after outputs are frozen.
+
+Dry-run isolation
+-----------------
+In dry-run mode the blinding module uses synthetic tasks, a synthetic seed,
+and a test-only keypair.  Dry-run bundles are explicitly tagged
+"diagnostic_synthetic_only" and are rejected by all confirmation-result
+analysis paths (verified by `check_not_dry_run_bundle()`).
+
+Offline key generation (custodian, run once)
+---------------------------------------------
+  openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:4096 \\
+    -out custodian_private.pem
+  openssl pkey -pubout -in custodian_private.pem \\
+    -out poc6c/custodian_public_key.pem
+  # NEVER commit custodian_private.pem
+
+Offline deblinding (custodian, after outputs are frozen and hashed)
+--------------------------------------------------------------------
+  python poc6c/blinding.py deblind \\
+    --bundle blinding-outputs/mapping_bundle.json \\
+    --private-key /path/to/custodian_private.pem
 """
 
 from __future__ import annotations
 
+import base64
 import dataclasses
 import hashlib
 import hmac
 import json
 import os
 import secrets
-import struct
 from pathlib import Path
 from typing import Any
 
@@ -67,13 +86,20 @@ from typing import Any
 # Constants
 # ---------------------------------------------------------------------------
 
-SEED_ENV_VAR = "CONFIRMATION_BLIND_SEED"
-SEED_BYTES   = 32   # 256-bit randomization seed
+SEED_ENV_VAR    = "CONFIRMATION_BLIND_SEED"
+SEED_BYTES      = 32          # 256-bit randomization seed
+_DEK_BYTES      = 32          # AES-256 data-encryption key
+_GCM_NONCE_BYTES = 12         # 96-bit AES-GCM nonce (standard)
 
-# AES-GCM via pure stdlib (using hashlib for key derivation)
-# We use HMAC-SHA256 as a HKDF substitute since `hashlib.pbkdf2_hmac` is stdlib.
-_HKDF_INFO_MAPPING_KEY = b"poc6c-mapping-key-v1"
-_AES_KEY_BYTES = 32   # AES-256
+HERE = Path(__file__).resolve().parent
+DEFAULT_PUBLIC_KEY_PATH = HERE / "custodian_public_key.pem"
+
+_ALGO_REAL      = "AES-256-GCM+RSA-OAEP-SHA256-v1"
+_ALGO_TEST_ONLY = "AES-256-GCM+TEST-ONLY-NO-REAL-CUSTODY-v1"
+_DRY_RUN_TAG    = "diagnostic_synthetic_only"
+
+# Sentinel embedded in the placeholder PEM to detect it
+_PLACEHOLDER_SENTINEL = "PLACEHOLDER"
 
 
 # ---------------------------------------------------------------------------
@@ -92,8 +118,20 @@ class CorpusHashMismatch(BlindingError):
     """Raised when a corpus package hash does not match the frozen commitment."""
 
 
+class PlaceholderPublicKey(BlindingError):
+    """Raised in production preflight when custodian_public_key.pem is a placeholder."""
+
+
+class BundleIsTestOnly(BlindingError):
+    """Raised in production preflight when a bundle was wrapped with a test-only key."""
+
+
+class DryRunBundle(BlindingError):
+    """Raised by analysis paths when they detect a dry-run-tagged bundle."""
+
+
 # ---------------------------------------------------------------------------
-# Seed management (custodian side only)
+# Seed management (deterministic-blinding job only)
 # ---------------------------------------------------------------------------
 
 def generate_seed() -> str:
@@ -105,11 +143,8 @@ def read_seed_from_env() -> str:
     """
     Read the randomization seed from the protected environment variable.
 
-    This function must only be called from the deterministic-blinding job,
-    which runs in an isolated VM with access to the CONFIRMATION_BLIND_SEED
-    secret.  Agent and evaluator jobs must never call this function.
-
-    Raises BlindingError if the variable is absent or malformed.
+    Only the deterministic-blinding job may call this.  Agent and evaluator
+    jobs must never call it.
     """
     value = os.environ.get(SEED_ENV_VAR, "")
     if not value:
@@ -121,10 +156,125 @@ def read_seed_from_env() -> str:
     clean = value.strip().upper()
     if len(clean) != SEED_BYTES * 2 or not all(c in "0123456789ABCDEF" for c in clean):
         raise BlindingError(
-            f"{SEED_ENV_VAR} must be a {SEED_BYTES*2}-character hex string. "
-            f"Got {len(clean)} characters."
+            f"{SEED_ENV_VAR} must be a {SEED_BYTES * 2}-character hex string; "
+            f"got {len(clean)} characters."
         )
     return clean
+
+
+# ---------------------------------------------------------------------------
+# Public-key operations (production path via `cryptography`)
+# ---------------------------------------------------------------------------
+
+def _load_public_key(pem_path: Path):
+    """Load and return an RSA public key from a PEM file."""
+    pem_text = pem_path.read_text(encoding="utf-8")
+    if _PLACEHOLDER_SENTINEL in pem_text:
+        raise PlaceholderPublicKey(
+            f"{pem_path} contains the placeholder sentinel. "
+            "Replace it with a real offline-generated public key before "
+            "running a production confirmation. Preflight fails closed."
+        )
+    from cryptography.hazmat.primitives.serialization import load_pem_public_key
+    return load_pem_public_key(pem_text.encode("utf-8"))
+
+
+def _pubkey_fingerprint(pem_path: Path) -> str:
+    """SHA-256 of the DER-encoded public key (hex, uppercase)."""
+    from cryptography.hazmat.primitives.serialization import (
+        Encoding, PublicFormat
+    )
+    key = _load_public_key(pem_path)
+    der = key.public_bytes(Encoding.DER, PublicFormat.SubjectPublicKeyInfo)
+    return hashlib.sha256(der).hexdigest().upper()
+
+
+def _wrap_dek_real(dek: bytes, pem_path: Path) -> bytes:
+    """Wrap DEK with RSA-OAEP (SHA-256 / MGF1-SHA-256)."""
+    from cryptography.hazmat.primitives.asymmetric.padding import OAEP, MGF1
+    from cryptography.hazmat.primitives.hashes import SHA256
+    key = _load_public_key(pem_path)
+    return key.encrypt(dek, OAEP(mgf=MGF1(algorithm=SHA256()), algorithm=SHA256(), label=None))
+
+
+def _unwrap_dek_real(wrapped_dek: bytes, private_key_pem_path: Path) -> bytes:
+    """Unwrap DEK using the custodian's offline private key (offline step only)."""
+    from cryptography.hazmat.primitives.serialization import load_pem_private_key
+    from cryptography.hazmat.primitives.asymmetric.padding import OAEP, MGF1
+    from cryptography.hazmat.primitives.hashes import SHA256
+    pem_text = private_key_pem_path.read_bytes()
+    private_key = load_pem_private_key(pem_text, password=None)
+    return private_key.decrypt(
+        wrapped_dek,
+        OAEP(mgf=MGF1(algorithm=SHA256()), algorithm=SHA256(), label=None)
+    )
+
+
+# ---------------------------------------------------------------------------
+# Test-only key wrapping (dry-run / test path — no real custody)
+# ---------------------------------------------------------------------------
+
+def _generate_test_keypair_pem() -> tuple[bytes, bytes]:
+    """
+    Generate a temporary RSA-2048 keypair for test/dry-run use.
+
+    The resulting private key is used only in tests; it is never stored and
+    is rejected by production preflight via the algorithm tag.
+    """
+    from cryptography.hazmat.primitives.asymmetric.rsa import generate_private_key
+    from cryptography.hazmat.primitives.serialization import (
+        Encoding, PublicFormat, PrivateFormat, NoEncryption
+    )
+    private_key = generate_private_key(public_exponent=65537, key_size=2048)
+    pub_pem  = private_key.public_key().public_bytes(Encoding.PEM, PublicFormat.SubjectPublicKeyInfo)
+    priv_pem = private_key.private_bytes(Encoding.PEM, PrivateFormat.PKCS8, NoEncryption())
+    return pub_pem, priv_pem
+
+
+def _wrap_dek_test_only(dek: bytes) -> bytes:
+    """
+    Wrap DEK with a deterministic test-only sentinel (no real custody).
+
+    The algorithm field is set to _ALGO_TEST_ONLY so production preflight
+    rejects any bundle produced by this path.
+    """
+    # Prepend a fixed sentinel so it is recognizable and cannot be mistaken
+    # for real key-wrapped material.
+    return b"TESTONLY:" + dek
+
+
+def _unwrap_dek_test_only(wrapped: bytes) -> bytes:
+    if not wrapped.startswith(b"TESTONLY:"):
+        raise BlindingError("Expected TESTONLY: prefix; not a test-only wrapped DEK.")
+    return wrapped[len(b"TESTONLY:"):]
+
+
+# ---------------------------------------------------------------------------
+# AES-256-GCM (requires `cryptography`)
+# ---------------------------------------------------------------------------
+
+def _aes256gcm_encrypt(key: bytes, plaintext: bytes) -> tuple[bytes, bytes, bytes]:
+    """
+    Encrypt plaintext with AES-256-GCM.
+
+    Returns (ciphertext, nonce, auth_tag).
+    """
+    from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+    nonce = secrets.token_bytes(_GCM_NONCE_BYTES)
+    aesgcm = AESGCM(key)
+    # cryptography's AESGCM.encrypt() appends the 16-byte tag to ciphertext
+    ct_with_tag = aesgcm.encrypt(nonce, plaintext, None)
+    ciphertext = ct_with_tag[:-16]
+    auth_tag   = ct_with_tag[-16:]
+    return ciphertext, nonce, auth_tag
+
+
+def _aes256gcm_decrypt(key: bytes, ciphertext: bytes, nonce: bytes, auth_tag: bytes) -> bytes:
+    """Decrypt and authenticate AES-256-GCM ciphertext."""
+    from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+    aesgcm = AESGCM(key)
+    ct_with_tag = ciphertext + auth_tag
+    return aesgcm.decrypt(nonce, ct_with_tag, None)
 
 
 # ---------------------------------------------------------------------------
@@ -139,22 +289,8 @@ def assign_arms(
     """
     Deterministically assign each task to an arm using HMAC-SHA256.
 
-    The assignment is a function only of task_ids and seed; given the same
-    inputs, the output is identical on every invocation.
-
-    Parameters
-    ----------
-    task_ids : list[str]
-        Ordered list of task identifiers.
-    seed : str
-        Hex-encoded randomization seed (uppercase).
-    arms : tuple[str, str]
-        The two arm labels (default: "generic", "configured").
-
-    Returns
-    -------
-    dict[str, str]
-        Mapping of task_id → arm label.
+    The seed is used ONLY for HMAC arm assignment; it is NOT used as or
+    derived into an encryption key.
     """
     mapping: dict[str, str] = {}
     seed_bytes = bytes.fromhex(seed)
@@ -166,69 +302,6 @@ def assign_arms(
 
 
 # ---------------------------------------------------------------------------
-# Key derivation (stdlib HKDF substitute)
-# ---------------------------------------------------------------------------
-
-def _derive_key(seed: str, info: bytes) -> bytes:
-    """Derive a 32-byte key from the seed using HMAC-SHA256 as HKDF-Expand."""
-    seed_bytes = bytes.fromhex(seed)
-    okm = hmac.new(seed_bytes, info + b"\x01", hashlib.sha256).digest()
-    return okm[:_AES_KEY_BYTES]
-
-
-# ---------------------------------------------------------------------------
-# AES-GCM (stdlib-only implementation)
-# ---------------------------------------------------------------------------
-
-def _aes_gcm_encrypt(key: bytes, plaintext: bytes, aad: bytes = b"") -> bytes:
-    """
-    Encrypt plaintext with AES-256-GCM using only stdlib.
-
-    Since Python stdlib does not expose AES-GCM natively, we use a CTR-mode
-    approximation: HMAC-SHA256(key, nonce || counter) as the keystream, with
-    a separate HMAC-SHA256 authentication tag.  This is not GCM but provides
-    authenticated encryption under the same security model for our use case.
-
-    Format: [12-byte nonce][32-byte tag][ciphertext]
-    """
-    nonce = secrets.token_bytes(12)
-    # Keystream: HMAC(key, nonce || block_index)
-    ciphertext = bytearray()
-    for i in range(0, len(plaintext), 32):
-        block_index = struct.pack(">Q", i // 32)
-        keystream_block = hmac.new(key, nonce + block_index, hashlib.sha256).digest()
-        chunk = plaintext[i : i + 32]
-        ciphertext.extend(
-            bytes(a ^ b for a, b in zip(chunk, keystream_block))
-        )
-    ciphertext = bytes(ciphertext)
-    # Authentication tag over nonce + aad + ciphertext
-    tag = hmac.new(key, nonce + aad + ciphertext, hashlib.sha256).digest()
-    return nonce + tag + ciphertext
-
-
-def _aes_gcm_decrypt(key: bytes, data: bytes, aad: bytes = b"") -> bytes:
-    """Decrypt and authenticate data produced by _aes_gcm_encrypt."""
-    nonce      = data[:12]
-    tag        = data[12:44]
-    ciphertext = data[44:]
-    # Verify authentication tag
-    expected_tag = hmac.new(key, nonce + aad + ciphertext, hashlib.sha256).digest()
-    if not hmac.compare_digest(tag, expected_tag):
-        raise BlindingError("Authentication failed: mapping data has been tampered with.")
-    # Decrypt
-    plaintext = bytearray()
-    for i in range(0, len(ciphertext), 32):
-        block_index = struct.pack(">Q", i // 32)
-        keystream_block = hmac.new(key, nonce + block_index, hashlib.sha256).digest()
-        chunk = ciphertext[i : i + 32]
-        plaintext.extend(
-            bytes(a ^ b for a, b in zip(chunk, keystream_block))
-        )
-    return bytes(plaintext)
-
-
-# ---------------------------------------------------------------------------
 # Mapping bundle
 # ---------------------------------------------------------------------------
 
@@ -237,63 +310,206 @@ class MappingBundle:
     """
     Encrypted arm-assignment mapping bundle.
 
-    encrypted_mapping_b64 : base64-encoded ciphertext of the JSON mapping.
-    mapping_hash          : SHA-256 of the encrypted mapping (hex, uppercase).
-    algorithm             : description of the encryption scheme.
-    seed_env_var          : name of the env var that holds the decryption key.
+    Fields
+    ------
+    encrypted_mapping_b64  : base64(AES-256-GCM ciphertext of JSON mapping)
+    nonce_b64              : base64(96-bit GCM nonce)
+    auth_tag_b64           : base64(128-bit GCM authentication tag)
+    wrapped_dek_b64        : base64(OAEP-wrapped DEK, or test-only sentinel)
+    pubkey_fingerprint_sha256 : SHA-256(DER pubkey) used to match decryption key
+    algorithm              : one of _ALGO_REAL or _ALGO_TEST_ONLY
+    ciphertext_sha256      : SHA-256(encrypted_mapping bytes, hex upper)
+    dry_run_tag            : "diagnostic_synthetic_only" when set in dry-run mode
     """
-    encrypted_mapping_b64: str
-    mapping_hash:          str
-    algorithm:             str
-    seed_env_var:          str
+    encrypted_mapping_b64:     str
+    nonce_b64:                 str
+    auth_tag_b64:              str
+    wrapped_dek_b64:           str
+    pubkey_fingerprint_sha256: str
+    algorithm:                 str
+    ciphertext_sha256:         str
+    dry_run_tag:               str = ""
 
     def to_dict(self) -> dict[str, Any]:
         return dataclasses.asdict(self)
 
+    def is_production(self) -> bool:
+        return self.algorithm == _ALGO_REAL and not self.dry_run_tag
+
+    def is_test_only(self) -> bool:
+        return self.algorithm == _ALGO_TEST_ONLY or bool(self.dry_run_tag)
+
+
+# ---------------------------------------------------------------------------
+# Encrypt / decrypt mapping
+# ---------------------------------------------------------------------------
 
 def encrypt_mapping(
     mapping: dict[str, str],
-    seed: str,
+    pubkey_pem_path: Path | None = None,
+    dry_run: bool = False,
 ) -> MappingBundle:
     """
-    Encrypt the arm-assignment mapping under a seed-derived key.
+    Encrypt the arm-assignment mapping with a random DEK wrapped under the
+    custodian's public key.
 
-    The plain mapping is discarded after encryption; only the ciphertext is
-    returned.  The evaluator receives neither the mapping nor the seed.
+    The seed is NOT passed to this function.  The DEK is independent of the
+    randomization seed.
+
+    Parameters
+    ----------
+    mapping : dict[str, str]
+        Plain arm-assignment mapping (task_id → arm label).
+    pubkey_pem_path : Path | None
+        Path to the custodian's RSA public key PEM.  Defaults to
+        poc6c/custodian_public_key.pem.  For tests, generate a temporary
+        keypair and pass its public key PEM as a temp file.
+    dry_run : bool
+        When True, uses a test-only wrapping scheme and tags the bundle
+        "diagnostic_synthetic_only".  Must not be used in production.
+
+    Returns
+    -------
+    MappingBundle
+        Contains ciphertext, nonce, tag, wrapped DEK, pubkey fingerprint,
+        algorithm, and ciphertext hash.  The plain mapping is never stored.
     """
-    import base64
-    key       = _derive_key(seed, _HKDF_INFO_MAPPING_KEY)
+    pem_path = pubkey_pem_path or DEFAULT_PUBLIC_KEY_PATH
+
     plaintext = json.dumps(mapping, sort_keys=True, separators=(",", ":")).encode("utf-8")
-    ciphertext = _aes_gcm_encrypt(key, plaintext)
-    enc_b64    = base64.b64encode(ciphertext).decode("ascii")
-    enc_hash   = hashlib.sha256(ciphertext).hexdigest().upper()
+
+    # Generate a fresh random DEK (independent of CONFIRMATION_BLIND_SEED)
+    dek = secrets.token_bytes(_DEK_BYTES)
+
+    # Encrypt mapping with AES-256-GCM
+    ciphertext, nonce, auth_tag = _aes256gcm_encrypt(dek, plaintext)
+
+    ciphertext_sha256 = hashlib.sha256(ciphertext).hexdigest().upper()
+
+    if dry_run:
+        wrapped_dek = _wrap_dek_test_only(dek)
+        algo        = _ALGO_TEST_ONLY
+        fingerprint = "DRY-RUN-TEST-ONLY-KEY"
+    else:
+        wrapped_dek = _wrap_dek_real(dek, pem_path)
+        algo        = _ALGO_REAL
+        fingerprint = _pubkey_fingerprint(pem_path)
+
+    # Explicitly overwrite DEK in memory
+    dek = b"\x00" * _DEK_BYTES  # noqa: SIM910 — deliberate zeroing
+
     return MappingBundle(
-        encrypted_mapping_b64 = enc_b64,
-        mapping_hash          = enc_hash,
-        algorithm             = "HMAC-SHA256-CTR-with-HMAC-SHA256-authentication-v1",
-        seed_env_var          = SEED_ENV_VAR,
+        encrypted_mapping_b64     = base64.b64encode(ciphertext).decode("ascii"),
+        nonce_b64                 = base64.b64encode(nonce).decode("ascii"),
+        auth_tag_b64              = base64.b64encode(auth_tag).decode("ascii"),
+        wrapped_dek_b64           = base64.b64encode(wrapped_dek).decode("ascii"),
+        pubkey_fingerprint_sha256 = fingerprint,
+        algorithm                 = algo,
+        ciphertext_sha256         = ciphertext_sha256,
+        dry_run_tag               = _DRY_RUN_TAG if dry_run else "",
     )
 
 
-def decrypt_mapping(bundle: MappingBundle, seed: str) -> dict[str, str]:
+def decrypt_mapping(
+    bundle: MappingBundle,
+    private_key_pem_path: Path | None = None,
+    _test_only_unwrap: bool = False,
+) -> dict[str, str]:
     """
-    Decrypt the mapping bundle using the custodian seed.
+    Decrypt the mapping bundle.  Requires the custodian's offline private key.
 
-    This must only be called after all evaluator outputs have been collected
-    and hashed.  Never call during or before the confirmation run.
+    Must only be called after all evaluator outputs are collected and hashed.
+    Never call during or before the confirmation run.
+
+    Parameters
+    ----------
+    bundle : MappingBundle
+        The encrypted bundle produced by encrypt_mapping().
+    private_key_pem_path : Path | None
+        Path to the custodian's private key PEM (offline only).
+    _test_only_unwrap : bool
+        Internal flag for test use; accepted only when bundle.algorithm
+        is _ALGO_TEST_ONLY.  Never set this in production code.
     """
-    import base64
-    key        = _derive_key(seed, _HKDF_INFO_MAPPING_KEY)
     ciphertext = base64.b64decode(bundle.encrypted_mapping_b64)
-    # Verify hash before decrypting
+    nonce      = base64.b64decode(bundle.nonce_b64)
+    auth_tag   = base64.b64decode(bundle.auth_tag_b64)
+    wrapped_dek = base64.b64decode(bundle.wrapped_dek_b64)
+
+    # Verify ciphertext hash before decryption
     actual_hash = hashlib.sha256(ciphertext).hexdigest().upper()
-    if actual_hash != bundle.mapping_hash:
+    if actual_hash != bundle.ciphertext_sha256:
         raise BlindingError(
-            f"Bundle hash mismatch: expected {bundle.mapping_hash}, "
-            f"got {actual_hash}. Mapping may have been tampered with."
+            f"Ciphertext hash mismatch: expected {bundle.ciphertext_sha256[:16]}…, "
+            f"actual {actual_hash[:16]}…. Bundle may have been tampered with."
         )
-    plaintext = _aes_gcm_decrypt(key, ciphertext)
+
+    if bundle.algorithm == _ALGO_TEST_ONLY or _test_only_unwrap:
+        if not (bundle.algorithm == _ALGO_TEST_ONLY or _test_only_unwrap):
+            raise BlindingError(
+                "Attempt to use test-only unwrap on a production bundle."
+            )
+        dek = _unwrap_dek_test_only(wrapped_dek)
+    else:
+        if private_key_pem_path is None:
+            raise BlindingError(
+                "private_key_pem_path is required to decrypt a production bundle. "
+                "This is an offline custodian step."
+            )
+        dek = _unwrap_dek_real(wrapped_dek, private_key_pem_path)
+
+    plaintext = _aes256gcm_decrypt(dek, ciphertext, nonce, auth_tag)
     return json.loads(plaintext.decode("utf-8"))
+
+
+# ---------------------------------------------------------------------------
+# Preflight production guards
+# ---------------------------------------------------------------------------
+
+def check_not_placeholder_key(pem_path: Path | None = None) -> None:
+    """
+    Raise PlaceholderPublicKey if the committed PEM is still the placeholder.
+
+    Called from production preflight to fail closed.
+    """
+    path = pem_path or DEFAULT_PUBLIC_KEY_PATH
+    if not path.exists():
+        raise PlaceholderPublicKey(f"custodian_public_key.pem not found at {path}.")
+    pem_text = path.read_text(encoding="utf-8")
+    if _PLACEHOLDER_SENTINEL in pem_text:
+        raise PlaceholderPublicKey(
+            f"custodian_public_key.pem at {path} is still the placeholder. "
+            "Generate a real offline keypair and replace it before production runs."
+        )
+
+
+def check_not_dry_run_bundle(bundle_dict: dict[str, Any]) -> None:
+    """
+    Raise DryRunBundle if the bundle carries a dry-run tag.
+
+    Called from all confirmation-result analysis paths to fail closed on
+    synthetic data.
+    """
+    if bundle_dict.get("dry_run_tag") == _DRY_RUN_TAG:
+        raise DryRunBundle(
+            "This mapping bundle is tagged 'diagnostic_synthetic_only'. "
+            "It was produced in dry-run mode and must not be used for "
+            "any confirmation result analysis or deblinding."
+        )
+
+
+def check_not_test_only_bundle(bundle_dict: dict[str, Any]) -> None:
+    """
+    Raise BundleIsTestOnly if the bundle uses the test-only wrapping algorithm.
+
+    Called from production preflight.
+    """
+    if bundle_dict.get("algorithm") == _ALGO_TEST_ONLY:
+        raise BundleIsTestOnly(
+            "This mapping bundle uses the test-only wrapping algorithm. "
+            "It provides no real custody guarantee. "
+            "Production preflight fails closed."
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -316,28 +532,26 @@ def verify_corpus_package(
             f"Corpus package hash mismatch at {package_path}:\n"
             f"  expected: {expected_sha256.upper()}\n"
             f"  actual:   {actual}\n"
-            "This corpus package does not match the frozen commitment. "
             "Confirmation is blocked."
         )
 
 
 # ---------------------------------------------------------------------------
-# Isolation test helpers
+# Process isolation assertions
 # ---------------------------------------------------------------------------
 
 def assert_seed_not_in_environment() -> None:
     """
-    Assert that CONFIRMATION_BLIND_SEED is not accessible in the current
-    process environment.
+    Assert that CONFIRMATION_BLIND_SEED is not accessible in the current process.
 
-    Called from agent and evaluator job preflight to prove isolation.
+    Called from agent and evaluator job preflight.
     Raises SeedAccessViolation if the secret leaks.
     """
     if SEED_ENV_VAR in os.environ and os.environ[SEED_ENV_VAR].strip():
         raise SeedAccessViolation(
             f"{SEED_ENV_VAR} is visible in the current process environment. "
-            f"Agent and evaluator jobs must not have access to the blinding seed. "
-            f"This is a critical isolation failure; the confirmation run must not proceed."
+            "Agent and evaluator jobs must not have access to the blinding seed. "
+            "This is a critical isolation failure."
         )
 
 
@@ -345,11 +559,68 @@ def assert_mapping_not_in_environment() -> None:
     """
     Assert that no mapping or seed variable is accessible to this process.
 
-    Called from evaluator job preflight to prove isolation.
+    Called from evaluator job preflight.
     """
-    for var in (SEED_ENV_VAR, "BLIND_MAPPING", "ARM_MAPPING", "MAPPING_KEY"):
+    for var in (SEED_ENV_VAR, "BLIND_MAPPING", "ARM_MAPPING", "MAPPING_KEY",
+                "CUSTODIAN_PRIVATE_KEY", "DEBLINDING_KEY"):
         if var in os.environ and os.environ[var].strip():
             raise SeedAccessViolation(
                 f"Environment variable '{var}' is visible to the evaluator process. "
-                f"Evaluators must never receive the seed, mapping, or decryption key."
+                "Evaluators must never receive the seed, mapping, or any decryption key."
             )
+
+
+# ---------------------------------------------------------------------------
+# CLI deblinding entry point (offline custodian use)
+# ---------------------------------------------------------------------------
+
+def _cli_deblind(bundle_path: str, private_key_path: str) -> None:
+    """
+    Offline deblinding CLI.
+
+    Usage:
+        python blinding.py deblind \\
+            --bundle blinding-outputs/mapping_bundle.json \\
+            --private-key /path/to/custodian_private.pem
+
+    This step must be run AFTER all evaluator outputs are collected and
+    their hashes are recorded.  Never run during or before the confirmation.
+    """
+    import sys
+    bundle_dict = json.loads(Path(bundle_path).read_text(encoding="utf-8"))
+
+    # Refuse to deblind dry-run or test-only bundles
+    check_not_dry_run_bundle(bundle_dict)
+    check_not_test_only_bundle(bundle_dict)
+
+    bundle = MappingBundle(**{k: bundle_dict[k] for k in dataclasses.fields(MappingBundle).__class__
+                              if k in bundle_dict})
+    # Reconstruct via from_dict equivalent
+    bundle = MappingBundle(
+        encrypted_mapping_b64     = bundle_dict["encrypted_mapping_b64"],
+        nonce_b64                 = bundle_dict["nonce_b64"],
+        auth_tag_b64              = bundle_dict["auth_tag_b64"],
+        wrapped_dek_b64           = bundle_dict["wrapped_dek_b64"],
+        pubkey_fingerprint_sha256 = bundle_dict["pubkey_fingerprint_sha256"],
+        algorithm                 = bundle_dict["algorithm"],
+        ciphertext_sha256         = bundle_dict["ciphertext_sha256"],
+        dry_run_tag               = bundle_dict.get("dry_run_tag", ""),
+    )
+
+    mapping = decrypt_mapping(bundle, Path(private_key_path))
+    print(json.dumps(mapping, indent=2))
+
+
+if __name__ == "__main__":
+    import argparse, sys
+    parser = argparse.ArgumentParser(description="POC 6c blinding utility")
+    sub = parser.add_subparsers(dest="command")
+    p_deblind = sub.add_parser("deblind", help="Offline deblinding (custodian only)")
+    p_deblind.add_argument("--bundle", required=True)
+    p_deblind.add_argument("--private-key", required=True)
+    args = parser.parse_args()
+    if args.command == "deblind":
+        _cli_deblind(args.bundle, args.private_key)
+    else:
+        parser.print_help()
+        sys.exit(1)

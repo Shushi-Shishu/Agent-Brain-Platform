@@ -506,25 +506,42 @@ def check_custody_key(
     key_path: Path | None = None,
 ) -> dict[str, Any]:
     """
-    Verify that custodian_public_key.pem is committed.
+    Verify custodian_public_key.pem: present, PEM-formatted, and NOT the
+    placeholder.  A placeholder key causes R05 to remain BLOCKED.
     """
     errors: list[str] = []
     path = key_path or (HERE / "custodian_public_key.pem")
 
     if not path.exists():
         errors.append(f"custodian_public_key.pem not found at {path}")
-    else:
-        content = path.read_text(encoding="utf-8")
-        if "BEGIN" not in content:
-            errors.append("custodian_public_key.pem does not look like a PEM file")
+        return {
+            "requirement": "custody_key",
+            "check": "check_custody_key",
+            "errors": errors,
+            "passed": False,
+            "is_placeholder": True,
+            "evidence": "; ".join(errors),
+        }
+
+    content = path.read_text(encoding="utf-8")
+    is_placeholder = "PLACEHOLDER" in content
+
+    if "BEGIN" not in content:
+        errors.append("custodian_public_key.pem does not look like a PEM file")
+    if is_placeholder:
+        errors.append(
+            "custodian_public_key.pem is still the placeholder. "
+            "R05 remains BLOCKED until a real offline-generated key replaces it."
+        )
 
     return {
         "requirement": "custody_key",
         "check": "check_custody_key",
         "errors": errors,
         "passed": len(errors) == 0,
+        "is_placeholder": is_placeholder,
         "evidence": (
-            f"custodian_public_key.pem present at {path}."
+            f"custodian_public_key.pem present and not a placeholder at {path}."
             if not errors else "; ".join(errors)
         ),
     }
@@ -554,6 +571,15 @@ def check_blinding_module(
         "generate_seed", "assign_arms", "encrypt_mapping", "decrypt_mapping",
         "assert_seed_not_in_environment", "assert_mapping_not_in_environment",
         "CONFIRMATION_BLIND_SEED", "SeedAccessViolation",
+        # Phase 2 additions: three-layer envelope
+        "AES-256-GCM+RSA-OAEP-SHA256-v1",
+        "check_not_placeholder_key",
+        "check_not_dry_run_bundle",
+        "check_not_test_only_bundle",
+        "PlaceholderPublicKey",
+        "BundleIsTestOnly",
+        "DryRunBundle",
+        "_DEK_BYTES",
     ]
     for sym in required_symbols:
         if sym not in src:

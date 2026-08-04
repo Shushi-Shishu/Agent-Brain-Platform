@@ -267,8 +267,60 @@ All 248 tests now pass (0 errors, up from 13 errors in vault/pilot tests).
 ### Remaining human actions before confirmation
 
 1. Create `confirmation` protected environment in GitHub Actions with required reviewers.
-2. Add `ANTHROPIC_API_KEY` as environment secret scoped to `confirmation`.
-3. Generate real EC/RSA keypair offline; commit public key; store private key offline.
-4. Generate `CONFIRMATION_BLIND_SEED` offline; add as `confirmation` environment secret.
-5. Trigger workflow with `dry_run=true` to validate isolation end-to-end.
-6. Activate preregistration and run Task 5.
+2. Create `confirmation-custody` protected environment scoped only to the owner.
+3. Add `ANTHROPIC_API_KEY` as environment secret in `confirmation` only.
+4. Generate real EC/RSA keypair offline; commit public key; store private key offline.
+5. Generate `CONFIRMATION_BLIND_SEED` offline; add as environment secret in `confirmation-custody` only.
+6. Trigger workflow with `dry_run=true` to validate isolation end-to-end.
+7. Replace `custodian_public_key.pem` placeholder with the real public key.
+8. Activate preregistration and run Task 5.
+
+## 2026-08-04 — Independent audit pass (branch codex/task4-external-readiness)
+
+Independent acceptance and publication audit of the Task 4 external-readiness
+commit (127cc33).  Branch pushed to origin unchanged; audit findings corrected
+on the same branch.  No confirmation answer generated, scored, or deblinded.
+R01–R05 remain BLOCKED.
+
+### Critical finding: seed-doubled-as-DEK (corrected)
+
+`blinding.py` v1 (127cc33) derived the mapping encryption key directly from
+`CONFIRMATION_BLIND_SEED` via HKDF-expand.  This violated Phase 2 requirement 9:
+the seed must not also function as the custodian's decryption secret.  Any
+process holding the seed could decrypt the mapping without the custodian's
+offline private key — defeating the custody guarantee.
+
+**Correction:** three-layer envelope introduced:
+
+1. `CONFIRMATION_BLIND_SEED` → HMAC-SHA256 arm assignment only (unchanged role)
+2. Fresh `secrets.token_bytes(32)` DEK → AES-256-GCM mapping encryption
+   (real GCM via `cryptography.hazmat.primitives.ciphers.aead.AESGCM`)
+3. DEK → RSA-OAEP (SHA-256/MGF1) wrapping under custodian public key
+
+The DEK is independent of the seed.  Deblinding requires the custodian's
+offline private key even if the seed is known.
+
+### Additional audit corrections
+
+| Finding | Corrected |
+|---|---|
+| Placeholder PEM accepted by `encrypt_mapping` without error | `_load_public_key` detects sentinel; `check_not_placeholder_key()` added |
+| `CONFIRMATION_BLIND_SEED` and `ANTHROPIC_API_KEY` in same GitHub env | Seed moved to separate `confirmation-custody` environment |
+| Dry-run bundles not tagged; could reach analysis paths | `dry_run_tag = "diagnostic_synthetic_only"`; `check_not_dry_run_bundle()` added |
+| Missing frozen-path isolation tests for dry-run | Tests added: `test_dry_run_does_not_open_frozen_task_file` etc. |
+| stdlib HMAC-CTR used instead of real AES-GCM | Now uses `cryptography` AESGCM |
+
+### Test counts after audit
+
+| File | Tests |
+|---|---|
+| `test_ablation.py` | 44 |
+| `test_readiness.py` | 56 |
+| `test_provider.py` | 42 (was 33; +9 Phase 5 gate tests) |
+| `test_blinding.py` | 57 (was 35; +22 Phase 2/3/4 crypto + isolation tests) |
+| Prior tests (controller, trace, analysis, etc.) | 80 |
+| **Total** | **279 passed, 0 errors, 0 skips** |
+
+### Gate matrix (unchanged)
+
+R01–R05 BLOCKED | R06–R09 SATISFIED | Confirmation ready: NO

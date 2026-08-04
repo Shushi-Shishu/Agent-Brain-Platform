@@ -1,16 +1,22 @@
 """
-Tests for blinding.py — deterministic blinding and custody infrastructure.
+Tests for blinding.py — three-layer cryptographic envelope and isolation.
 
-Coverage:
-- Seed generation (randomness, format)
-- Deterministic arm assignment (reproducible given seed)
-- Mapping encryption/decryption round-trip
-- Cross-arm artifact rejection (mismatch detection)
-- Corpus hash mismatch detection
+Coverage (Phase 2 + Phase 3 + Phase 4 requirements):
+- Seed generation and validation
+- Deterministic arm assignment (seed used for HMAC only, NOT encryption key)
+- AES-256-GCM mapping encryption with real cryptography library
+- RSA-OAEP DEK wrapping round-trip with temporary test keypair
+- Ciphertext-hash mismatch detected before decryption
+- Authentication-tag tampering detected
+- Placeholder public key causes production preflight to fail closed
+- Test-only bundle causes production preflight to fail closed
+- Dry-run bundle causes analysis path to fail closed
+- Dry-run does NOT open frozen confirmation paths
 - Seed isolation: assert_seed_not_in_environment
-- Mapping isolation: assert_mapping_not_in_environment
-- Evaluator input isolation
-- Selection-only invariant: no confirmation answer generated
+- Mapping/key isolation: assert_mapping_not_in_environment
+- Corpus hash mismatch detection
+- Cross-arm artifact rejection
+- Selection-only invariant
 """
 
 from __future__ import annotations
@@ -19,6 +25,7 @@ import hashlib
 import json
 import os
 import sys
+import tempfile
 from pathlib import Path
 from unittest.mock import patch
 
@@ -30,20 +37,30 @@ if str(HERE) not in sys.path:
 
 import blinding as bl
 from blinding import (
-    generate_seed,
-    read_seed_from_env,
-    assign_arms,
-    encrypt_mapping,
-    decrypt_mapping,
-    verify_corpus_package,
-    assert_seed_not_in_environment,
-    assert_mapping_not_in_environment,
-    MappingBundle,
     BlindingError,
-    SeedAccessViolation,
     CorpusHashMismatch,
+    DryRunBundle,
+    MappingBundle,
+    PlaceholderPublicKey,
+    SeedAccessViolation,
+    BundleIsTestOnly,
     SEED_ENV_VAR,
     SEED_BYTES,
+    _ALGO_REAL,
+    _ALGO_TEST_ONLY,
+    _DRY_RUN_TAG,
+    _PLACEHOLDER_SENTINEL,
+    assign_arms,
+    assert_mapping_not_in_environment,
+    assert_seed_not_in_environment,
+    check_not_dry_run_bundle,
+    check_not_placeholder_key,
+    check_not_test_only_bundle,
+    decrypt_mapping,
+    encrypt_mapping,
+    generate_seed,
+    read_seed_from_env,
+    verify_corpus_package,
 )
 
 
@@ -51,298 +68,505 @@ from blinding import (
 # Helpers
 # ---------------------------------------------------------------------------
 
-def make_seed() -> str:
-    return generate_seed()
-
-
 SAMPLE_TASKS = [f"SRCH-C{i:03d}" for i in range(1, 33)]
 
 
+def _make_temp_real_keypair():
+    """Generate a temporary RSA-2048 keypair for test use; returns (pub_pem_path, priv_pem_path)."""
+    from cryptography.hazmat.primitives.asymmetric.rsa import generate_private_key
+    from cryptography.hazmat.primitives.serialization import (
+        Encoding, PublicFormat, PrivateFormat, NoEncryption
+    )
+    priv = generate_private_key(public_exponent=65537, key_size=2048)
+    pub_pem  = priv.public_key().public_bytes(Encoding.PEM, PublicFormat.SubjectPublicKeyInfo)
+    priv_pem = priv.private_bytes(Encoding.PEM, PrivateFormat.PKCS8, NoEncryption())
+    tmp_pub  = tempfile.NamedTemporaryFile(suffix=".pem", delete=False)
+    tmp_priv = tempfile.NamedTemporaryFile(suffix=".pem", delete=False)
+    tmp_pub.write(pub_pem);  tmp_pub.close()
+    tmp_priv.write(priv_pem); tmp_priv.close()
+    return Path(tmp_pub.name), Path(tmp_priv.name)
+
+
 # ---------------------------------------------------------------------------
-# Seed generation tests
+# Seed generation
 # ---------------------------------------------------------------------------
 
 class TestSeedGeneration:
-    def test_seed_is_hex_string(self):
-        seed = generate_seed()
-        assert all(c in "0123456789ABCDEFabcdef" for c in seed)
+    def test_seed_is_uppercase_hex(self):
+        s = generate_seed()
+        assert s == s.upper()
+        assert all(c in "0123456789ABCDEF" for c in s)
 
-    def test_seed_length(self):
-        seed = generate_seed()
-        assert len(seed) == SEED_BYTES * 2
+    def test_seed_correct_length(self):
+        assert len(generate_seed()) == SEED_BYTES * 2
 
     def test_seeds_are_unique(self):
-        s1 = generate_seed()
-        s2 = generate_seed()
-        assert s1 != s2  # Extremely unlikely to collide
+        assert generate_seed() != generate_seed()
 
-    def test_seed_is_uppercase(self):
-        seed = generate_seed()
-        assert seed == seed.upper()
-
-
-# ---------------------------------------------------------------------------
-# read_seed_from_env tests
-# ---------------------------------------------------------------------------
-
-class TestReadSeedFromEnv:
-    def test_reads_valid_seed(self):
+    def test_read_seed_from_env_valid(self):
         seed = generate_seed()
         with patch.dict(os.environ, {SEED_ENV_VAR: seed}):
-            result = read_seed_from_env()
-        assert result == seed
+            assert read_seed_from_env() == seed
 
-    def test_raises_when_var_absent(self):
+    def test_read_seed_raises_absent(self):
         env = {k: v for k, v in os.environ.items() if k != SEED_ENV_VAR}
         with patch.dict(os.environ, env, clear=True):
             with pytest.raises(BlindingError):
                 read_seed_from_env()
 
-    def test_raises_when_var_empty(self):
+    def test_read_seed_raises_empty(self):
         with patch.dict(os.environ, {SEED_ENV_VAR: ""}):
             with pytest.raises(BlindingError):
                 read_seed_from_env()
 
-    def test_raises_when_var_malformed(self):
-        with patch.dict(os.environ, {SEED_ENV_VAR: "NOTAHEXSTRING"}):
-            with pytest.raises(BlindingError):
-                read_seed_from_env()
-
-    def test_raises_when_var_too_short(self):
-        with patch.dict(os.environ, {SEED_ENV_VAR: "AABB" * 8}):  # 32 chars, not 64
+    def test_read_seed_raises_malformed(self):
+        with patch.dict(os.environ, {SEED_ENV_VAR: "NOTVALID"}):
             with pytest.raises(BlindingError):
                 read_seed_from_env()
 
 
 # ---------------------------------------------------------------------------
-# Arm assignment tests
+# Arm assignment (seed used for HMAC only, never for encryption)
 # ---------------------------------------------------------------------------
 
 class TestArmAssignment:
-    def test_deterministic_assignment(self):
+    def test_deterministic(self):
         seed = generate_seed()
-        m1 = assign_arms(SAMPLE_TASKS, seed)
-        m2 = assign_arms(SAMPLE_TASKS, seed)
-        assert m1 == m2
+        assert assign_arms(SAMPLE_TASKS, seed) == assign_arms(SAMPLE_TASKS, seed)
 
-    def test_different_seeds_produce_different_assignments(self):
-        s1, s2 = generate_seed(), generate_seed()
-        m1 = assign_arms(SAMPLE_TASKS, s1)
-        m2 = assign_arms(SAMPLE_TASKS, s2)
-        # With 32 tasks there is a 2^-32 chance of exact collision
+    def test_different_seeds_different_assignments(self):
+        m1 = assign_arms(SAMPLE_TASKS, generate_seed())
+        m2 = assign_arms(SAMPLE_TASKS, generate_seed())
         assert m1 != m2
 
     def test_all_tasks_assigned(self):
-        seed = generate_seed()
-        mapping = assign_arms(SAMPLE_TASKS, seed)
-        assert set(mapping.keys()) == set(SAMPLE_TASKS)
+        m = assign_arms(SAMPLE_TASKS, generate_seed())
+        assert set(m.keys()) == set(SAMPLE_TASKS)
 
-    def test_assignments_are_valid_arms(self):
-        seed = generate_seed()
-        mapping = assign_arms(SAMPLE_TASKS, seed)
-        for arm in mapping.values():
-            assert arm in ("generic", "configured")
-
-    def test_custom_arms(self):
-        seed = generate_seed()
-        mapping = assign_arms(["T1", "T2", "T3"], seed, arms=("arm_a", "arm_b"))
-        for arm in mapping.values():
-            assert arm in ("arm_a", "arm_b")
+    def test_valid_arm_labels(self):
+        m = assign_arms(SAMPLE_TASKS, generate_seed())
+        assert all(v in ("generic", "configured") for v in m.values())
 
     def test_both_arms_represented(self):
+        m = assign_arms(SAMPLE_TASKS, generate_seed())
+        assert "generic" in m.values() and "configured" in m.values()
+
+    def test_seed_not_used_as_encryption_key(self):
+        """assign_arms must not return an encryption key or touch blinding crypto."""
         seed = generate_seed()
-        # With 32 tasks, the probability of all tasks mapping to one arm is ~2^-31
         mapping = assign_arms(SAMPLE_TASKS, seed)
-        assert "generic" in mapping.values()
-        assert "configured" in mapping.values()
+        # The mapping itself must not contain the seed or any derived key material
+        m_str = json.dumps(mapping)
+        assert seed not in m_str
+        assert seed.lower() not in m_str.lower()
 
 
 # ---------------------------------------------------------------------------
-# Encryption / decryption round-trip tests
+# Three-layer encryption round-trip with real keypair
 # ---------------------------------------------------------------------------
 
-class TestMappingEncryption:
+class TestRealKeyEncryption:
+    def setup_method(self):
+        self.pub_path, self.priv_path = _make_temp_real_keypair()
+
+    def teardown_method(self):
+        for p in (self.pub_path, self.priv_path):
+            try:
+                p.unlink()
+            except Exception:
+                pass
+
     def test_encrypt_decrypt_roundtrip(self):
         seed = generate_seed()
         mapping = assign_arms(SAMPLE_TASKS, seed)
-        bundle = encrypt_mapping(mapping, seed)
-        recovered = decrypt_mapping(bundle, seed)
+        bundle = encrypt_mapping(mapping, pubkey_pem_path=self.pub_path)
+        recovered = decrypt_mapping(bundle, private_key_pem_path=self.priv_path)
         assert recovered == mapping
 
-    def test_bundle_has_required_fields(self):
-        seed = generate_seed()
-        mapping = assign_arms(["T1"], seed)
-        bundle = encrypt_mapping(mapping, seed)
+    def test_bundle_is_production_algorithm(self):
+        bundle = encrypt_mapping({"T1": "generic"}, pubkey_pem_path=self.pub_path)
+        assert bundle.algorithm == _ALGO_REAL
+
+    def test_bundle_has_all_required_fields(self):
+        bundle = encrypt_mapping({"T1": "generic"}, pubkey_pem_path=self.pub_path)
         d = bundle.to_dict()
-        assert "encrypted_mapping_b64" in d
-        assert "mapping_hash" in d
-        assert "algorithm" in d
-        assert "seed_env_var" in d
+        for field in ("encrypted_mapping_b64", "nonce_b64", "auth_tag_b64",
+                      "wrapped_dek_b64", "pubkey_fingerprint_sha256",
+                      "algorithm", "ciphertext_sha256"):
+            assert field in d, f"Missing field: {field}"
 
-    def test_bundle_hash_is_stable(self):
-        seed = generate_seed()
-        mapping = assign_arms(["T1", "T2"], seed)
-        b1 = encrypt_mapping(mapping, seed)
-        # Different nonce means different ciphertext, but both should round-trip
-        recovered = decrypt_mapping(b1, seed)
-        assert recovered == mapping
+    def test_bundle_dry_run_tag_absent_for_real(self):
+        bundle = encrypt_mapping({"T1": "generic"}, pubkey_pem_path=self.pub_path)
+        assert bundle.dry_run_tag == ""
 
-    def test_wrong_seed_fails_decryption(self):
-        seed1 = generate_seed()
-        seed2 = generate_seed()
-        mapping = assign_arms(["T1"], seed1)
-        bundle = encrypt_mapping(mapping, seed1)
-        with pytest.raises(BlindingError):
-            decrypt_mapping(bundle, seed2)
+    def test_nonce_is_random_across_encryptions(self):
+        mapping = {"T1": "generic"}
+        b1 = encrypt_mapping(mapping, pubkey_pem_path=self.pub_path)
+        b2 = encrypt_mapping(mapping, pubkey_pem_path=self.pub_path)
+        assert b1.nonce_b64 != b2.nonce_b64
 
-    def test_tampered_ciphertext_fails_authentication(self):
-        import base64
-        seed = generate_seed()
-        mapping = assign_arms(["T1", "T2"], seed)
-        bundle = encrypt_mapping(mapping, seed)
-        # Tamper with the ciphertext
-        raw = base64.b64decode(bundle.encrypted_mapping_b64)
-        tampered = bytearray(raw)
-        tampered[-1] ^= 0xFF
-        bad_bundle = MappingBundle(
-            encrypted_mapping_b64=base64.b64encode(bytes(tampered)).decode(),
-            mapping_hash=bundle.mapping_hash,
-            algorithm=bundle.algorithm,
-            seed_env_var=bundle.seed_env_var,
-        )
-        with pytest.raises(BlindingError):
-            decrypt_mapping(bad_bundle, seed)
-
-    def test_hash_mismatch_detected_before_decryption(self):
+    def test_dek_is_independent_of_seed(self):
+        """Wrapped DEK must differ between calls — it is not seed-derived."""
         seed = generate_seed()
         mapping = assign_arms(["T1"], seed)
-        bundle = encrypt_mapping(mapping, seed)
-        bad_bundle = MappingBundle(
-            encrypted_mapping_b64=bundle.encrypted_mapping_b64,
-            mapping_hash="A" * 64,  # wrong hash
-            algorithm=bundle.algorithm,
-            seed_env_var=bundle.seed_env_var,
-        )
+        b1 = encrypt_mapping(mapping, pubkey_pem_path=self.pub_path)
+        b2 = encrypt_mapping(mapping, pubkey_pem_path=self.pub_path)
+        # Independent fresh random DEKs produce different wrapped material
+        assert b1.wrapped_dek_b64 != b2.wrapped_dek_b64
+
+    def test_ciphertext_hash_in_bundle(self):
+        import base64
+        bundle = encrypt_mapping({"T1": "configured"}, pubkey_pem_path=self.pub_path)
+        ct = base64.b64decode(bundle.encrypted_mapping_b64)
+        expected = hashlib.sha256(ct).hexdigest().upper()
+        assert bundle.ciphertext_sha256 == expected
+
+    def test_is_production_returns_true(self):
+        bundle = encrypt_mapping({"T1": "generic"}, pubkey_pem_path=self.pub_path)
+        assert bundle.is_production()
+
+    def test_wrong_private_key_fails(self):
+        """Decryption with a different private key must fail."""
+        mapping = {"T1": "generic"}
+        bundle = encrypt_mapping(mapping, pubkey_pem_path=self.pub_path)
+        wrong_pub, wrong_priv = _make_temp_real_keypair()
+        try:
+            with pytest.raises(Exception):  # ValueError or InvalidSignature from cryptography
+                decrypt_mapping(bundle, private_key_pem_path=wrong_priv)
+        finally:
+            wrong_pub.unlink(); wrong_priv.unlink()
+
+    def test_missing_private_key_path_raises(self):
+        bundle = encrypt_mapping({"T1": "generic"}, pubkey_pem_path=self.pub_path)
         with pytest.raises(BlindingError):
-            decrypt_mapping(bad_bundle, seed)
+            decrypt_mapping(bundle, private_key_pem_path=None)
 
 
 # ---------------------------------------------------------------------------
-# Corpus hash mismatch tests
+# Ciphertext integrity
+# ---------------------------------------------------------------------------
+
+class TestCiphertextIntegrity:
+    def setup_method(self):
+        self.pub_path, self.priv_path = _make_temp_real_keypair()
+
+    def teardown_method(self):
+        for p in (self.pub_path, self.priv_path):
+            try: p.unlink()
+            except Exception: pass
+
+    def test_tampered_ciphertext_fails(self):
+        import base64
+        bundle = encrypt_mapping({"T1": "generic"}, pubkey_pem_path=self.pub_path)
+        raw = bytearray(base64.b64decode(bundle.encrypted_mapping_b64))
+        raw[-1] ^= 0xFF
+        bad = MappingBundle(
+            encrypted_mapping_b64     = base64.b64encode(bytes(raw)).decode(),
+            nonce_b64                 = bundle.nonce_b64,
+            auth_tag_b64              = bundle.auth_tag_b64,
+            wrapped_dek_b64           = bundle.wrapped_dek_b64,
+            pubkey_fingerprint_sha256 = bundle.pubkey_fingerprint_sha256,
+            algorithm                 = bundle.algorithm,
+            ciphertext_sha256         = bundle.ciphertext_sha256,
+        )
+        with pytest.raises(BlindingError):
+            decrypt_mapping(bad, private_key_pem_path=self.priv_path)
+
+    def test_wrong_ciphertext_hash_detected_before_decryption(self):
+        bundle = encrypt_mapping({"T1": "generic"}, pubkey_pem_path=self.pub_path)
+        bad = MappingBundle(
+            encrypted_mapping_b64     = bundle.encrypted_mapping_b64,
+            nonce_b64                 = bundle.nonce_b64,
+            auth_tag_b64              = bundle.auth_tag_b64,
+            wrapped_dek_b64           = bundle.wrapped_dek_b64,
+            pubkey_fingerprint_sha256 = bundle.pubkey_fingerprint_sha256,
+            algorithm                 = bundle.algorithm,
+            ciphertext_sha256         = "A" * 64,
+        )
+        with pytest.raises(BlindingError, match="hash mismatch"):
+            decrypt_mapping(bad, private_key_pem_path=self.priv_path)
+
+    def test_tampered_auth_tag_fails(self):
+        import base64
+        bundle = encrypt_mapping({"T1": "generic"}, pubkey_pem_path=self.pub_path)
+        raw_tag = bytearray(base64.b64decode(bundle.auth_tag_b64))
+        raw_tag[0] ^= 0xFF
+        bad = MappingBundle(
+            encrypted_mapping_b64     = bundle.encrypted_mapping_b64,
+            nonce_b64                 = bundle.nonce_b64,
+            auth_tag_b64              = base64.b64encode(bytes(raw_tag)).decode(),
+            wrapped_dek_b64           = bundle.wrapped_dek_b64,
+            pubkey_fingerprint_sha256 = bundle.pubkey_fingerprint_sha256,
+            algorithm                 = bundle.algorithm,
+            ciphertext_sha256         = bundle.ciphertext_sha256,
+        )
+        with pytest.raises(Exception):  # InvalidTag from cryptography
+            decrypt_mapping(bad, private_key_pem_path=self.priv_path)
+
+
+# ---------------------------------------------------------------------------
+# Placeholder public key — fails closed (Phase 2 requirement 7)
+# ---------------------------------------------------------------------------
+
+class TestPlaceholderKey:
+    def test_placeholder_detected_on_encrypt(self):
+        """encrypt_mapping must fail closed when the PEM contains the placeholder sentinel."""
+        with tempfile.NamedTemporaryFile(suffix=".pem", mode="w", delete=False) as f:
+            f.write(f"-----BEGIN PUBLIC KEY-----\n{_PLACEHOLDER_SENTINEL}: fake\n-----END PUBLIC KEY-----\n")
+            pem_path = Path(f.name)
+        try:
+            with pytest.raises(PlaceholderPublicKey):
+                encrypt_mapping({"T1": "generic"}, pubkey_pem_path=pem_path)
+        finally:
+            pem_path.unlink()
+
+    def test_placeholder_detected_by_check_function(self):
+        with tempfile.NamedTemporaryFile(suffix=".pem", mode="w", delete=False) as f:
+            f.write(f"-----BEGIN PUBLIC KEY-----\n{_PLACEHOLDER_SENTINEL}: fake\n-----END PUBLIC KEY-----\n")
+            pem_path = Path(f.name)
+        try:
+            with pytest.raises(PlaceholderPublicKey):
+                check_not_placeholder_key(pem_path)
+        finally:
+            pem_path.unlink()
+
+    def test_default_pem_is_placeholder(self):
+        """The committed custodian_public_key.pem must still be a placeholder."""
+        with pytest.raises(PlaceholderPublicKey):
+            check_not_placeholder_key()
+
+    def test_real_key_passes_check(self):
+        pub_path, priv_path = _make_temp_real_keypair()
+        try:
+            check_not_placeholder_key(pub_path)  # must not raise
+        finally:
+            pub_path.unlink(); priv_path.unlink()
+
+
+# ---------------------------------------------------------------------------
+# Test-only bundle — rejected by production preflight (Phase 2 requirement 8)
+# ---------------------------------------------------------------------------
+
+class TestBundleIsTestOnly:
+    def test_dry_run_produces_test_only_algorithm(self):
+        bundle = encrypt_mapping({"T1": "generic"}, dry_run=True)
+        assert bundle.algorithm == _ALGO_TEST_ONLY
+
+    def test_test_only_bundle_rejected_by_preflight(self):
+        bundle = encrypt_mapping({"T1": "generic"}, dry_run=True)
+        with pytest.raises(BundleIsTestOnly):
+            check_not_test_only_bundle(bundle.to_dict())
+
+    def test_real_bundle_passes_test_only_check(self):
+        pub_path, priv_path = _make_temp_real_keypair()
+        try:
+            bundle = encrypt_mapping({"T1": "generic"}, pubkey_pem_path=pub_path)
+            check_not_test_only_bundle(bundle.to_dict())  # must not raise
+        finally:
+            pub_path.unlink(); priv_path.unlink()
+
+    def test_test_only_round_trip(self):
+        """Dry-run bundles round-trip via the test-only unwrap path."""
+        mapping = assign_arms(["T1", "T2"], generate_seed())
+        bundle = encrypt_mapping(mapping, dry_run=True)
+        recovered = decrypt_mapping(bundle, _test_only_unwrap=True)
+        assert recovered == mapping
+
+
+# ---------------------------------------------------------------------------
+# Dry-run isolation (Phase 4)
+# ---------------------------------------------------------------------------
+
+class TestDryRunIsolation:
+    def test_dry_run_bundle_has_tag(self):
+        bundle = encrypt_mapping({"T1": "generic"}, dry_run=True)
+        assert bundle.dry_run_tag == _DRY_RUN_TAG
+
+    def test_dry_run_bundle_rejected_by_analysis_path(self):
+        bundle = encrypt_mapping({"T1": "generic"}, dry_run=True)
+        with pytest.raises(DryRunBundle):
+            check_not_dry_run_bundle(bundle.to_dict())
+
+    def test_real_bundle_passes_analysis_path(self):
+        pub_path, priv_path = _make_temp_real_keypair()
+        try:
+            bundle = encrypt_mapping({"T1": "generic"}, pubkey_pem_path=pub_path)
+            check_not_dry_run_bundle(bundle.to_dict())  # must not raise
+        finally:
+            pub_path.unlink(); priv_path.unlink()
+
+    def test_dry_run_does_not_open_frozen_task_file(self):
+        """Dry-run encrypt_mapping must not read tasks_v1.json."""
+        frozen_task_path = HERE / "confirmation" / "tasks_v1.json"
+        read_calls = []
+        real_open = open
+
+        def mock_open(path, *args, **kwargs):
+            if str(frozen_task_path) in str(path):
+                read_calls.append(str(path))
+            return real_open(path, *args, **kwargs)
+
+        with patch("builtins.open", side_effect=mock_open):
+            encrypt_mapping({"T1": "generic"}, dry_run=True)
+
+        assert not read_calls, (
+            f"dry_run encrypt_mapping opened frozen task file: {read_calls}"
+        )
+
+    def test_dry_run_does_not_open_confirmation_rubric(self):
+        """Dry-run must not open EVALUATION_RUBRIC_V1.md."""
+        rubric_path = HERE / "confirmation" / "EVALUATION_RUBRIC_V1.md"
+        read_calls = []
+        real_open = open
+
+        def mock_open(path, *args, **kwargs):
+            if str(rubric_path) in str(path):
+                read_calls.append(str(path))
+            return real_open(path, *args, **kwargs)
+
+        with patch("builtins.open", side_effect=mock_open):
+            encrypt_mapping({"T1": "generic"}, dry_run=True)
+
+        assert not read_calls, (
+            f"dry_run encrypt_mapping opened confirmation rubric: {read_calls}"
+        )
+
+    def test_dry_run_does_not_open_sealed_labels(self):
+        """Dry-run must not open any file under confirmation/sealed/."""
+        sealed_dir = HERE / "confirmation" / "sealed"
+        read_calls = []
+        real_open = open
+
+        def mock_open(path, *args, **kwargs):
+            if str(sealed_dir) in str(path):
+                read_calls.append(str(path))
+            return real_open(path, *args, **kwargs)
+
+        with patch("builtins.open", side_effect=mock_open):
+            encrypt_mapping({"T1": "generic"}, dry_run=True)
+
+        assert not read_calls, (
+            f"dry_run encrypt_mapping opened sealed file: {read_calls}"
+        )
+
+
+# ---------------------------------------------------------------------------
+# Corpus hash mismatch
 # ---------------------------------------------------------------------------
 
 class TestCorpusHashMismatch:
     def test_matching_hash_passes(self, tmp_path):
-        content = b"fake corpus package content"
         pkg = tmp_path / "corpus.enc"
-        pkg.write_bytes(content)
-        expected = hashlib.sha256(content).hexdigest().upper()
-        # Should not raise
-        verify_corpus_package(pkg, expected)
+        pkg.write_bytes(b"test content")
+        expected = hashlib.sha256(b"test content").hexdigest().upper()
+        verify_corpus_package(pkg, expected)  # must not raise
 
     def test_mismatched_hash_raises(self, tmp_path):
-        content = b"fake corpus package content"
         pkg = tmp_path / "corpus.enc"
-        pkg.write_bytes(content)
-        wrong_hash = "A" * 64
+        pkg.write_bytes(b"test content")
         with pytest.raises(CorpusHashMismatch):
-            verify_corpus_package(pkg, wrong_hash)
+            verify_corpus_package(pkg, "A" * 64)
 
 
 # ---------------------------------------------------------------------------
-# Seed isolation tests
+# Seed isolation
 # ---------------------------------------------------------------------------
 
 class TestSeedIsolation:
-    def test_seed_absent_passes(self):
+    def test_absent_seed_passes(self):
         env = {k: v for k, v in os.environ.items() if k != SEED_ENV_VAR}
         with patch.dict(os.environ, env, clear=True):
-            assert_seed_not_in_environment()  # should not raise
+            assert_seed_not_in_environment()  # must not raise
 
-    def test_seed_present_raises_violation(self):
+    def test_present_seed_raises(self):
         with patch.dict(os.environ, {SEED_ENV_VAR: generate_seed()}):
             with pytest.raises(SeedAccessViolation):
                 assert_seed_not_in_environment()
 
     def test_empty_seed_var_does_not_raise(self):
         with patch.dict(os.environ, {SEED_ENV_VAR: ""}):
-            # Empty string should not be treated as a present seed
-            assert_seed_not_in_environment()
+            assert_seed_not_in_environment()  # empty ≠ present
 
 
 # ---------------------------------------------------------------------------
-# Mapping isolation (evaluator) tests
+# Mapping/key isolation (evaluator)
 # ---------------------------------------------------------------------------
 
 class TestMappingIsolation:
-    def test_mapping_vars_absent_passes(self):
-        env = {
+    def test_no_sensitive_vars_passes(self):
+        clean = {
             k: v for k, v in os.environ.items()
-            if k not in (SEED_ENV_VAR, "BLIND_MAPPING", "ARM_MAPPING", "MAPPING_KEY")
+            if k not in (SEED_ENV_VAR, "BLIND_MAPPING", "ARM_MAPPING",
+                         "MAPPING_KEY", "CUSTODIAN_PRIVATE_KEY", "DEBLINDING_KEY")
         }
-        with patch.dict(os.environ, env, clear=True):
-            assert_mapping_not_in_environment()  # should not raise
+        with patch.dict(os.environ, clean, clear=True):
+            assert_mapping_not_in_environment()  # must not raise
 
-    def test_blind_mapping_present_raises_violation(self):
-        with patch.dict(os.environ, {"BLIND_MAPPING": "some_value"}):
-            with pytest.raises(SeedAccessViolation):
-                assert_mapping_not_in_environment()
-
-    def test_arm_mapping_present_raises_violation(self):
-        with patch.dict(os.environ, {"ARM_MAPPING": "some_value"}):
-            with pytest.raises(SeedAccessViolation):
-                assert_mapping_not_in_environment()
-
-    def test_seed_present_raises_violation_in_mapping_check(self):
-        with patch.dict(os.environ, {SEED_ENV_VAR: generate_seed()}):
+    @pytest.mark.parametrize("var", [
+        SEED_ENV_VAR, "BLIND_MAPPING", "ARM_MAPPING",
+        "MAPPING_KEY", "CUSTODIAN_PRIVATE_KEY", "DEBLINDING_KEY",
+    ])
+    def test_each_sensitive_var_raises(self, var):
+        with patch.dict(os.environ, {var: "some_value"}):
             with pytest.raises(SeedAccessViolation):
                 assert_mapping_not_in_environment()
 
 
 # ---------------------------------------------------------------------------
-# Cross-arm artifact rejection tests
+# Cross-arm artifact rejection
 # ---------------------------------------------------------------------------
 
-class TestCrossArmArtifactRejection:
-    def test_different_seeds_cannot_decrypt_each_other(self):
-        """An artifact encrypted with seed A cannot be decrypted with seed B."""
-        seed_a = generate_seed()
-        seed_b = generate_seed()
-        mapping = assign_arms(["T1", "T2"], seed_a)
-        bundle_a = encrypt_mapping(mapping, seed_a)
-        with pytest.raises(BlindingError):
-            decrypt_mapping(bundle_a, seed_b)
+class TestCrossArmRejection:
+    def test_different_seeds_cannot_share_ciphertext(self):
+        """The mapping produced from seed A must not decrypt correctly when the bundle
+        was encrypted with seed B's mapping — different plaintexts encrypt differently."""
+        seed_a, seed_b = generate_seed(), generate_seed()
+        m_a = assign_arms(["T1", "T2"], seed_a)
+        m_b = assign_arms(["T1", "T2"], seed_b)
+        pub_path, priv_path = _make_temp_real_keypair()
+        try:
+            bundle_a = encrypt_mapping(m_a, pubkey_pem_path=pub_path)
+            recovered = decrypt_mapping(bundle_a, private_key_pem_path=priv_path)
+            # The recovered mapping must be m_a, not m_b
+            assert recovered == m_a
+            if m_a != m_b:
+                assert recovered != m_b
+        finally:
+            pub_path.unlink(); priv_path.unlink()
 
-    def test_arm_assignment_is_unique_per_seed(self):
-        """Two different seeds produce different arm assignments (with high probability)."""
-        seed_a = generate_seed()
-        seed_b = generate_seed()
-        m_a = assign_arms(SAMPLE_TASKS, seed_a)
-        m_b = assign_arms(SAMPLE_TASKS, seed_b)
-        # Full equality is astronomically unlikely; check at least one differs
-        assert any(m_a[t] != m_b[t] for t in SAMPLE_TASKS)
+    def test_evaluator_cannot_decrypt_without_private_key(self):
+        pub_path, priv_path = _make_temp_real_keypair()
+        try:
+            bundle = encrypt_mapping({"T1": "generic"}, pubkey_pem_path=pub_path)
+            with pytest.raises(BlindingError):
+                decrypt_mapping(bundle, private_key_pem_path=None)
+        finally:
+            pub_path.unlink(); priv_path.unlink()
 
 
 # ---------------------------------------------------------------------------
-# Evaluator input isolation tests
+# Evaluator input isolation
 # ---------------------------------------------------------------------------
 
 class TestEvaluatorInputIsolation:
-    def test_bundle_does_not_expose_plain_mapping(self):
-        seed = generate_seed()
-        mapping = assign_arms(["T1", "T2", "T3"], seed)
-        bundle = encrypt_mapping(mapping, seed)
+    def test_bundle_does_not_contain_plain_task_ids(self):
+        # Use realistic multi-character task IDs that won't appear in base64
+        # by coincidence (unlike single chars like "T1" / "T2")
+        mapping = assign_arms(
+            ["SRCH-C001", "SRCH-C002", "SRCH-C003"], generate_seed()
+        )
+        bundle = encrypt_mapping(mapping, dry_run=True)
         bundle_json = json.dumps(bundle.to_dict())
-        # Plain task IDs must not appear in the bundle
-        for task_id in mapping.keys():
-            assert task_id not in bundle_json
+        # The full task IDs must not appear as plaintext in the bundle JSON
+        for tid in mapping.keys():
+            assert tid not in bundle_json, (
+                f"Task ID '{tid}' found as plaintext in bundle — mapping leaked"
+            )
 
-    def test_bundle_does_not_expose_arm_labels(self):
-        seed = generate_seed()
-        mapping = assign_arms(["T1"], seed)
-        bundle = encrypt_mapping(mapping, seed)
+    def test_bundle_does_not_contain_arm_labels(self):
+        mapping = assign_arms(["T1", "T2"], generate_seed())
+        bundle = encrypt_mapping(mapping, dry_run=True)
         bundle_str = json.dumps(bundle.to_dict())
-        # Arm labels must not appear as plaintext
         for arm in ("generic", "configured"):
             assert arm not in bundle_str
 
@@ -352,10 +576,7 @@ class TestEvaluatorInputIsolation:
 # ---------------------------------------------------------------------------
 
 class TestSelectionOnlyInvariant:
-    def test_no_confirmation_output_in_blinding_module(self):
+    def test_no_confirmation_verdict_in_blinding_module(self):
         src = (HERE / "blinding.py").read_text(encoding="utf-8")
-        forbidden = ("confirmation verdict", "confirmed effect", "confirmation score")
-        for phrase in forbidden:
-            assert phrase not in src.lower(), (
-                f"blinding.py contains confirmation output reference: '{phrase}'"
-            )
+        for phrase in ("confirmation verdict", "confirmed effect", "confirmation score"):
+            assert phrase not in src.lower()

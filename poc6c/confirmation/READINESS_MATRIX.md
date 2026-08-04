@@ -1,6 +1,6 @@
 # Task 4 — Confirmation Readiness Matrix
 
-**Status date:** 2026-08-04 (updated: external-readiness infrastructure complete)  
+**Status date:** 2026-08-04 (audit pass: 2026-08-04)  
 **Overall Task 4 status: BLOCKED** — R01–R05 are externally blocked.  
 Task 5 must not start until all nine requirements are SATISFIED.  
 All ablation results remain labeled **selection-only**. No confirmation or
@@ -10,21 +10,29 @@ The preflight gate in `readiness.py::run_preflight()` enforces this
 programmatically: it raises `PreflightFailed` if any requirement is unmet,
 preventing any confirmation run from starting.
 
-### External-readiness infrastructure delivered (2026-08-04)
-
-The following infrastructure is now in place to support unblocking R01–R05
-once the repository owner supplies credentials and environment decisions:
+### External-readiness infrastructure (delivered + audit-corrected)
 
 | Artifact | Purpose | Status |
 |---|---|---|
-| `poc6c/provider.py` | Anthropic Messages API adapter; auditable telemetry per response; fail-closed on missing key or model mismatch | **DELIVERED** |
-| `poc6c/pricing_lock.json` | Versioned pricing record for `claude-sonnet-5` (agent) and `claude-opus-5` (evaluator); locked rates, source URL, confirmation constraints | **DELIVERED** |
-| `poc6c/blinding.py` | Deterministic arm assignment from seed; symmetric-authenticated mapping encryption; seed/mapping isolation assertions | **DELIVERED** |
-| `poc6c/custodian_public_key.pem` | Placeholder public key; owner must replace with real offline-generated key and store private key off-repo | **DELIVERED (placeholder)** |
-| `.github/workflows/poc6c-confirmation.yml` | Fail-closed 6-job confirmation workflow: preflight → generic-arm → configured-arm → deterministic-blinding → blinded-evaluator → integrity-and-analysis; all on separate standard GitHub-hosted VMs | **DELIVERED** |
-| `poc6c/test_provider.py` | 33 tests: missing key, model mismatch, cost calculation, pricing drift, secret redaction, synthetic fixtures | **DELIVERED** |
-| `poc6c/test_blinding.py` | 35 tests: seed generation, arm assignment, encrypt/decrypt round-trip, tamper detection, corpus hash mismatch, seed/mapping isolation | **DELIVERED** |
-| `poc6a/experiment.py` (vault path) | Vault path now configurable via `PROJECT008_PATH` env var; 13 pre-existing vault errors resolved | **FIXED** |
+| `poc6c/provider.py` | Anthropic Messages API adapter; auditable telemetry; fail-closed on missing key, model mismatch, or missing usage; `compute_provider_cost_usd` returns `None` never estimates | **DELIVERED** |
+| `poc6c/pricing_lock.json` | Versioned pricing record for `claude-sonnet-5` (agent) and `claude-opus-5` (evaluator); locked rates, source URL, confirmation constraints (Batch API / caching / priority tiers disabled) | **DELIVERED** |
+| `poc6c/blinding.py` | Three-layer cryptographic envelope: HMAC-SHA256 arm assignment (seed used only here), AES-256-GCM mapping encryption with fresh random DEK, RSA-OAEP DEK wrapping under custodian public key. DEK is **independent of `CONFIRMATION_BLIND_SEED`**. Placeholder-key detection, dry-run tagging, all isolation assertions | **DELIVERED (audit-corrected)** |
+| `poc6c/custodian_public_key.pem` | Placeholder; production preflight fails closed until replaced with real offline-generated RSA-4096 / EC-P384 key | **PLACEHOLDER — blocks R05** |
+| `.github/workflows/poc6c-confirmation.yml` | Fail-closed 6-job workflow; `confirmation-custody` env scopes `CONFIRMATION_BLIND_SEED` only to blinding job; `confirmation` env scopes `ANTHROPIC_API_KEY` to arm/evaluator; explicit env allow-lists; dry-run bundle rejected in analysis path | **DELIVERED (audit-corrected)** |
+| `poc6c/test_provider.py` | 42 tests: missing key, model lookup, mismatch, cost, pricing drift, secret redaction, R01–R03 gate checks | **DELIVERED (expanded)** |
+| `poc6c/test_blinding.py` | 57 tests: seed, HMAC assignment, AES-GCM+OAEP round-trip, tamper detection, placeholder-key rejection, test-only-bundle rejection, dry-run isolation (frozen-path checks), seed/mapping isolation, evaluator input isolation, cross-arm rejection | **DELIVERED (expanded)** |
+| `poc6a/experiment.py` (vault path) | Vault path configurable via `PROJECT008_PATH`; 13 pre-existing errors resolved | **FIXED** |
+
+### Key audit findings corrected (2026-08-04)
+
+| Finding | Severity | Resolution |
+|---|---|---|
+| `blinding.py` derived mapping encryption key directly from `CONFIRMATION_BLIND_SEED` via HKDF — seed doubled as custodian decryption secret | **Critical** (Phase 2 req 9) | Replaced with three-layer design: fresh random DEK → AES-256-GCM → RSA-OAEP wrapping. Seed is now used only for HMAC arm assignment |
+| Placeholder PEM was accepted by `encrypt_mapping` without failing closed | **High** (Phase 2 req 7) | `_load_public_key` now raises `PlaceholderPublicKey` on the sentinel string; `check_not_placeholder_key()` added to preflight |
+| `CONFIRMATION_BLIND_SEED` was available to the same GitHub Actions `confirmation` env as `ANTHROPIC_API_KEY` | **High** (Phase 3) | Seed moved to a separate `confirmation-custody` environment; blinding job uses only that env |
+| Dry-run bundles were not tagged and could reach analysis paths | **Medium** (Phase 4) | `dry_run_tag = "diagnostic_synthetic_only"` on all dry-run bundles; `check_not_dry_run_bundle()` rejects them in analysis; `check_not_test_only_bundle()` rejects test-only algorithm bundles |
+| Dry-run isolation tests were missing | **Medium** (Phase 4) | Added tests proving `encrypt_mapping(dry_run=True)` never opens `tasks_v1.json`, rubric, or sealed labels |
+| Workflow used stdlib HMAC-CTR instead of real AES-GCM | **Medium** (Phase 2) | Now uses `cryptography.hazmat.primitives.ciphers.aead.AESGCM` for real AES-256-GCM |
 
 ---
 
