@@ -90,7 +90,8 @@ No secondary result can rescue a failed primary gate.
 Gate IDs correspond to R01–R09 in `confirmation/READINESS_MATRIX.md` and
 `PLAN.md` Task 4.
 
-**Audit hold (2026-08-04):** Task 4B engineering remediation remains open.
+**Audit hold (2026-08-04):** Task 4B engineering remediation remains open;
+independent review rejected commit `cac1cac`.
 The separate-VM skeleton and passing unit tests do not yet establish R04 or
 R05. No checkbox below may be completed, and this draft must not be activated,
 until the remediation commit has passed independent acceptance review and the
@@ -115,16 +116,17 @@ required real per-job evidence has been recorded.
   that does not use confirmation answers
   — SATISFIED: `rubric.validate_rubric()` passes; hash matches preregistration;
   calibration used non-confirmation pilot material only;
-- [x] **R08** task, prompt, schema, rubric, corpus, label, and manifest hashes
+- [ ] **R08** task, prompt, schema, rubric, corpus, label, and manifest hashes
   reverified
-  — SATISFIED (local artifacts): all six local artifact hashes match;
-  corpus_manifest and indexed_body require Project 008 vault for final
-  verification before activation;
+  — PENDING: all six local artifact hashes match, but the executable R08 gate
+  currently ignores the failing vault result; both `corpus_manifest` and
+  `indexed_body` must be integrated and match before activation;
 - [ ] **R05** randomization seed and blind-mapping custody location are locked
   — BLOCKED (Custody): requires neutral human-held custody location;
-- [x] **R09** preregistration checklist updated without changing outcome
+- [ ] **R09** preregistration checklist updated without changing outcome
   thresholds or incorporating confirmation outputs
-  — SATISFIED: this update; no thresholds changed; no confirmation outputs added;
+  — PENDING: no thresholds or outputs changed, but independent acceptance of the
+  final remediation commit has not been recorded;
 - [x] no investigator has inspected confirmation outputs.
 
 If any readiness gate is absent, do not label the run confirmation.

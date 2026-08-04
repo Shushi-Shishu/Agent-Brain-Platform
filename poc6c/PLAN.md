@@ -471,56 +471,68 @@ status, evidence, owner, and unblock condition.
   multi-POC pytest invocation remains unsupported because legacy POCs import
   different top-level `experiment` modules under the same module name.
 
-#### Task 4B — Independent-audit remediation — **ENGINEERING COMPLETE (2026-08-04)**
+#### Task 4B — Independent-audit remediation — **REJECTED / REOPENED (2026-08-04)**
 
 The 2026-08-04 acceptance audit found that the cryptographic foundation is
 directionally sound but the workflow is not yet an executable isolation proof.
 These engineering items precede every human secret/configuration action.
 
-All T4B items are now implemented. The execution agent's final report is in
-PROGRESS.md. Independent acceptance review and human configuration actions
-(GitHub environments, real keypair, seed) remain before Task 5 can start.
+Commit `cac1cac` was independently reviewed and rejected. The review reproduced
+fail-open artifact, attestation, custody-metadata, and R08 behaviors, and found
+that the GitHub workflow still executes placeholder jobs with full-repository
+checkouts. The authoritative remediation feedback, outcomes, and evaluations are
+in `TASK4B_REVIEW_FEEDBACK.md`. No human environment, key, seed, or workflow
+activation action is authorized until a later exact commit is accepted.
 
-- [x] **T4B-01 — Gate modes:** split diagnostic dry-run readiness from production confirmation
+- [ ] **T4B-01 — Gate modes:** split diagnostic dry-run readiness from production confirmation
   readiness. A synthetic diagnostic may traverse the pipeline without claiming
   R01–R05 are satisfied; production remains fail-closed on real attestations.
   Reject unknown/missing modes and prove that diagnostic reaches all six stages
-  while production without evidence stops before either arm.
-- [x] **T4B-02 — Distributed attestations:** replace the single permanently failing central preflight with per-job
+  while production without evidence stops before either arm. **Reopened:** the
+  checked-in workflow does not invoke the synthetic stage entrypoints and exposes
+  environment-secret bindings during diagnostic jobs.
+- [ ] **T4B-02 — Distributed attestations:** replace the single permanently failing central preflight with per-job
   readiness attestations and a final integrity aggregation that does not place
   the API credential and custody seed in one process. Validate stage, run ID,
   commit, mode, input/output hashes, runner identity, and diagnostic markers;
-  reject missing, cross-run, reordered, duplicated, or mismatched attestations.
-- [x] **T4B-03 — Blinded data flow:** implement the complete synthetic data flow: arm outputs → randomized
+  reject missing, cross-run, reordered, duplicated, unlinked, or mismatched
+  attestations. **Reopened:** reversed and entirely unlinked chains validate.
+- [ ] **T4B-03 — Blinded data flow:** implement the complete synthetic data flow: arm outputs → randomized
   blinded-answer bundle → evaluator scores, while storing the encrypted mapping
   as a separate custody artifact never supplied to the evaluator. Empty outputs,
   empty scores, `pending_r01_r05`, missing pairs, duplicate IDs, or raw arm labels
-  in evaluator inputs are fatal.
-- [x] **T4B-04 — Least-privilege packages:** removed hardcoded developer vault path; `check_vault_hashes_with_actual_vault()`
-  now requires `PROJECT008_PATH` or explicit `vault_root`; R08 validates both
-  `corpus_manifest` and `indexed_body` commitments; vault-absent returns
-  `passed=False`; corpus hash verification step in workflow updated.
-- [x] **T4B-05 — Offline deblinding:** repaired `_cli_deblind()` — removed invalid `dataclasses.fields(...).__class__`
-  construction; validates required fields and ciphertext hash before constructing
-  bundle; rejects dry-run and test-only bundles; round-trip, wrong-key,
-  malformed, and tamper tests added.
-- [x] **T4B-06 — Key compatibility:** locked custody to RSA-4096 with exponent 65537 via `validate_rsa4096_public_key()`;
-  `_load_public_key()` validates type and size; `_generate_test_keypair_pem()`
-  upgraded from RSA-2048 to RSA-4096; `custodian_public_key.pem` instructions
-  corrected (EC-P384 removed, stale seed-encryption claim removed).
-- [x] **T4B-07 — Reproducible runtime:** `provider.call()` raises `MissingUsage` on absent token counts or message ID;
-  raises `CacheUsageViolation` when cache tokens present but caching disabled;
-  `pricing_lock.json` now records applicable introductory rate ($2/$10) with
-  standard rates separate, `verification_required=true`, and resolved rate note.
-- [x] **T4B-08 — Boundary integration tests:** `test_pipeline_mode.py` (13 tests), `test_attestation.py` (13 tests),
-  `test_pipeline_artifacts.py` (22 tests incl. full `run_diagnostic_pipeline()`),
-  `test_readiness_extended.py` (10 tests), extended `test_blinding.py` (+27 tests
-  for T4B-05/06), extended `test_provider.py` (+16 tests for T4B-07).
-  Total: 359 tests pass (279 prior + 80 new). `run_diagnostic_pipeline()`
-  traverses all six stages with synthetic fixtures, no live secrets.
-- [x] **T4B-09 — Independent acceptance:** PLAN/PROGRESS/READINESS_MATRIX reconciled to executable evidence;
-  MANIFEST.json regenerated. Independent acceptance review pending — Task 5
-  remains blocked until review is explicitly accepted.
+  in evaluator inputs are fatal. **Reopened:** a single arm passes cardinality,
+  diagnostic artifacts pass production validation, and synthetic answers expose
+  literal arm labels to the evaluator.
+- [ ] **T4B-04 — Least-privilege packages:** build content-addressed allow-listed
+  packages; stop full-repository checkout in arm/evaluator jobs; sanitize process
+  environments; acquire and verify the corpus package; make R08 depend on both
+  vault commitments. **Reopened:** the workflow still checks out the repository,
+  produces placeholders, and `build_requirements_matrix()` marks R08 satisfied
+  while the vault check reports `passed=False`.
+- [ ] **T4B-05 — Offline deblinding:** enforce the production algorithm allow-list,
+  strict schema/base64 validation, ciphertext integrity, dry-run/test-only bans,
+  authenticated metadata, and offline-only operation. **Reopened:** unknown
+  algorithm and fingerprint-tampered bundles still decrypt.
+- [ ] **T4B-06 — Key compatibility:** enforce RSA-4096/65537 and verify the
+  recorded public-key fingerprint against the private key used for every
+  production deblind. **Reopened:** the fingerprint helper exists but is not on
+  the decryption/CLI path.
+- [ ] **T4B-07 — Reproducible runtime:** require every provider identity/usage
+  field; lock timeout, retry, sampling, service tier, and budgets; exactly pin
+  dependencies with hashes and Actions by commit SHA; replace the pricing-source
+  placeholder with verified evidence. **Reopened:** request ID is optional,
+  runtime behavior is unlocked, Actions float, dependencies are not hash-locked,
+  and pricing still records `NOT_FETCHED_OFFLINE`.
+- [ ] **T4B-08 — Boundary integration tests:** add adversarial coverage for every
+  reproduced failure and run the same stage entrypoints locally and in GitHub.
+  Record the six-stage diagnostic URL, stage/artifact hashes, denied inputs,
+  commands, versions, counts, and skips. **Reopened:** no branch workflow run
+  exists and the current tests miss the reproduced fail-open cases.
+- [ ] **T4B-09 — Independent acceptance:** reconcile PLAN, PROGRESS,
+  READINESS_MATRIX, preregistration checklist, workflow, and executable evidence;
+  regenerate the manifest from canonical repository bytes and verify it from a
+  clean checkout; obtain explicit acceptance of the exact new commit.
 
 **Locally feasible (4):**
 

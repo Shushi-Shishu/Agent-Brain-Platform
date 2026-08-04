@@ -1,6 +1,11 @@
 # Task 4B Execution-Agent Handoff
 
-**Status:** implementation required; Task 5 remains blocked
+**Status:** implementation incomplete; commit `cac1cac` rejected; Task 5 remains blocked
+
+**Current re-review assignment:** `poc6c/TASK4B_REVIEW_FEEDBACK.md`. That file
+records the reproduced failures at `cac1cac`, the required remediation outcomes,
+and the exact acceptance evaluations. It supplements this original contract and
+controls wherever it is more specific.
 
 **Target branch:** `codex/task4-external-readiness`
 

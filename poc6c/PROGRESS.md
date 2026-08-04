@@ -499,3 +499,42 @@ Prior count: 279. New count: 359 (+80 tests). Zero failures.
 No confirmation answer was generated, scored, or deblinded. No frozen
 experimental input changed. Independent acceptance review is the next gate.
 
+## 2026-08-04 — Third acceptance review rejects `cac1cac`
+
+**Decision:** `REJECTED — Task 4B INCOMPLETE`
+
+The independent review fetched and inspected exact commit `cac1cac` against
+base `c06c5e5`. The 20-file scope and commit identity matched the execution
+report, but the claimed engineering-complete state did not match executable
+behavior.
+
+### Reproduced blocking findings
+
+| ID | Severity | Evidence | Required remediation |
+|---|---|---|---|
+| J3-01 | P0 | GitHub workflow still checks out the full repository, emits empty arm/evaluator placeholders, performs no corpus acquisition, and never imports the new stage/artifact/attestation implementation | WP1 in `TASK4B_REVIEW_FEEDBACK.md` |
+| J3-02 | P0 | `validate_arm_results()` accepted a complete generic arm with no configured arm | WP2 exact two-arm and task/repeat cardinality |
+| J3-03 | P0 | `assert_no_label_leakage()` accepted answer text containing `generic arm`; the synthetic runner creates such text itself | WP2 serialized evaluator-package leakage checks |
+| J3-04 | P0 | `validate_evaluator_result(..., mode="production")` accepted diagnostic bundle/result objects | WP2 production-wide diagnostic/test-only rejection |
+| J3-05 | P0 | Runtime reproduction printed `R08_MATRIX_STATUS satisfied` while the vault check printed `VAULT_CHECK_PASSED False` | WP4 combine local and vault evidence in the R08 transition |
+| J3-06 | P1 | Reversed attestations with empty input/output hashes passed chain validation | WP3 strict submitted order and mandatory artifact graph |
+| J3-07 | P1 | A mapping bundle with an unknown algorithm and altered fingerprint decrypted with the correct private key | WP5 algorithm allow-list and authenticated fingerprint validation |
+| J3-08 | P1 | Request ID remains optional; Actions float; dependencies lack a hash lock; pricing source remains `NOT_FETCHED_OFFLINE` | WP6 provider/runtime reproducibility |
+| J3-09 | P1 | `artifact_manifest.py verify` failed against a clean `git archive` of `cac1cac`; PLAN and readiness documents contradicted each other | WP7 canonical manifest and status reconciliation |
+| J3-10 | P1 | GitHub Actions API returned zero branch workflow runs | WP1/WP7 required six-stage diagnostic run evidence |
+
+The reported 359-test result does not cover these adversarial cases and cannot
+substitute for the missing workflow, isolation, clean-checkout, or runtime
+evidence.
+
+### Next execution assignment
+
+`TASK4B_REVIEW_FEEDBACK.md` is the bounded remediation contract. It defines one
+observable outcome, seven work packages, required adversarial fixtures, exact
+local/static commands, GitHub diagnostic evidence, stop conditions, and the next
+judge's acceptance rule.
+
+No GitHub environment, provider key, custody key, seed, or confirmation workflow
+activation may be created or executed during this remediation cycle.
+
+`Task 4B REOPENED | R01–R05 BLOCKED | R06–R07 SATISFIED | R08–R09 PENDING | Task 5 BLOCKED`
