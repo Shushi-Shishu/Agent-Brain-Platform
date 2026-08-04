@@ -22,7 +22,14 @@ preventing any confirmation run from starting.
 | `.github/workflows/poc6c-confirmation.yml` | Six-job topology and separate credential/custody environment scopes exist, but preflight cannot advance, arm/evaluator steps are placeholders, full-repository checkout violates the declared minimal-input boundary, and blinded-answer data flow is incomplete | **REMEDIATION REQUIRED — blocks R04** |
 | `poc6c/test_provider.py` | 42 tests: missing key, model lookup, mismatch, cost, pricing drift, secret redaction, R01–R03 gate checks | **DELIVERED (expanded)** |
 | `poc6c/test_blinding.py` | 57 tests: seed, HMAC assignment, AES-GCM+OAEP round-trip, tamper detection, placeholder-key rejection, test-only-bundle rejection, dry-run isolation (frozen-path checks), seed/mapping isolation, evaluator input isolation, cross-arm rejection | **DELIVERED (expanded)** |
+| `poc6c/conftest.py` | Excludes generated workload fixture/run payloads from pytest collection, preventing duplicate-basename import collisions without excluding the real workload harness tests | **DELIVERED (`66bd91c`)** |
 | `poc6a/experiment.py` (vault path) | Vault path configurable via `PROJECT008_PATH`; 13 pre-existing errors resolved | **FIXED** |
+
+Commit `66bd91c` reports 349 passed, 2 platform skips, and 0 errors for the
+complete POC 6c suite after the collection fix. Root-level multi-POC collection
+remains unsupported because legacy POCs reuse top-level module names. This is
+test-infrastructure evidence only; it does not satisfy or partially satisfy
+R01–R05 and closes none of PLAN.md T4B-01 through T4B-09.
 
 ### Key audit findings corrected (2026-08-04)
 

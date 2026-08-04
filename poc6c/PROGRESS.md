@@ -375,3 +375,31 @@ This made verification depend on the checkout's line-ending configuration.
 Root `.gitattributes` now enforces LF for detected text and preserves common
 binary formats. `MANIFEST.json` is regenerated once from the canonical LF
 bytes; future Windows and Linux checkouts must reproduce the same records.
+
+## 2026-08-04 — Test collection hardening (`66bd91c`)
+
+Accepted maintenance work:
+
+- added `poc6c/conftest.py` with collection ignores for generated workload
+  fixture and run payload directories;
+- removed the stale duplicate unchecked Task 1 registry checkbox;
+- regenerated the content-addressed manifest from 370 to 371 files;
+- reported complete POC 6c suite result: 349 passed, 2 platform skips, 0 errors.
+
+The exact scope matters: root-level `pytest -q` is not a valid repository-wide
+suite. It still produces seven collection errors because legacy POCs import
+different files as the top-level module `experiment` in one interpreter. That
+separate legacy test-architecture issue does not invalidate the isolated POC 6c
+result and is not a Task 4B confirmation-readiness gate.
+
+This commit fixes pytest basename collisions and improves repository-wide test
+execution. It does **not** modify `readiness.py`, the confirmation workflow,
+blinding/deblinding, provider execution, or job-package isolation. Therefore it
+closes no Task 4B item and does not change the readiness decision:
+
+`Task 4B OPEN | R01–R05 BLOCKED | R06–R09 SATISFIED | Task 5 BLOCKED`
+
+The next locally feasible work is PLAN.md T4B-01 through T4B-04: separate gate
+modes, distributed attestations, complete blinded-answer data flow, and
+least-privilege job packages. Human secret/environment setup remains deferred
+until T4B-01 through T4B-09 pass independent acceptance.

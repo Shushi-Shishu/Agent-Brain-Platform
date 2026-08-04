@@ -463,6 +463,11 @@ status, evidence, owner, and unblock condition.
   `confirmation-custody` environment scopes.
 - [x] Preserve R01–R05 as blocked and R06–R09 as satisfied; generate no
   confirmation answer, score, mapping reveal, or product verdict.
+- [x] Harden pytest discovery so workload fixture/run payloads are not collected
+  as repository tests. Commit `66bd91c` adds `poc6c/conftest.py`; the complete
+  POC 6c suite reports 349 passed, 2 platform skips, and 0 errors. A root-level
+  multi-POC pytest invocation remains unsupported because legacy POCs import
+  different top-level `experiment` modules under the same module name.
 
 #### Task 4B — Independent-audit remediation — **BLOCKED OPEN**
 
@@ -470,30 +475,35 @@ The 2026-08-04 acceptance audit found that the cryptographic foundation is
 directionally sound but the workflow is not yet an executable isolation proof.
 These engineering items precede every human secret/configuration action:
 
-- [ ] Split diagnostic dry-run readiness from production confirmation
+- [ ] **T4B-01 — Gate modes:** split diagnostic dry-run readiness from production confirmation
   readiness. A synthetic diagnostic may traverse the pipeline without claiming
   R01–R05 are satisfied; production remains fail-closed on real attestations.
-- [ ] Replace the single permanently failing central preflight with per-job
+- [ ] **T4B-02 — Distributed attestations:** replace the single permanently failing central preflight with per-job
   readiness attestations and a final integrity aggregation that does not place
   the API credential and custody seed in one process.
-- [ ] Implement the complete synthetic data flow: arm outputs → randomized
+- [ ] **T4B-03 — Blinded data flow:** implement the complete synthetic data flow: arm outputs → randomized
   blinded-answer bundle → evaluator scores, while storing the encrypted mapping
   as a separate custody artifact never supplied to the evaluator.
-- [ ] Stop checking out the full repository in arm and evaluator jobs. Build
+- [ ] **T4B-04 — Least-privilege packages:** stop checking out the full repository in arm and evaluator jobs. Build
   minimal hash-addressed job packages and run agent/evaluator subprocesses with
   a genuinely sanitized environment.
-- [ ] Repair and test the offline `_cli_deblind()` path, including correct-key,
+- [ ] **T4B-05 — Offline deblinding:** repair and test the offline `_cli_deblind()` path, including correct-key,
   wrong-key, and tamper cases.
-- [ ] Lock custody to RSA-4096 unless a separate EC hybrid scheme is implemented;
+- [ ] **T4B-06 — Key compatibility:** lock custody to RSA-4096 unless a separate EC hybrid scheme is implemented;
   reject incompatible or undersized keys and keep private-key/seed filenames
   ignored by Git.
-- [ ] Pin Python dependencies and GitHub Actions immutably; validate the workflow
+- [ ] **T4B-07 — Reproducible runtime:** pin Python dependencies and GitHub Actions immutably; validate the workflow
   with `actionlint` or an equivalent parser.
-- [ ] Add integration tests proving that diagnostic mode reaches every stage,
+- [ ] **T4B-08 — Boundary integration tests:** add integration tests proving that diagnostic mode reaches every stage,
   production rejects synthetic/test-only artifacts, and each job can access only
   its declared inputs.
-- [ ] Complete an independent acceptance review of the remediation commit before
+- [ ] **T4B-09 — Independent acceptance:** complete an independent acceptance review of the remediation commit before
   creating environments, generating real secrets, or activating preregistration.
+
+**Execution order:** T4B-01 through T4B-04 are the P0 critical path. T4B-05
+through T4B-07 may proceed after their interfaces are fixed. T4B-08 verifies
+the combined implementation, and T4B-09 is the final exit review. None of these
+items is closed by the pytest collection fix.
 
 **Locally feasible (4):**
 
