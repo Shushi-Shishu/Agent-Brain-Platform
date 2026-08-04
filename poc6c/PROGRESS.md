@@ -324,3 +324,54 @@ offline private key even if the seed is known.
 ### Gate matrix (unchanged)
 
 R01–R05 BLOCKED | R06–R09 SATISFIED | Confirmation ready: NO
+
+## 2026-08-04 — Second acceptance audit: Task 4B remediation opened
+
+The pushed branch and ancestry were verified:
+
+- base `fa3a4756af882aff569cfc175c81c94aea21f885`;
+- external-readiness delivery `127cc335d98b14382fcea0c62b709a15ffe23257`;
+- custody/security audit correction `d32042b2b0ca208dd09a7c79c6caf2c205c1fe51`;
+- remote branch `origin/codex/task4-external-readiness`.
+
+The three-layer envelope correction is retained: the seed is used only for
+HMAC assignment, a fresh 32-byte DEK encrypts the mapping with AES-256-GCM, and
+RSA-OAEP wraps the DEK. The API credential and custody seed are scoped to
+different protected environments.
+
+The branch is **not yet accepted for Task 4 completion**. The 279 passing tests
+do not exercise the GitHub Actions topology and currently codify that
+`run_preflight()` always raises on R01–R05. The workflow therefore cannot pass
+its first job in either diagnostic or production mode.
+
+### Open audit findings
+
+| Severity | Finding | Required remediation |
+|---|---|---|
+| P0 | Workflow preflight calls a function intentionally tested to always fail R01–R05 | Separate diagnostic and production gates; use per-job attestations and final aggregation |
+| P0 | Arm jobs emit empty placeholders; blinding does not consume the arm answers; evaluator receives no blinded-answer bundle and emits empty scores | Implement a complete synthetic end-to-end data flow before any confirmation run |
+| P0 | Arm and evaluator jobs checkout the full repository, contradicting the claimed input allow-list and out-of-scope file isolation | Build minimal hash-addressed packages and use sanitized subprocess environments |
+| P1 | `_cli_deblind()` executes an invalid `MappingBundle` construction before the valid one | Remove the invalid construction and add offline round-trip/tamper/wrong-key tests |
+| P1 | Documentation recommends EC P-384 although the implementation wraps DEKs with RSA-OAEP | Require and validate RSA-4096 unless EC hybrid encryption is implemented separately |
+| P1 | Dependency expressions and action tags are not immutable; `cryptography>=41.0.0` is unquoted in shell steps | Quote and exactly lock dependencies; pin actions by commit SHA |
+| P1 | Readiness instructions still place `CONFIRMATION_BLIND_SEED` in `confirmation` in some locations | Correct all instructions to use `confirmation-custody` only |
+
+### Decision and next actions
+
+1. Complete PLAN.md Task 4B without opening untouched confirmation material.
+2. Run the full local suite, workflow parser, synthetic integration pipeline,
+   artifact-manifest verification, and diff checks.
+3. Obtain independent acceptance of the remediation commit.
+4. Only then create protected environments, generate the RSA-4096 custody
+   keypair and randomization seed offline, and perform a diagnostic workflow run.
+5. Keep Task 5 and preregistration activation blocked until R01–R09 have real
+   evidence. No existing threshold, prompt, task, rubric, or outcome rule changes.
+
+### Cross-platform manifest canonicalization
+
+The audit also found that the prior 370-file manifest was generated from CRLF
+working-tree bytes, while the frozen confirmation hashes and Git blobs use LF.
+This made verification depend on the checkout's line-ending configuration.
+Root `.gitattributes` now enforces LF for detected text and preserves common
+binary formats. `MANIFEST.json` is regenerated once from the canonical LF
+bytes; future Windows and Linux checkouts must reproduce the same records.

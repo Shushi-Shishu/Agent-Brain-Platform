@@ -302,9 +302,9 @@ when the event count is too small.
 
 ## Post-diagnostic execution roadmap
 
-**Status date:** 2026-08-02  
-**Current gate:** diagnostic selection is complete; formal confirmation and
-the product build remain closed.
+**Status date:** 2026-08-04
+**Current gate:** Task 4 external-readiness remediation is open. Formal
+confirmation and the product build remain closed.
 
 The earlier instrumentation, search configuration selection, and diagnostic
 transfer work are complete. The tasks below are the authoritative execution
@@ -455,6 +455,47 @@ locally feasible. Task 5 must not start until all nine are satisfied.
 See `confirmation/READINESS_MATRIX.md` for the authoritative per-requirement
 status, evidence, owner, and unblock condition.
 
+#### Task 4A — Bounded readiness and custody foundation
+
+- [x] Implement the provider adapter, auditable telemetry schema, pricing lock,
+  three-layer custody envelope, placeholder-key rejection, and synthetic-bundle
+  tags.
+- [x] Separate the API credential and blinding seed into the `confirmation` and
+  `confirmation-custody` environment scopes.
+- [x] Preserve R01–R05 as blocked and R06–R09 as satisfied; generate no
+  confirmation answer, score, mapping reveal, or product verdict.
+
+#### Task 4B — Independent-audit remediation — **BLOCKED OPEN**
+
+The 2026-08-04 acceptance audit found that the cryptographic foundation is
+directionally sound but the workflow is not yet an executable isolation proof.
+These engineering items precede every human secret/configuration action:
+
+- [ ] Split diagnostic dry-run readiness from production confirmation
+  readiness. A synthetic diagnostic may traverse the pipeline without claiming
+  R01–R05 are satisfied; production remains fail-closed on real attestations.
+- [ ] Replace the single permanently failing central preflight with per-job
+  readiness attestations and a final integrity aggregation that does not place
+  the API credential and custody seed in one process.
+- [ ] Implement the complete synthetic data flow: arm outputs → randomized
+  blinded-answer bundle → evaluator scores, while storing the encrypted mapping
+  as a separate custody artifact never supplied to the evaluator.
+- [ ] Stop checking out the full repository in arm and evaluator jobs. Build
+  minimal hash-addressed job packages and run agent/evaluator subprocesses with
+  a genuinely sanitized environment.
+- [ ] Repair and test the offline `_cli_deblind()` path, including correct-key,
+  wrong-key, and tamper cases.
+- [ ] Lock custody to RSA-4096 unless a separate EC hybrid scheme is implemented;
+  reject incompatible or undersized keys and keep private-key/seed filenames
+  ignored by Git.
+- [ ] Pin Python dependencies and GitHub Actions immutably; validate the workflow
+  with `actionlint` or an equivalent parser.
+- [ ] Add integration tests proving that diagnostic mode reaches every stage,
+  production rejects synthetic/test-only artifacts, and each job can access only
+  its declared inputs.
+- [ ] Complete an independent acceptance review of the remediation commit before
+  creating environments, generating real secrets, or activating preregistration.
+
 **Locally feasible (4):**
 
 - [x] **R06 — Corpus-facade enforcement:** implement a runtime preflight that
@@ -481,25 +522,30 @@ status, evidence, owner, and unblock condition.
   versions supplied by the execution environment.
 - [ ] **R03 — BLOCKED (Runtime):** capture provider token and monetary usage
   for every agent and evaluator call; missing values must not be estimated.
-- [ ] **R04 — BLOCKED (Isolation):** provide OS-enforced isolated workspaces
-  preventing cross-arm, mapping, evaluator, and out-of-scope file access.
-- [ ] **R05 — BLOCKED (Custody):** lock the randomization seed and
-  blind-mapping file in a custody location inaccessible to agents and
-  evaluators.
+- [ ] **R04 — BLOCKED (Engineering + infrastructure):** provide OS-enforced
+  isolated workspaces with minimal job packages, sanitized subprocess
+  environments, complete blinded-answer data flow, and runtime attestations.
+- [ ] **R05 — BLOCKED (Engineering + human custody):** repair and verify offline
+  deblinding, enforce RSA-4096 key compatibility, then lock the seed and encrypted
+  mapping in custody locations inaccessible to agents and evaluators.
 
 **Deliverable:** an activated, timestamped preregistration with all nine
 readiness checkboxes satisfied.
 
-**Exit gate:** all nine requirements R01–R09 are complete. The preflight
-in `readiness.py` enforces this: `run_preflight()` raises `PreflightFailed`
-if any requirement is unmet, preventing a confirmation run from starting.
-If any requirement is missing, subsequent runs remain diagnostic and Task 5
-must not start.
+**Exit gate:** all Task 4B remediation items pass independent review and all nine
+requirements R01–R09 are supported by real per-job evidence. Diagnostic mode
+must remain explicitly synthetic and non-confirmatory. Production preflight and
+the final integrity gate must fail if any required attestation is absent,
+synthetic, test-only, mismatched, or inaccessible to the authorized job. If any
+requirement is missing, Task 5 must not start.
 
 ### Task 5 — Execute untouched search confirmation
 
 **Purpose:** obtain the first confirmatory estimate of configured-versus-generic
 value.
+
+**Status:** **BLOCKED** until Task 4B is independently accepted and R01–R09 are
+all satisfied with real evidence.
 
 - [ ] Activate the preregistration before generating any confirmation answer.
 - [ ] Generate the blinded arm mapping under the locked seed and custody rules.

@@ -90,6 +90,12 @@ No secondary result can rescue a failed primary gate.
 Gate IDs correspond to R01–R09 in `confirmation/READINESS_MATRIX.md` and
 `PLAN.md` Task 4.
 
+**Audit hold (2026-08-04):** Task 4B engineering remediation remains open.
+The separate-VM skeleton and passing unit tests do not yet establish R04 or
+R05. No checkbox below may be completed, and this draft must not be activated,
+until the remediation commit has passed independent acceptance review and the
+required real per-job evidence has been recorded.
+
 - [x] **R00a** task file contains 32 questions unseen during configuration selection;
 - [x] **R00b** task file and all prompts/schemas/rubrics are hashed
   (reverified as R08 below);
