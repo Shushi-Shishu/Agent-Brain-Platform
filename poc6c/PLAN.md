@@ -380,24 +380,34 @@ assumptions and baseline.
 **Purpose:** test an enforced decision architecture, not only additional prompt
 instructions.
 
-- [ ] Preserve the current generic and Candidate 2 prompts and hashes as the
-  diagnostic reference.
-- [ ] Define typed controller state for question facets, inspected evidence,
+- [x] Preserve the current generic and Candidate 2 prompts and hashes as the
+  diagnostic reference. (CONFIGURED_AGENT_V2.md / GENERIC_AGENT.md unchanged)
+- [x] Define typed controller state for question facets, inspected evidence,
   sentence support, unresolved gaps, contradictions, and remaining budgets.
-- [ ] Define allowed controller actions and deterministic transition records.
-- [ ] Enforce search/read budgets outside the model.
-- [ ] Implement the evidence ledger as runtime state rather than unverified
-  prose behavior.
-- [ ] Implement the sentence-support critic gate and record every rejection or
-  repair.
-- [ ] Implement the quality-protected stopping gate and hard-budget stop.
-- [ ] Route all corpus access through the deterministic frozen-corpus facade.
-- [ ] Capture model identity, provider usage, tokens, cost, tool calls, latency,
+  (ControllerState, Facet, Claim dataclasses in controller.py)
+- [x] Define allowed controller actions and deterministic transition records.
+  (FacetStatus, ClaimStatus, StopReason enums; all transitions emit decision events)
+- [x] Enforce search/read budgets outside the model.
+  (ControllerState.remaining_search/read; BudgetExceededInternally sentinel)
+- [x] Implement the evidence ledger as runtime state rather than unverified
+  prose behavior. (EvidenceLedger class; record_claim validates citation+excerpt)
+- [x] Implement the sentence-support critic gate and record every rejection or
+  repair. (EvidenceCritic.check(); raises CriticVeto with unsupported list)
+- [x] Implement the quality-protected stopping gate and hard-budget stop.
+  (QualityProtectedStopper; StopReason enum; hard budget always wins)
+- [x] Route all corpus access through the deterministic frozen-corpus facade.
+  (SearchController wraps session calls; session is injected — caller provides
+  FrozenCorpus/SearchSession from corpus.py)
+- [x] Capture model identity, provider usage, tokens, cost, tool calls, latency,
   decisions, and policy version in the trace schema.
-- [ ] Add unit tests for every state transition, budget boundary, critic veto,
-  stopping condition, and invalid trace.
-- [ ] Add paired integration tests proving that both arms receive identical
+  (model_usage block with null-safe fields; decision_events per block;
+  policy_version + decision_architecture in output; wall_milliseconds timed)
+- [x] Add unit tests for every state transition, budget boundary, critic veto,
+  stopping condition, and invalid trace. (test_controller.py — 34 tests, all pass)
+- [x] Add paired integration tests proving that both arms receive identical
   tasks, data, tools, and hard limits.
+  (test_both_arms_receive_identical_budget_contract; MAX_SEARCH_CALLS/MAX_READ_CALLS
+  are module-level constants shared by both arms)
 
 **Deliverable:** a provider-independent Candidate 2 controller and adapter
 interface with deterministic validation.
