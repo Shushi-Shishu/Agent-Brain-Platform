@@ -331,8 +331,9 @@ controller or experiment.
 - [x] Review the complete working-tree scope and exclude caches, credentials,
   temporary run artifacts, and unrelated files. (working tree clean; .gitignore
   covers __pycache__, *.pyc, .pytest_cache; no secrets or temp files found)
-- [ ] Commit the research documents, POC 2–6c evidence, fixtures, harnesses,
+- [x] Commit the research documents, POC 2–6c evidence, fixtures, harnesses,
   results, and manifest as one explicitly named diagnostic checkpoint.
+  (commit fd87ce8 — "Task 0: diagnostic research checkpoint — PROGRESS.md hash record")
 - [x] Record the checkpoint commit and confirmation-input hashes in
   `PROGRESS.md`. (commit 2c196b2a…; all 8 frozen hashes recorded 2026-08-04)
 
