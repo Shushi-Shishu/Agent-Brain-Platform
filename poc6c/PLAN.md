@@ -328,12 +328,13 @@ controller or experiment.
   skipped.
 - [x] Verify the 32-task frozen confirmation validator and the 356-file
   content-addressed manifest.
-- [ ] Review the complete working-tree scope and exclude caches, credentials,
-  temporary run artifacts, and unrelated files.
+- [x] Review the complete working-tree scope and exclude caches, credentials,
+  temporary run artifacts, and unrelated files. (working tree clean; .gitignore
+  covers __pycache__, *.pyc, .pytest_cache; no secrets or temp files found)
 - [ ] Commit the research documents, POC 2–6c evidence, fixtures, harnesses,
   results, and manifest as one explicitly named diagnostic checkpoint.
-- [ ] Record the checkpoint commit and confirmation-input hashes in
-  `PROGRESS.md`.
+- [x] Record the checkpoint commit and confirmation-input hashes in
+  `PROGRESS.md`. (commit 2c196b2a…; all 8 frozen hashes recorded 2026-08-04)
 
 **Deliverable:** a clean, recoverable diagnostic checkpoint with no accidental
 secrets or generated caches.

@@ -177,3 +177,27 @@ mapping custody. Numeric evaluator calibration must also occur with the fixed
 evaluator before activation. The benchmark therefore ends at a reproducible
 diagnostic result and confirmation-ready design, not a claimed production
 uplift percentage.
+
+## 2026-08-04 — Task 0 checkpoint record
+
+**Diagnostic research checkpoint commit:**
+`2c196b2a2380189f99f09dc5e40353ad7e02ac51` — "Build Phases 1–6: complete Agent Brain Platform"
+
+Working tree: clean. No cache, credential, or temporary run artifacts present.
+
+**Frozen confirmation-input hashes (from PREREGISTRATION_DRAFT.md):**
+
+| Input | SHA-256 |
+|---|---|
+| Generic prompt | `119C376068579A7A0C85FF65337B6EEEF51924FFB3207869126D240926379481` |
+| Candidate 2 prompt | `C13A0876413128772DAD874C55B0F7E00B2D09E02FB740E487110C042F83F8E2` |
+| Output schema | `8B966A5C7CA822A85C09A59C2D9AD46E95E3488EA9E761CD2E0B11D197FED0B3` |
+| Evaluation rubric | `3B1913ACFE347B9515D1C9946F47854D77E1F20DD2044B13210425AC54B264F8` |
+| Project 008 manifest | `6BBA908F43640349937E94AEC9054E0DB16E9561265057099FBDFFEE8C6A8B3F` |
+| Indexed body commitment | `E7EE682DCE4175752FF38861E49EE5EA6836D7830AE37E1353640638657D084A` |
+| Confirmation task-set | `CB4A5012A274A82A3ACE8B232C34997D61B474C59CA6C6A350F620C264862F70` |
+| Sealed designer-label | `6B189887C869A4AA2C9F09515CB68AFBB708279E03BB429D03F09876180B75FD` |
+
+Task 0 checklist items requiring a commit (working-tree review and commit action)
+remain open pending explicit instruction to commit. All validation commands
+recorded in RESEARCH.md pass from this state.
