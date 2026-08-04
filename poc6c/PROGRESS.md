@@ -403,3 +403,39 @@ The next locally feasible work is PLAN.md T4B-01 through T4B-04: separate gate
 modes, distributed attestations, complete blinded-answer data flow, and
 least-privilege job packages. Human secret/environment setup remains deferred
 until T4B-01 through T4B-09 pass independent acceptance.
+
+## 2026-08-04 — Full-work review converted to execution contract
+
+The branch was reviewed from base `fa3a475` through `9ceee29`. The review retains
+the useful custody corrections but rejects Task 4B completion. The workflow is
+not executable in either mode, does not carry arm answers into a blinded answer
+bundle, supplies no answers to the evaluator, and can complete integrity logic
+with placeholder statuses and empty scores.
+
+Additional mandatory findings incorporated into the execution task:
+
+| Severity | Finding | Assigned work |
+|---|---|---|
+| P0 | Corpus workflow checks only that a hash string is nonempty; no package is acquired or verified | T4B-04 actual package and commitment verification |
+| P0 | R08 uses only the local hash result; the separately computed vault result is discarded and `indexed_body` is not checked | T4B-02/T4B-04 evidence integration; R08 reopened |
+| P1 | Provider accepts missing usage and returns `provider_cost_usd=None`; cache tokens are neither rejected nor priced | T4B-07 fail-closed telemetry and pricing |
+| P1 | `pricing_lock.json` contains `NOT_FETCHED_OFFLINE` and unresolved rate notes | T4B-07 auditable pricing lock |
+| P1 | Custodian instructions allow EC although implementation uses RSA-OAEP; key type/size are not enforced | T4B-06 RSA-4096 validation and instruction repair |
+| P1 | Offline deblinding CLI raises before its valid constructor | T4B-05 CLI repair and adversarial tests |
+| P1 | Full checkout, inherited runner environment, mutable actions, and unquoted dependency constraints contradict isolation/reproducibility claims | T4B-04/T4B-07 hardening |
+| P2 | Default vault path is tied to one developer machine | T4B-04 portable path/package resolution |
+
+`TASK4B_EXECUTION_HANDOFF.md` now supplies the execution agent with explicit
+boundaries, subtasks, artifact contracts, expected outcomes, positive and
+negative evaluations, definition of done, and final-report format. It forbids
+real secrets, untouched confirmation execution, preregistration activation, and
+changes to frozen experimental inputs during remediation.
+
+Current decision:
+
+`Task 4B INCOMPLETE | R08/R09 AUDIT-REOPENED | Task 5 BLOCKED`
+
+The execution agent must implement T4B-01 through T4B-08, reconcile evidence in
+T4B-09, regenerate the manifest, and obtain independent acceptance of the exact
+remediation commit. Unit-test counts or documentation changes alone are not an
+exit condition.

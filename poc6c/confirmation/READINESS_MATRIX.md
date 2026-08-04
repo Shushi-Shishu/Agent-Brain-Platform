@@ -15,8 +15,8 @@ preventing any confirmation run from starting.
 
 | Artifact | Purpose | Status |
 |---|---|---|
-| `poc6c/provider.py` | Anthropic Messages API adapter; auditable telemetry; fail-closed on missing key, model mismatch, or missing usage; `compute_provider_cost_usd` returns `None` never estimates | **DELIVERED** |
-| `poc6c/pricing_lock.json` | Versioned pricing record for `claude-sonnet-5` (agent) and `claude-opus-5` (evaluator); locked rates, source URL, confirmation constraints (Batch API / caching / priority tiers disabled) | **DELIVERED** |
+| `poc6c/provider.py` | Anthropic Messages API adapter and telemetry schema; fails on missing key and model mismatch, but currently accepts missing usage and can return `provider_cost_usd=None`; cache usage is recorded but not rejected or priced | **REMEDIATION REQUIRED — blocks R03** |
+| `poc6c/pricing_lock.json` | Versioned pricing record for configured agent/evaluator models; source digest is still `NOT_FETCHED_OFFLINE` and temporary-versus-standard rate notes are unresolved | **REMEDIATION REQUIRED — blocks R03** |
 | `poc6c/blinding.py` | Three-layer cryptographic envelope: HMAC-SHA256 arm assignment (seed used only here), AES-256-GCM mapping encryption with fresh random DEK, RSA-OAEP DEK wrapping under custodian public key. DEK is **independent of `CONFIRMATION_BLIND_SEED`**. Placeholder-key detection, dry-run tagging, all isolation assertions | **DELIVERED (audit-corrected)** |
 | `poc6c/custodian_public_key.pem` | Placeholder; production requires an offline-generated RSA-4096 public key. EC keys are not compatible with the current RSA-OAEP implementation | **PLACEHOLDER — blocks R05** |
 | `.github/workflows/poc6c-confirmation.yml` | Six-job topology and separate credential/custody environment scopes exist, but preflight cannot advance, arm/evaluator steps are placeholders, full-repository checkout violates the declared minimal-input boundary, and blinded-answer data flow is incomplete | **REMEDIATION REQUIRED — blocks R04** |
@@ -53,6 +53,10 @@ R01–R05 and closes none of PLAN.md T4B-01 through T4B-09.
 | Key documentation offers EC P-384 although code uses RSA-OAEP | **P1** | Require and validate RSA-4096, or implement a separately specified EC hybrid scheme |
 | Workflow dependencies/actions are not immutably locked | **P1** | Exactly pin Python packages and GitHub Actions; validate YAML with `actionlint` or equivalent |
 | Some R04/R05 instructions place the seed in `confirmation` | **P1** | Scope `CONFIRMATION_BLIND_SEED` only to `confirmation-custody` everywhere |
+| Corpus workflow accepts any nonempty expected-hash string and performs no package download or verification | **P0** | Acquire the content-addressed package and verify exact SHA-256 before arm execution |
+| R08 ignores the separately computed vault result and never validates `indexed_body` | **P0** | Integrate both vault commitments into the fail-closed R08 result; R08 is audit-reopened |
+| Provider permits missing usage/cost and does not reject or price cache tokens | **P1** | Raise on missing required telemetry; reject cache usage or lock its pricing |
+| Pricing source digest is a placeholder and the rate note is internally unresolved | **P1** | Freeze an auditable source snapshot/digest and one applicable rate schedule |
 
 ---
 
@@ -62,13 +66,13 @@ R01–R05 and closes none of PLAN.md T4B-01 through T4B-09.
 |---|---|---|---|---|---|---|---|
 | R01 | Runtime | Auditable configured-agent model ID and version locked by the execution environment | **BLOCKED** | `provider.py::AnthropicProviderAdapter` implements model-ID locking via `response.model` verification and `verify_models_available()` (GET /v1/models preflight). Infrastructure is ready; blocked on ANTHROPIC_API_KEY being supplied to the confirmation run environment. | Infrastructure | Supply `ANTHROPIC_API_KEY` to the GitHub Actions `confirmation` environment and run preflight — `provider.verify_models_available()` will confirm `claude-sonnet-5` is available and lock its ID. | Yes |
 | R02 | Runtime | Auditable evaluator model IDs and versions locked by the execution environment for every evaluator call | **BLOCKED** | Same as R01; `provider.py` supports both agent (`claude-sonnet-5`) and evaluator (`claude-opus-5`) model IDs. Infrastructure is ready; blocked on ANTHROPIC_API_KEY. | Infrastructure | Same as R01, applied to `claude-opus-5` evaluator calls. | Yes |
-| R03 | Runtime | Provider token count and monetary cost captured for every agent and evaluator call; missing values must not be estimated | **BLOCKED** | `provider.py::ResponseTelemetry` records `input_tokens`, `output_tokens`, `provider_cost_usd`, `cache_creation_input_tokens`, `cache_read_input_tokens`, `stop_reason`, `http_request_id`, and `latency_ms`. `pricing_lock.json` contains locked rates. `compute_provider_cost_usd()` returns `None` (never estimates) when tokens are missing. Infrastructure is ready; blocked on live API credentials. | Infrastructure | Supply `ANTHROPIC_API_KEY`; `provider.call()` will populate all telemetry fields from the live API response. | Yes |
+| R03 | Runtime | Provider token count and monetary cost captured for every agent and evaluator call; missing values must not be estimated | **BLOCKED** | The telemetry schema exists, but `provider.call()` currently accepts missing token counts and returns `provider_cost_usd=None`; cache tokens are not rejected or priced; the pricing source digest is a placeholder. Live credentials alone cannot satisfy R03. | Engineering + infrastructure | Complete T4B-07: fail closed on missing identity/usage fields, reject or price cache usage, freeze an auditable pricing source, test real adapter failure paths, then collect provider-supplied live evidence. | Yes |
 | R04 | Isolation | OS-enforced isolated workspaces preventing cross-arm, mapping, evaluator, and out-of-scope file access | **BLOCKED** | Separate VM jobs exist, but the arm and evaluator jobs checkout the complete repository, subprocess environments are not proven sanitized, production data flow is placeholder-only, and no diagnostic run can pass the permanently blocked central preflight. | Engineering + infrastructure | Complete Task 4B: minimal job packages, sanitized subprocesses, synthetic end-to-end data flow, per-job attestations, final aggregation, and independent review. Then create the protected environments and verify the real runner boundaries. | Yes |
 | R05 | Custody | Randomization seed and blind-mapping file locked in a custody location inaccessible to agents and evaluators | **BLOCKED** | The seed-independent AES-256-GCM + RSA-OAEP envelope and separated `confirmation-custody` scope are present. Offline deblinding still requires repair/testing; key compatibility must be enforced as RSA-4096; the committed key remains a placeholder. | Engineering + human custodian | Repair and test offline deblinding and RSA validation first. Then the human custodian generates the RSA-4096 keypair and seed outside every repository/agent host, transfers only the public key, stores the private key offline, and places only the seed in `confirmation-custody`. | Yes |
 | R06 | Corpus | Deterministic `FrozenCorpus` / `SearchSession` facade is the only vault access path; direct filesystem reads are blocked | **SATISFIED** | `readiness.check_corpus_facade_enforced()` passes on `corpus.py`: `FrozenCorpus` enforces manifest hash on construction; `SearchSession` enforces budget before every search/read; path traversal raises `CorpusError`; no direct `open()` calls bypass the facade. Verified by `test_readiness.py::TestCorpusFacadeRealFile`. | Local | All vault access in `corpus.py` must flow through `FrozenCorpus` and `SearchSession`. | Yes |
 | R07 | Rubric | Anchored 100-point rubric dimensions, score bounds, and canonical hash verified using non-confirmation pilot material only | **SATISFIED** | `rubric.validate_rubric()` passes on `confirmation/EVALUATION_RUBRIC_V1.md`: hash matches preregistration (`3B1913AC…`); all 6 dimensions present with correct maxima; all anchor scores valid; `critical_failure` definition present. Total = 100. Calibration scope: non-confirmation pilot material only. Verified by `test_readiness.py::TestValidateRubricRealFile`. | Local | `EVALUATION_RUBRIC_V1.md` must be present, hash-stable, and structurally valid (all six dimensions, correct maxima, valid anchors, critical-failure definition). | Yes |
-| R08 | Hashes | All frozen inputs re-hashed and confirmed against `PREREGISTRATION_DRAFT.md` values | **SATISFIED (local + vault)** | `readiness.check_hash_reverification()` passes for all 6 local artifacts. `readiness.check_vault_hashes_with_actual_vault()` now also passes: vault located at `C:\Users\C5332030\Shubham - Work\My_Projects\08. Project_ID_008_Obsidian_Knowledge_Files` and `corpus_manifest` SHA-256 matches frozen commitment (`6BBA908F…`). The 13 pre-existing vault errors in `test_corpus.py` and `test_pilot.py` were caused by a hardcoded `C:\XboxGames\...` path in `poc6a/experiment.py` — fixed by making the path configurable via `PROJECT008_PATH` env var. All 248 tests now pass. Verified by `test_readiness.py::TestHashReverification` and `test_readiness.py::TestVaultHashes`. | Local | All 6 local artifact hashes must match (confirmed). `corpus_manifest` and `indexed_body` must also be verified — `corpus_manifest` now verified at actual vault path. `indexed_body` requires running `corpus.indexed_content_commitment()` against the live vault before activation. | Yes |
-| R09 | Process | Preregistration checklist updated to reflect current readiness without changing outcome thresholds or incorporating confirmation outputs | **SATISFIED** | `confirmation/PREREGISTRATION_DRAFT.md` updated in this commit: R06/R07/R08 gates marked `[x]`; status remains "Not Yet Activated"; no confirmation outputs or threshold changes added. Verified by `test_readiness.py::TestPreregistrationChecklist::test_real_updated_file_passes`. | Local | `PREREGISTRATION_DRAFT.md` must mark R06/R07/R08 gates as `[x]`, remain in draft state, and contain no confirmation outputs or threshold changes. | Yes |
+| R08 | Hashes | All frozen inputs re-hashed and confirmed against `PREREGISTRATION_DRAFT.md` values | **PENDING — AUDIT REOPENED** | Six local artifact hashes pass. `build_requirements_matrix()` nevertheless marks R08 from that local result alone; the separately called vault result is discarded, and `check_vault_hashes_with_actual_vault()` does not compute the frozen `indexed_body` commitment. The current SATISFIED result is therefore not accepted evidence. | Engineering + local | Complete T4B-04/T4B-08: verify the actual corpus package, `corpus_manifest`, and `indexed_body`; incorporate all results into the R08 gate and adversarial tests; remove the developer-specific default path. | Yes |
+| R09 | Process | Preregistration checklist updated to reflect current readiness without changing outcome thresholds or incorporating confirmation outputs | **PENDING — AUDIT REOPENED** | The draft remains unactivated and no threshold/output changed, but it still marks R08 satisfied even though the independent audit reopened the incomplete vault commitments. Its current checkbox state no longer reflects accepted evidence. | Local | Complete T4B-09 after R08 remediation: reconcile the checklist to executable gate evidence, preserve every frozen decision rule, and verify no confirmation output was incorporated. | Yes |
 
 ---
 
@@ -76,15 +80,16 @@ R01–R05 and closes none of PLAN.md T4B-01 through T4B-09.
 
 | Status | Count | IDs |
 |---|---|---|
-| **SATISFIED** | 4 | R06, R07, R08, R09 |
+| **SATISFIED** | 2 | R06, R07 |
 | **BLOCKED** | 5 | R01, R02, R03, R04, R05 |
-| Pending | 0 | — |
+| **PENDING** | 2 | R08, R09 |
 | **Total** | **9** | R01–R09 |
 
 **Confirmation ready: NO** — Task 5 must not start.
 
-R01–R03 require external provider evidence. R04–R05 require Task 4B engineering
-remediation before protected environments, real keys, or secrets are created.
+R01–R03 require engineering completion plus external provider evidence.
+R04–R05 require Task 4B engineering remediation before protected environments,
+real keys, or secrets are created. R08 requires complete vault commitments.
 Passing unit tests alone does not satisfy the distributed runtime gates.
 
 ---
@@ -93,7 +98,8 @@ Passing unit tests alone does not satisfy the distributed runtime gates.
 
 ### Phase A — engineering remediation before any real secret is created
 
-1. Complete every Task 4B item in `PLAN.md`.
+1. Execute `TASK4B_EXECUTION_HANDOFF.md` and complete every Task 4B item in
+   `PLAN.md`.
 2. Prove a fully synthetic diagnostic traversal across all six logical stages.
 3. Prove production rejects absent, synthetic, test-only, or mismatched
    attestations and artifacts.

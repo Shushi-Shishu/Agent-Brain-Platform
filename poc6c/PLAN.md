@@ -461,8 +461,10 @@ status, evidence, owner, and unblock condition.
   tags.
 - [x] Separate the API credential and blinding seed into the `confirmation` and
   `confirmation-custody` environment scopes.
-- [x] Preserve R01–R05 as blocked and R06–R09 as satisfied; generate no
-  confirmation answer, score, mapping reveal, or product verdict.
+- [x] At the Task 4A commit, preserve R01–R05 as blocked and record R06–R09 as
+  satisfied; generate no confirmation answer, score, mapping reveal, or product
+  verdict. The later independent audit reopened R08 and consequently R09
+  reconciliation; see Task 4B.
 - [x] Harden pytest discovery so workload fixture/run payloads are not collected
   as repository tests. Commit `66bd91c` adds `poc6c/conftest.py`; the complete
   POC 6c suite reports 349 passed, 2 platform skips, and 0 errors. A root-level
@@ -475,35 +477,57 @@ The 2026-08-04 acceptance audit found that the cryptographic foundation is
 directionally sound but the workflow is not yet an executable isolation proof.
 These engineering items precede every human secret/configuration action:
 
+The execution agent must follow `TASK4B_EXECUTION_HANDOFF.md`. That handoff is
+the implementation contract for scope, subtasks, expected artifacts, positive
+and adversarial evaluations, evidence, stop conditions, and the required final
+report. A documentation-only change, placeholder workflow, or passing unit suite
+does not complete any item below.
+
 - [ ] **T4B-01 — Gate modes:** split diagnostic dry-run readiness from production confirmation
   readiness. A synthetic diagnostic may traverse the pipeline without claiming
   R01–R05 are satisfied; production remains fail-closed on real attestations.
+  Reject unknown/missing modes and prove that diagnostic reaches all six stages
+  while production without evidence stops before either arm.
 - [ ] **T4B-02 — Distributed attestations:** replace the single permanently failing central preflight with per-job
   readiness attestations and a final integrity aggregation that does not place
-  the API credential and custody seed in one process.
+  the API credential and custody seed in one process. Validate stage, run ID,
+  commit, mode, input/output hashes, runner identity, and diagnostic markers;
+  reject missing, cross-run, reordered, duplicated, or mismatched attestations.
 - [ ] **T4B-03 — Blinded data flow:** implement the complete synthetic data flow: arm outputs → randomized
   blinded-answer bundle → evaluator scores, while storing the encrypted mapping
-  as a separate custody artifact never supplied to the evaluator.
+  as a separate custody artifact never supplied to the evaluator. Empty outputs,
+  empty scores, `pending_r01_r05`, missing pairs, duplicate IDs, or raw arm labels
+  in evaluator inputs are fatal.
 - [ ] **T4B-04 — Least-privilege packages:** stop checking out the full repository in arm and evaluator jobs. Build
   minimal hash-addressed job packages and run agent/evaluator subprocesses with
-  a genuinely sanitized environment.
+  a genuinely sanitized environment. Implement actual corpus package download
+  and hash verification; make R08 require both `corpus_manifest` and
+  `indexed_body`, and remove developer-specific default vault paths.
 - [ ] **T4B-05 — Offline deblinding:** repair and test the offline `_cli_deblind()` path, including correct-key,
-  wrong-key, and tamper cases.
+  wrong-key, malformed bundle, unknown algorithm, fingerprint mismatch, dry-run,
+  test-only, and tamper cases.
 - [ ] **T4B-06 — Key compatibility:** lock custody to RSA-4096 unless a separate EC hybrid scheme is implemented;
   reject incompatible or undersized keys and keep private-key/seed filenames
-  ignored by Git.
+  ignored by Git. Correct stale EC and seed-derived-encryption instructions.
 - [ ] **T4B-07 — Reproducible runtime:** pin Python dependencies and GitHub Actions immutably; validate the workflow
-  with `actionlint` or an equivalent parser.
+  with `actionlint` or an equivalent parser. Make R03 fail closed on missing
+  usage/identity fields and cache usage; replace the unauditable pricing source
+  placeholder and lock provider timeouts, retries, sampling, tier, and budgets.
 - [ ] **T4B-08 — Boundary integration tests:** add integration tests proving that diagnostic mode reaches every stage,
   production rejects synthetic/test-only artifacts, and each job can access only
-  its declared inputs.
+  its declared inputs. Exercise the same stage entrypoints and schemas locally
+  and in GitHub Actions; record exact commands, counts, hashes, skips, and run URL.
 - [ ] **T4B-09 — Independent acceptance:** complete an independent acceptance review of the remediation commit before
   creating environments, generating real secrets, or activating preregistration.
+  Reconcile PLAN, PROGRESS, readiness matrix, preregistration checklist, and
+  manifest to executable evidence before requesting that review.
 
 **Execution order:** T4B-01 through T4B-04 are the P0 critical path. T4B-05
 through T4B-07 may proceed after their interfaces are fixed. T4B-08 verifies
 the combined implementation, and T4B-09 is the final exit review. None of these
-items is closed by the pytest collection fix.
+items is closed by the pytest collection fix. See the handoff's per-task
+Implementation, Expected outcome, and Evaluation sections for the required
+subtasks and proof.
 
 **Locally feasible (4):**
 
@@ -514,14 +538,16 @@ items is closed by the pytest collection fix.
 - [x] **R07 — Rubric calibration:** verify the anchored 100-point rubric
   dimensions, score bounds, and canonical hash using non-confirmation
   pilot material only. Evidence: `rubric.py` + `test_readiness.py`.
-- [x] **R08 — Hash reverification:** re-hash all frozen inputs (prompts,
+- [ ] **R08 — AUDIT REOPENED — Hash reverification:** re-hash all frozen inputs (prompts,
   schema, rubric, corpus manifest, task set, designer labels) and confirm
   each matches the value locked in `PREREGISTRATION_DRAFT.md`. Evidence:
-  `readiness.py` `check_hash_reverification()` + `test_readiness.py`.
-- [x] **R09 — Preregistration checklist update:** reflect the current
-  readiness status in `PREREGISTRATION_DRAFT.md` without changing any
-  outcome threshold or adding confirmation outputs. Evidence: checklist
-  updated in this commit.
+  `readiness.py` currently verifies the local set but does not make the actual
+  vault result or `indexed_body` commitment part of the R08 gate. Close under
+  T4B-04 and T4B-08.
+- [ ] **R09 — AUDIT REOPENED — Preregistration checklist reconciliation:**
+  reflect the corrected R08 and Task 4B readiness status in
+  `PREREGISTRATION_DRAFT.md` without changing any outcome threshold or adding
+  confirmation outputs. Close under T4B-09 after executable evidence agrees.
 
 **Externally blocked (5):**
 

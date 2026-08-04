@@ -1,18 +1,18 @@
 {
   "schema": "poc6c-artifact-manifest-v1",
-  "file_count": 371,
-  "total_bytes": 1426720,
-  "records_sha256": "5DD4600D7B50E55847ED30880B5D833BB47FB951D5EEE3D2557C5BB493247DFC",
+  "file_count": 372,
+  "total_bytes": 1446101,
+  "records_sha256": "050113FA1DC9D6ED08E5412DDB9DC8F19F84276F5BD8E8B8E7ADB540337138A4",
   "files": [
     {
       "path": "PLAN.md",
-      "size_bytes": 29779,
-      "sha256": "E6691BA796A17C4734345F01EECD5B6901250F542019D3B120E0EEB98303CBCB"
+      "size_bytes": 31806,
+      "sha256": "3CAED30C9EC93727B04D05715BE6F58A7B8FF71CE110EB76924C8901C67CB73B"
     },
     {
       "path": "PROGRESS.md",
-      "size_bytes": 21755,
-      "sha256": "D0E3780725A55E3B48CBAF8B28DEBD2BF43C875ABE12A7B96D2739E289B22C01"
+      "size_bytes": 24192,
+      "sha256": "EE80D2C61F4C9973565000442D7BA498A73628F8BD5AFFE0FF779AD17422581A"
     },
     {
       "path": "README.md",
@@ -23,6 +23,11 @@
       "path": "RESULTS.md",
       "size_bytes": 4469,
       "sha256": "9D9D9CDBDBD0ED9B4DAA1B4F41B021FA51FBA7C1B242D3304B07CD38E53AD9E4"
+    },
+    {
+      "path": "TASK4B_EXECUTION_HANDOFF.md",
+      "size_bytes": 14402,
+      "sha256": "D3CE397DD33AE615C29B1BC0842DBA9C93C8301663A98A6CCBEFF196A904172F"
     },
     {
       "path": "ablation.py",
@@ -56,8 +61,8 @@
     },
     {
       "path": "confirmation/READINESS_MATRIX.md",
-      "size_bytes": 16246,
-      "sha256": "FACB6526DD3143DD577BB9E19072249CFD69DBA05A3A239B6DE5BE55E052EFE9"
+      "size_bytes": 16761,
+      "sha256": "DAFA6F20D236591316FE75B9484352BFBA1B84D277B35732DDD399D50ACA72E3"
     },
     {
       "path": "confirmation/__init__.py",
