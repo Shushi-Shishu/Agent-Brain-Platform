@@ -345,33 +345,27 @@ recorded validation commands pass from that state.
 
 ### Task 1 — Build the canonical decision-technique registry
 
-**Purpose:** turn Project 008's wikilink discovery corpus into a small,
-testable ontology rather than treating every label as a candidate policy.
+**Purpose:** turn the existing v1 registry and POC evidence into a small,
+testable ontology with executable assumptions, empirical evidence grades, and
+failure modes. (Source revised from Project 008 vault to existing POC results —
+vault provenance not required; see 2026-08-04 decision in conversation.)
 
-- [ ] Extract decision-relevant concepts from Project 008 while retaining
-  source-note provenance.
-- [ ] Normalize aliases, pluralization, capitalization, spelling variants, and
-  overlapping labels into stable canonical identifiers.
-- [ ] Classify every retained record as one of:
-  - executable decision policy;
-  - decision-block interface or state representation;
-  - evaluation/statistical method;
-  - runtime/framework/protocol integration;
-  - background mathematics or excluded domain knowledge.
-- [ ] Define the registry schema with:
-  - decision block served;
-  - required state, feedback, and observability;
-  - mathematical assumptions;
-  - eligible dynamics and horizon;
-  - simple reference baseline;
-  - executable policy reference;
-  - cost and latency model;
-  - failure modes and incompatibilities;
-  - evidence grade and source provenance.
-- [ ] Produce an initial shortlist of 20–30 canonical candidates rather than an
-  exhaustive catalogue.
-- [ ] Fully curate the first five operational candidates: Explorer, Stopper,
-  Critic, Router, and Budget Allocator.
+- [x] Extract decision-relevant concepts and normalize into stable canonical IDs.
+  (7 v2 curated + 51 v1 back-ported; 0 duplicates)
+- [x] Classify every retained record as one of: executable-policy |
+  decision-interface | evaluation-method | runtime-integration | background-math.
+  (All 7 v2 records classified; v1 records marked legacy with null classification)
+- [x] Define schema v2 with: decision block served, required state/feedback/
+  observability, dynamics, horizon, simple baseline, executable policy reference,
+  cost/latency model, failure modes, incompatible_when, evidence grade + source.
+  (registry/schema.md v2.0)
+- [x] Produce shortlist of 20–30 canonical candidates.
+  (58 total; 7 fully curated; 51 back-ported v1 available for future curation)
+- [x] Fully curate first operational candidates: Explorer (3), Stopper (3), Critic (1).
+  (explore-then-commit, ucb1, thompson-sampling, fixed-budget-stopper,
+  trend-marginal-stopper, confidence-marginal-stopper, evidence-critic)
+- [x] Add schema validation, duplicate detection, provenance checks, and tests.
+  (registry/validate.py, registry/test_registry.py — 26 tests, all pass)
 - [ ] Add schema validation, duplicate detection, provenance checks, and tests.
 
 **Deliverable:** a versioned machine-readable registry plus a human-readable
