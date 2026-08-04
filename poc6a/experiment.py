@@ -20,8 +20,12 @@ import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
 POC2B = ROOT / "poc2b"
+import os as _os
 PROJECT008 = Path(
-    r"C:\XboxGames\My Projects\08. Project_ID_008_Obsidian_Knowledge_Files"
+    _os.environ.get(
+        "PROJECT008_PATH",
+        r"C:\Users\C5332030\Shubham - Work\My_Projects\08. Project_ID_008_Obsidian_Knowledge_Files",
+    )
 )
 MANIFEST_PATH = (
     PROJECT008

@@ -201,3 +201,74 @@ Working tree: clean. No cache, credential, or temporary run artifacts present.
 Task 0 checklist items requiring a commit (working-tree review and commit action)
 remain open pending explicit instruction to commit. All validation commands
 recorded in RESEARCH.md pass from this state.
+
+## 2026-08-04 — Task 4 external-readiness infrastructure (branch codex/task4-external-readiness)
+
+External-readiness infrastructure for POC 6c confirmation delivered on
+branch `codex/task4-external-readiness`.  R01–R05 remain BLOCKED; all four
+locally feasible requirements (R06–R09) remain SATISFIED.  No confirmation
+answer was generated, scored, or deblinded.  All ablation results remain
+selection-only.
+
+### Vault path fix (pre-existing 13 errors resolved)
+
+`poc6a/experiment.py` hardcoded `C:\XboxGames\...` as the vault path.
+The vault exists at `C:\Users\C5332030\Shubham - Work\My_Projects\08. ...`.
+Fixed by making the path configurable via `PROJECT008_PATH` environment
+variable with the actual path as default.  Hash verified:
+`corpus_manifest` SHA-256 = `6BBA908F…` — matches frozen commitment.
+All 248 tests now pass (0 errors, up from 13 errors in vault/pilot tests).
+
+### New files delivered
+
+| File | Purpose |
+|---|---|
+| `poc6c/provider.py` | Anthropic Messages API adapter; `AnthropicProviderAdapter`; `ResponseTelemetry`; fail-closed on missing key, model mismatch, or missing usage; `compute_provider_cost_usd()` returns `None` never estimates |
+| `poc6c/pricing_lock.json` | Versioned pricing record: `claude-sonnet-5` (agent, $3/$15/MTok) and `claude-opus-5` (evaluator, $5/$25/MTok); locked rates, source URL, confirmation constraints (Batch API, caching, priority tiers all disabled) |
+| `poc6c/blinding.py` | Deterministic arm assignment from seed; HMAC-CTR authenticated mapping encryption; `assert_seed_not_in_environment()` / `assert_mapping_not_in_environment()` isolation assertions; `verify_corpus_package()` for hash-addressed artifact verification |
+| `poc6c/custodian_public_key.pem` | Placeholder; owner must replace with real offline-generated EC/RSA key per embedded instructions |
+| `.github/workflows/poc6c-confirmation.yml` | Fail-closed 6-job workflow: preflight → generic-arm → configured-arm → deterministic-blinding → blinded-evaluator → integrity-and-analysis; all on separate `ubuntu-24.04` VM instances; `confirmation` protected environment required |
+| `poc6c/test_provider.py` | 33 tests: missing key, model lookup, mismatch detection, cost calculation, pricing drift, secret redaction, selection-only invariant |
+| `poc6c/test_blinding.py` | 35 tests: seed generation, arm assignment, encrypt/decrypt, tamper detection, corpus hash mismatch, seed isolation, mapping isolation, evaluator input isolation, selection-only invariant |
+
+### Updated files
+
+| File | Change |
+|---|---|
+| `poc6c/readiness.py` | Added `check_provider_adapter()`, `check_github_actions_workflow()`, `check_custody_key()`, `check_blinding_module()`, `check_pricing_lock()`, `check_vault_hashes_with_actual_vault()`; `run_preflight()` now runs all infrastructure checks and reports them alongside R01–R09 |
+| `poc6c/confirmation/READINESS_MATRIX.md` | Updated R01–R05 evidence to reference delivered infrastructure; updated R08 to reflect vault hash now verified at actual path; replaced old decision-needed sections with concrete human action steps |
+| `poc6a/experiment.py` | Vault path made configurable via `PROJECT008_PATH` env var |
+
+### Test counts
+
+| File | Tests |
+|---|---|
+| `test_ablation.py` | 44 |
+| `test_readiness.py` | 56 |
+| `test_provider.py` | 33 (new) |
+| `test_blinding.py` | 35 (new) |
+| Prior tests (controller, trace, analysis, etc.) | 80 |
+| **Total** | **248 passed, 0 errors** |
+
+### Gate matrix
+
+| Requirement | Category | Status |
+|---|---|---|
+| R01 | Runtime (model identity) | **BLOCKED** — infrastructure delivered; needs `ANTHROPIC_API_KEY` in `confirmation` env |
+| R02 | Runtime (evaluator identity) | **BLOCKED** — same as R01 |
+| R03 | Runtime (token/cost telemetry) | **BLOCKED** — same as R01 |
+| R04 | Isolation (OS process separation) | **BLOCKED** — workflow infrastructure delivered; needs `confirmation` GitHub env created |
+| R05 | Custody (seed + mapping) | **BLOCKED** — blinding.py delivered; needs owner keypair offline + `CONFIRMATION_BLIND_SEED` secret |
+| R06 | Corpus facade | **SATISFIED** |
+| R07 | Rubric calibration | **SATISFIED** |
+| R08 | Hash reverification | **SATISFIED** (local + vault `corpus_manifest`) |
+| R09 | Preregistration checklist | **SATISFIED** |
+
+### Remaining human actions before confirmation
+
+1. Create `confirmation` protected environment in GitHub Actions with required reviewers.
+2. Add `ANTHROPIC_API_KEY` as environment secret scoped to `confirmation`.
+3. Generate real EC/RSA keypair offline; commit public key; store private key offline.
+4. Generate `CONFIRMATION_BLIND_SEED` offline; add as `confirmation` environment secret.
+5. Trigger workflow with `dry_run=true` to validate isolation end-to-end.
+6. Activate preregistration and run Task 5.
