@@ -130,6 +130,10 @@ class DryRunBundle(BlindingError):
     """Raised by analysis paths when they detect a dry-run-tagged bundle."""
 
 
+class KeyCompatibilityError(BlindingError):
+    """Raised when the custodian public key is not RSA-4096 with exponent 65537."""
+
+
 # ---------------------------------------------------------------------------
 # Seed management (deterministic-blinding job only)
 # ---------------------------------------------------------------------------
@@ -166,17 +170,89 @@ def read_seed_from_env() -> str:
 # Public-key operations (production path via `cryptography`)
 # ---------------------------------------------------------------------------
 
-def _load_public_key(pem_path: Path):
-    """Load and return an RSA public key from a PEM file."""
+def _load_public_key(pem_path: Path, require_rsa4096: bool = True):
+    """Load and return an RSA-4096 public key from a PEM file.
+
+    Raises PlaceholderPublicKey if the sentinel is present.
+    Raises KeyCompatibilityError if the key is not RSA-4096 with exponent 65537.
+    """
     pem_text = pem_path.read_text(encoding="utf-8")
     if _PLACEHOLDER_SENTINEL in pem_text:
         raise PlaceholderPublicKey(
             f"{pem_path} contains the placeholder sentinel. "
-            "Replace it with a real offline-generated public key before "
+            "Replace it with a real offline-generated RSA-4096 public key before "
             "running a production confirmation. Preflight fails closed."
         )
     from cryptography.hazmat.primitives.serialization import load_pem_public_key
-    return load_pem_public_key(pem_text.encode("utf-8"))
+    key = load_pem_public_key(pem_text.encode("utf-8"))
+    if require_rsa4096:
+        validate_rsa4096_public_key_obj(key, str(pem_path))
+    return key
+
+
+def validate_rsa4096_public_key(pem_path: Path) -> None:
+    """
+    Parse the PEM at pem_path and verify it is RSA-4096 with exponent 65537.
+
+    Raises KeyCompatibilityError with a descriptive message for:
+    - non-RSA key type (e.g. EC)
+    - RSA key size != 4096 bits
+    - public exponent != 65537
+    - placeholder sentinel present
+    """
+    pem_text = pem_path.read_text(encoding="utf-8")
+    if _PLACEHOLDER_SENTINEL in pem_text:
+        raise PlaceholderPublicKey(
+            f"{pem_path} contains the placeholder sentinel. "
+            "Replace it with a real offline-generated RSA-4096 public key."
+        )
+    from cryptography.hazmat.primitives.serialization import load_pem_public_key
+    key = load_pem_public_key(pem_text.encode("utf-8"))
+    validate_rsa4096_public_key_obj(key, str(pem_path))
+
+
+def validate_rsa4096_public_key_obj(key: Any, label: str = "") -> None:
+    """
+    Validate that a loaded public key object is RSA-4096 with exponent 65537.
+
+    Raises KeyCompatibilityError otherwise.
+    """
+    try:
+        from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicKey
+    except ImportError:
+        return  # cryptography unavailable — skip validation (test-only path)
+    if not isinstance(key, RSAPublicKey):
+        raise KeyCompatibilityError(
+            f"Key at '{label}' is not an RSA key. "
+            "Only RSA-4096 with exponent 65537 is accepted for custody wrapping."
+        )
+    pub_numbers = key.public_numbers()
+    if key.key_size != 4096:
+        raise KeyCompatibilityError(
+            f"Key at '{label}' is RSA-{key.key_size}. "
+            "Only RSA-4096 is accepted."
+        )
+    if pub_numbers.e != 65537:
+        raise KeyCompatibilityError(
+            f"Key at '{label}' has public exponent {pub_numbers.e}. "
+            "Only exponent 65537 is accepted."
+        )
+
+
+def validate_key_fingerprint_matches(bundle: "MappingBundle", pem_path: Path) -> None:
+    """
+    Verify that the bundle's recorded pubkey_fingerprint_sha256 matches
+    the fingerprint of the key at pem_path.
+
+    Raises KeyCompatibilityError on mismatch.
+    """
+    actual_fp = _pubkey_fingerprint(pem_path)
+    if bundle.pubkey_fingerprint_sha256.upper() != actual_fp.upper():
+        raise KeyCompatibilityError(
+            f"Bundle fingerprint '{bundle.pubkey_fingerprint_sha256[:16]}…' "
+            f"does not match key at '{pem_path}' ('{actual_fp[:16]}…'). "
+            "Use the correct private key for deblinding."
+        )
 
 
 def _pubkey_fingerprint(pem_path: Path) -> str:
@@ -216,16 +292,18 @@ def _unwrap_dek_real(wrapped_dek: bytes, private_key_pem_path: Path) -> bytes:
 
 def _generate_test_keypair_pem() -> tuple[bytes, bytes]:
     """
-    Generate a temporary RSA-2048 keypair for test/dry-run use.
+    Generate a temporary RSA-4096 keypair for test/dry-run use.
 
-    The resulting private key is used only in tests; it is never stored and
-    is rejected by production preflight via the algorithm tag.
+    Uses RSA-4096 (not 2048) so that tests exercise the same key-size
+    validation path as production.  The resulting private key is used only
+    in tests; it is never stored and bundles produced with it carry the
+    test-only algorithm tag.
     """
     from cryptography.hazmat.primitives.asymmetric.rsa import generate_private_key
     from cryptography.hazmat.primitives.serialization import (
         Encoding, PublicFormat, PrivateFormat, NoEncryption
     )
-    private_key = generate_private_key(public_exponent=65537, key_size=2048)
+    private_key = generate_private_key(public_exponent=65537, key_size=4096)
     pub_pem  = private_key.public_key().public_bytes(Encoding.PEM, PublicFormat.SubjectPublicKeyInfo)
     priv_pem = private_key.private_bytes(Encoding.PEM, PrivateFormat.PKCS8, NoEncryption())
     return pub_pem, priv_pem
@@ -587,15 +665,32 @@ def _cli_deblind(bundle_path: str, private_key_path: str) -> None:
     their hashes are recorded.  Never run during or before the confirmation.
     """
     import sys
-    bundle_dict = json.loads(Path(bundle_path).read_text(encoding="utf-8"))
+    raw = Path(bundle_path).read_text(encoding="utf-8")
+    bundle_dict = json.loads(raw)
+
+    # Validate required fields present before constructing
+    required_fields = {f.name for f in dataclasses.fields(MappingBundle)}
+    missing = required_fields - {"dry_run_tag"} - set(bundle_dict.keys())
+    if missing:
+        print(f"FATAL: Bundle is missing required fields: {missing}", file=sys.stderr)
+        sys.exit(1)
 
     # Refuse to deblind dry-run or test-only bundles
     check_not_dry_run_bundle(bundle_dict)
     check_not_test_only_bundle(bundle_dict)
 
-    bundle = MappingBundle(**{k: bundle_dict[k] for k in dataclasses.fields(MappingBundle).__class__
-                              if k in bundle_dict})
-    # Reconstruct via from_dict equivalent
+    # Verify ciphertext hash before constructing bundle object
+    import base64 as _b64
+    ct_bytes = _b64.b64decode(bundle_dict["encrypted_mapping_b64"])
+    actual_hash = hashlib.sha256(ct_bytes).hexdigest().upper()
+    if actual_hash != bundle_dict.get("ciphertext_sha256", "").upper():
+        print(
+            f"FATAL: Ciphertext hash mismatch before decryption. "
+            "Bundle may be tampered.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
     bundle = MappingBundle(
         encrypted_mapping_b64     = bundle_dict["encrypted_mapping_b64"],
         nonce_b64                 = bundle_dict["nonce_b64"],

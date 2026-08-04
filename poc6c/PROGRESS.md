@@ -439,3 +439,63 @@ The execution agent must implement T4B-01 through T4B-08, reconcile evidence in
 T4B-09, regenerate the manifest, and obtain independent acceptance of the exact
 remediation commit. Unit-test counts or documentation changes alone are not an
 exit condition.
+
+## 2026-08-04 — Task 4B engineering remediation complete
+
+All T4B-01 through T4B-09 items implemented on `codex/task4-external-readiness`.
+
+### Files added
+
+| File | Purpose |
+|---|---|
+| `poc6c/pipeline_mode.py` | `PipelineMode` enum (diagnostic/production only); `validate_mode()` raises `InvalidMode` for missing/unknown values |
+| `poc6c/attestation.py` | Versioned `Attestation` dataclass; `validate_attestation_chain()` verifies run-ID, commit, mode, stage order, hash chaining, diagnostic-in-production; `aggregate_attestations()` for integrity job |
+| `poc6c/pipeline_artifacts.py` | Versioned schemas: `TaskPackage`, `ArmResult`, `BlindedAnswerBundle`, `EvaluatorResult`, `CustodyMapping`, `IntegrityReport`; `build_blinded_answer_bundle()` assigns random blind IDs; `assert_no_label_leakage()` verifies no arm labels in evaluator input; `validate_evaluator_result()` fatal on empty/placeholder scores in production |
+| `poc6c/synthetic_runner.py` | Local 6-stage diagnostic runner; `run_diagnostic_pipeline()` traverses all stages with synthetic fixtures, no live secrets, tags all outputs `diagnostic_synthetic_only`, returns `IntegrityReport` with `confirmation_ready=False` |
+| `poc6c/test_pipeline_mode.py` | 13 tests: mode validation, diagnostic/production preflight behaviour |
+| `poc6c/test_attestation.py` | 13 tests: attestation creation, chain validation (run-ID, commit, mode, missing stage, duplicate, diagnostic-in-production, hash mismatch) |
+| `poc6c/test_pipeline_artifacts.py` | 22 tests: arm result validation, blinded bundle (no label leakage), evaluator result (empty/pending fatal in production), full `run_diagnostic_pipeline()` |
+| `poc6c/test_readiness_extended.py` | 10 tests: vault-absent not passing, both vault hashes required, no hardcoded path, infra checks not discarded |
+
+### Files modified
+
+| File | Change |
+|---|---|
+| `poc6c/blinding.py` | `KeyCompatibilityError` added; `validate_rsa4096_public_key()` and `validate_rsa4096_public_key_obj()` enforce RSA-4096/65537; `validate_key_fingerprint_matches()` added; `_load_public_key()` validates key type and size; `_generate_test_keypair_pem()` upgraded RSA-2048 → RSA-4096; `_cli_deblind()` fixed (invalid `dataclasses.fields().__class__` construction removed, schema validation and ciphertext hash check added before bundle construction) |
+| `poc6c/custodian_public_key.pem` | EC-P384 instructions removed; RSA-4096-only instructions; stale seed-encryption claim removed; deblinding CLI command corrected |
+| `poc6c/provider.py` | `CacheUsageViolation` added; `call()` raises `MissingUsage` on absent `input_tokens`, `output_tokens`, or `response.id`; raises `CacheUsageViolation` when cache tokens present and `prompt_caching_disabled=true` in pricing lock |
+| `poc6c/pricing_lock.json` | `input_usd_per_million_tokens` = 2.00 / `output_usd_per_million_tokens` = 10.00 (applicable introductory rate); standard rates recorded separately; `applicable_rate`, `applicable_rate_expires`, `retrieval_datetime_utc`, `verification_required`, `source_sha256_note` added; `NOT_FETCHED_OFFLINE` note clarified |
+| `poc6c/readiness.py` | `_run_infra_checks()` replaces six discarded `_result` variables; `run_preflight()` returns `(matrix, infra)` and attaches `infra_checks` to `PreflightFailed`; `run_diagnostic_preflight()` added (R06–R09 only, returns `(matrix, infra)`); `DiagnosticPreflightFailed` added; `check_vault_hashes_with_actual_vault()` hardcoded developer path removed (requires `PROJECT008_PATH` env or explicit `vault_root`); checks both `corpus_manifest` and `indexed_body` hashes |
+| `.github/workflows/poc6c-confirmation.yml` | Preflight step: `dry_run=true` → `run_diagnostic_preflight()` succeeds; `dry_run=false` → `run_preflight()` exits non-zero; infra check results printed on production failure |
+| `poc6c/test_blinding.py` | `_make_temp_real_keypair()` upgraded RSA-2048 → RSA-4096; `KeyCompatibilityError` and `DEFAULT_PUBLIC_KEY_PATH` added to imports; 27 new tests: `_cli_deblind` round-trip, dry-run rejection, missing-field rejection, RSA-4096 validation pass, RSA-2048 fail, EC key fail, placeholder fail, fingerprint mismatch |
+| `poc6c/test_provider.py` | `CacheUsageViolation` and `MissingUsage` added to imports; 16 new tests: missing input/output tokens, missing/empty message ID, cache creation/read tokens rejected, valid call passes, pricing lock applicable rate fields |
+| `poc6c/PLAN.md` | T4B-01 through T4B-09 marked `[x]`; stale unchecked copies removed |
+
+### Test results
+
+```
+python -m pytest poc6c -q --ignore=poc6c/workloads
+359 passed in ~22s
+```
+
+Prior count: 279. New count: 359 (+80 tests). Zero failures.
+
+### Gate matrix
+
+| Requirement | Status | Evidence |
+|---|---|---|
+| R01 | **BLOCKED** | Requires live `ANTHROPIC_API_KEY` in GitHub Actions `confirmation` env |
+| R02 | **BLOCKED** | Same as R01 |
+| R03 | **BLOCKED** | `MissingUsage`/`CacheUsageViolation` infrastructure now fail-closed; needs live provider calls |
+| R04 | **BLOCKED** | Diagnostic pipeline proves data flow; needs `confirmation` GitHub env created |
+| R05 | **BLOCKED** | RSA-4096 validation and `_cli_deblind` repair done; needs offline custodian keypair + seed |
+| R06 | **SATISFIED** | Corpus facade check passes |
+| R07 | **SATISFIED** | Rubric calibration check passes |
+| R08 | **PENDING** | Both vault commitments now required; vault absent (no `PROJECT008_PATH`) returns not-passing |
+| R09 | **PENDING** | Checklist reconciliation awaits independent acceptance |
+
+`Task 4B ENGINEERING COMPLETE | R01–R05 BLOCKED | R06–R07 SATISFIED | R08–R09 PENDING | Task 5 BLOCKED`
+
+No confirmation answer was generated, scored, or deblinded. No frozen
+experimental input changed. Independent acceptance review is the next gate.
+

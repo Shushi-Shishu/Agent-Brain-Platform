@@ -620,32 +620,52 @@ def check_pricing_lock(
 def check_vault_hashes_with_actual_vault(
     vault_root: Path | None = None,
     expected_manifest_sha256: str = "6BBA908F43640349937E94AEC9054E0DB16E9561265057099FBDFFEE8C6A8B3F",
+    expected_indexed_body_sha256: str = "E7EE682DCE4175752FF38861E49EE5EA6836D7830AE37E1353640638657D084A",
 ) -> dict[str, Any]:
     """
     Re-check vault-dependent hashes (R08 extension) against the actual vault.
 
-    Unlike check_hash_reverification() which reports vault_absent for these
-    hashes, this function attempts to locate the vault at the actual path and
-    verify both corpus_manifest and indexed_body against frozen commitments.
+    Verifies BOTH corpus_manifest and indexed_body against frozen commitments.
+    Returns passed=True only when both hashes match.
 
     The vault location is resolved via the PROJECT008_PATH environment variable
-    (set by poc6a/experiment.py) or the default actual path.
+    or the explicit vault_root argument.  No developer-specific default path is
+    used — callers must supply vault_root or set PROJECT008_PATH.
     """
     import os as _os
     errors: list[str] = []
 
-    vault_path = vault_root or Path(
-        _os.environ.get(
-            "PROJECT008_PATH",
-            r"C:\Users\C5332030\Shubham - Work\My_Projects\08. Project_ID_008_Obsidian_Knowledge_Files",
-        )
-    )
+    if vault_root is not None:
+        vault_path = vault_root
+    else:
+        env_path = _os.environ.get("PROJECT008_PATH", "").strip()
+        if not env_path:
+            return {
+                "requirement": "R08_vault",
+                "check": "check_vault_hashes_with_actual_vault",
+                "vault_path": None,
+                "errors": [
+                    "Vault path not supplied: set PROJECT008_PATH environment variable "
+                    "or pass vault_root explicitly. No developer-specific default is used."
+                ],
+                "passed": False,
+                "vault_present": False,
+                "evidence": "Vault path not configured.",
+            }
+        vault_path = Path(env_path)
 
     manifest_path = (
         vault_path
         / "0. Exploration & Applicability Engine"
         / "state"
         / "identity-manifest.json"
+    )
+    # indexed_body: BM25 index / content file — adjust sub-path if vault layout differs
+    indexed_body_path = (
+        vault_path
+        / "0. Exploration & Applicability Engine"
+        / "state"
+        / "indexed_body.json"
     )
 
     if not vault_path.exists():
@@ -659,6 +679,7 @@ def check_vault_hashes_with_actual_vault(
             "evidence": "Vault absent; cannot verify corpus_manifest and indexed_body hashes.",
         }
 
+    # Check corpus_manifest
     if not manifest_path.exists():
         errors.append(f"identity-manifest.json not found at {manifest_path}")
     else:
@@ -669,8 +690,18 @@ def check_vault_hashes_with_actual_vault(
                 f"expected {expected_manifest_sha256[:16]}…, "
                 f"actual {actual[:16]}…"
             )
-        else:
-            pass  # hash matches
+
+    # Check indexed_body
+    if not indexed_body_path.exists():
+        errors.append(f"indexed_body.json not found at {indexed_body_path}")
+    else:
+        actual_ib = hashlib.sha256(indexed_body_path.read_bytes()).hexdigest().upper()
+        if actual_ib != expected_indexed_body_sha256.upper():
+            errors.append(
+                f"indexed_body hash mismatch: "
+                f"expected {expected_indexed_body_sha256[:16]}…, "
+                f"actual {actual_ib[:16]}…"
+            )
 
     return {
         "requirement": "R08_vault",
@@ -680,7 +711,7 @@ def check_vault_hashes_with_actual_vault(
         "passed": len(errors) == 0,
         "vault_present": True,
         "evidence": (
-            f"Vault present at {vault_path}; corpus_manifest hash verified."
+            f"Vault present at {vault_path}; corpus_manifest and indexed_body hashes verified."
             if not errors else "; ".join(errors)
         ),
     }
@@ -989,36 +1020,39 @@ class PreflightFailed(RuntimeError):
         )
 
 
+def _run_infra_checks() -> dict[str, Any]:
+    """Run all six infrastructure checks and return their results (never discarded)."""
+    return {
+        "provider_adapter":       check_provider_adapter(),
+        "github_actions_workflow": check_github_actions_workflow(),
+        "custody_key":            check_custody_key(),
+        "blinding_module":        check_blinding_module(),
+        "pricing_lock":           check_pricing_lock(),
+        "vault_hashes":           check_vault_hashes_with_actual_vault(),
+    }
+
+
 def run_preflight(
     corpus_path: Path | None = None,
     rubric_path: Path | None = None,
     hash_paths: dict[str, Path] | None = None,
     preregistration_path: Path | None = None,
-) -> list[Requirement]:
+) -> tuple[list[Requirement], dict[str, Any]]:
     """
     Run all nine readiness checks AND the Task-4 external-readiness
     infrastructure checks, then raise PreflightFailed if any R01–R09
     requirements are unmet.
 
-    Additional infrastructure checks (provider adapter, workflow, custody
-    key, blinding module, pricing lock, vault hashes) are run and reported
-    in the matrix but do not block preflight independently — they inform the
-    R01–R05 unblock conditions.
-
-    Must be called before every confirmation run.  Returns the full matrix
-    if all requirements are satisfied (which currently cannot happen while
-    R01–R05 are blocked).
+    Returns (matrix, infra_results) if all requirements are satisfied
+    (which currently cannot happen while R01–R05 are blocked).
 
     This function NEVER succeeds in the current runtime because R01–R05
     are externally blocked.  That is the correct and intended behavior.
+
+    Infrastructure check results are always returned — never discarded.
+    They are attached to PreflightFailed.infra_checks on failure.
     """
-    # Run infrastructure checks (non-blocking but reported)
-    _provider_result  = check_provider_adapter()
-    _workflow_result  = check_github_actions_workflow()
-    _custody_result   = check_custody_key()
-    _blinding_result  = check_blinding_module()
-    _pricing_result   = check_pricing_lock()
-    _vault_result     = check_vault_hashes_with_actual_vault()
+    infra = _run_infra_checks()
 
     matrix = build_requirements_matrix(
         corpus_path=corpus_path,
@@ -1033,5 +1067,61 @@ def run_preflight(
         and req.status != RequirementStatus.SATISFIED
     ]
     if unmet:
-        raise PreflightFailed(unmet, matrix)
-    return matrix
+        exc = PreflightFailed(unmet, matrix)
+        exc.infra_checks = infra  # type: ignore[attr-defined]
+        raise exc
+    return matrix, infra
+
+
+def run_diagnostic_preflight(
+    corpus_path: Path | None = None,
+    rubric_path: Path | None = None,
+    hash_paths: dict[str, Path] | None = None,
+    preregistration_path: Path | None = None,
+) -> tuple[list[Requirement], dict[str, Any]]:
+    """
+    Diagnostic-mode preflight: verifies locally feasible gates (R06–R09)
+    and infrastructure checks only.  Does NOT require R01–R05.
+
+    Returns (matrix, infra_results).  Never raises for blocked R01–R05.
+    Raises DiagnosticPreflightFailed if any locally verifiable gate fails.
+
+    Use this in dry_run / diagnostic pipeline mode to allow downstream jobs
+    to exercise the full synthetic data flow without live secrets.
+    """
+    infra = _run_infra_checks()
+
+    matrix = build_requirements_matrix(
+        corpus_path=corpus_path,
+        rubric_path=rubric_path,
+        hash_paths=hash_paths,
+        preregistration_path=preregistration_path,
+    )
+
+    # Only check locally verifiable requirements
+    local_ids = {"R06", "R07", "R08", "R09"}
+    unmet_local = [
+        req.req_id
+        for req in matrix
+        if req.req_id in local_ids
+        and req.status != RequirementStatus.SATISFIED
+    ]
+    if unmet_local:
+        exc = DiagnosticPreflightFailed(unmet_local, matrix)
+        exc.infra_checks = infra  # type: ignore[attr-defined]
+        raise exc
+    return matrix, infra
+
+
+class DiagnosticPreflightFailed(RuntimeError):
+    """
+    Raised by run_diagnostic_preflight() when a locally verifiable gate
+    (R06–R09) fails.  R01–R05 blocked status is expected and never raises.
+    """
+    def __init__(self, unmet: list[str], matrix: list[Requirement]) -> None:
+        self.unmet  = unmet
+        self.matrix = matrix
+        super().__init__(
+            f"Diagnostic preflight FAILED — local gate(s) unmet: {', '.join(unmet)}. "
+            f"Fix these before running the diagnostic pipeline."
+        )

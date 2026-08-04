@@ -111,22 +111,43 @@ jobs:
           python - <<'PYEOF'
           import os, sys, json, hashlib
           sys.path.insert(0, "poc6c")
-          from readiness import run_preflight, PreflightFailed
+          from readiness import (
+              run_preflight, run_diagnostic_preflight,
+              PreflightFailed, DiagnosticPreflightFailed,
+          )
 
           dry_run = os.environ.get("DRY_RUN", "false").lower() == "true"
 
-          try:
-              matrix = run_preflight()
-              print("Preflight PASSED — all nine requirements satisfied.")
-              passed = "true"
-          except PreflightFailed as e:
-              print(f"Preflight FAILED: {e}", file=sys.stderr)
-              passed = "false"
-              sys.exit(1)
+          if dry_run:
+              # Diagnostic mode: only locally verifiable gates required.
+              # R01-R05 blocked status is expected and does not fail diagnostic.
+              try:
+                  matrix, infra = run_diagnostic_preflight()
+                  print("Diagnostic preflight PASSED — local gates verified.")
+                  passed = "true"
+              except DiagnosticPreflightFailed as e:
+                  print(f"Diagnostic preflight FAILED: {e}", file=sys.stderr)
+                  passed = "false"
+                  sys.exit(1)
+          else:
+              # Production mode: all nine requirements must be satisfied.
+              try:
+                  matrix, infra = run_preflight()
+                  print("Production preflight PASSED — all nine requirements satisfied.")
+                  passed = "true"
+              except PreflightFailed as e:
+                  print(f"Production preflight FAILED: {e}", file=sys.stderr)
+                  # Report infra check results so human can see what is blocking
+                  infra = getattr(e, "infra_checks", {})
+                  for name, result in infra.items():
+                      status = "OK" if result.get("passed") else "FAIL"
+                      print(f"  infra/{name}: {status}", file=sys.stderr)
+                  passed = "false"
+                  sys.exit(1)
 
           with open(os.environ["GITHUB_OUTPUT"], "a") as f:
               f.write(f"passed={passed}\n")
-              report = {"passed": True, "dry_run": dry_run}
+              report = {"passed": passed == "true", "dry_run": dry_run, "mode": "diagnostic" if dry_run else "production"}
               report_json = json.dumps(report, sort_keys=True)
               sha256 = hashlib.sha256(report_json.encode()).hexdigest().upper()
               f.write(f"sha256={sha256}\n")

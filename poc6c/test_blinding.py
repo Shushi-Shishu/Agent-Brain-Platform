@@ -44,12 +44,14 @@ from blinding import (
     PlaceholderPublicKey,
     SeedAccessViolation,
     BundleIsTestOnly,
+    KeyCompatibilityError,
     SEED_ENV_VAR,
     SEED_BYTES,
     _ALGO_REAL,
     _ALGO_TEST_ONLY,
     _DRY_RUN_TAG,
     _PLACEHOLDER_SENTINEL,
+    DEFAULT_PUBLIC_KEY_PATH,
     assign_arms,
     assert_mapping_not_in_environment,
     assert_seed_not_in_environment,
@@ -72,12 +74,12 @@ SAMPLE_TASKS = [f"SRCH-C{i:03d}" for i in range(1, 33)]
 
 
 def _make_temp_real_keypair():
-    """Generate a temporary RSA-2048 keypair for test use; returns (pub_pem_path, priv_pem_path)."""
+    """Generate a temporary RSA-4096 keypair for test use; returns (pub_pem_path, priv_pem_path)."""
     from cryptography.hazmat.primitives.asymmetric.rsa import generate_private_key
     from cryptography.hazmat.primitives.serialization import (
         Encoding, PublicFormat, PrivateFormat, NoEncryption
     )
-    priv = generate_private_key(public_exponent=65537, key_size=2048)
+    priv = generate_private_key(public_exponent=65537, key_size=4096)
     pub_pem  = priv.public_key().public_bytes(Encoding.PEM, PublicFormat.SubjectPublicKeyInfo)
     priv_pem = priv.private_bytes(Encoding.PEM, PrivateFormat.PKCS8, NoEncryption())
     tmp_pub  = tempfile.NamedTemporaryFile(suffix=".pem", delete=False)
@@ -580,3 +582,147 @@ class TestSelectionOnlyInvariant:
         src = (HERE / "blinding.py").read_text(encoding="utf-8")
         for phrase in ("confirmation verdict", "confirmed effect", "confirmation score"):
             assert phrase not in src.lower()
+
+
+# ---------------------------------------------------------------------------
+# T4B-05: _cli_deblind repair tests
+# ---------------------------------------------------------------------------
+
+def _make_temp_rsa4096_keypair():
+    """Generate a temporary RSA-4096 keypair for tests."""
+    from cryptography.hazmat.primitives.asymmetric.rsa import generate_private_key
+    from cryptography.hazmat.primitives.serialization import (
+        Encoding, PublicFormat, PrivateFormat, NoEncryption,
+    )
+    priv = generate_private_key(public_exponent=65537, key_size=4096)
+    pub_pem  = priv.public_key().public_bytes(Encoding.PEM, PublicFormat.SubjectPublicKeyInfo)
+    priv_pem = priv.private_bytes(Encoding.PEM, PrivateFormat.PKCS8, NoEncryption())
+    tmp_pub  = tempfile.NamedTemporaryFile(suffix=".pem", delete=False)
+    tmp_priv = tempfile.NamedTemporaryFile(suffix=".pem", delete=False)
+    tmp_pub.write(pub_pem);  tmp_pub.close()
+    tmp_priv.write(priv_pem); tmp_priv.close()
+    return Path(tmp_pub.name), Path(tmp_priv.name)
+
+
+class TestCliDeblind:
+    def test_cli_deblind_roundtrip_rsa4096(self, tmp_path):
+        """Generate RSA-4096 pair, encrypt a mapping, deblind via _cli_deblind."""
+        pub_path, priv_path = _make_temp_rsa4096_keypair()
+        try:
+            mapping = {"TASK-001": "generic", "TASK-002": "configured"}
+            bundle  = encrypt_mapping(mapping, pubkey_pem_path=pub_path, dry_run=False)
+            bundle_file = tmp_path / "mapping_bundle.json"
+            import json as _json
+            bundle_file.write_text(_json.dumps(bundle.to_dict()), encoding="utf-8")
+
+            # Capture stdout
+            import io, contextlib
+            buf = io.StringIO()
+            with contextlib.redirect_stdout(buf):
+                bl._cli_deblind(str(bundle_file), str(priv_path))
+            result = _json.loads(buf.getvalue())
+            assert result == mapping
+        finally:
+            pub_path.unlink(missing_ok=True)
+            priv_path.unlink(missing_ok=True)
+
+    def test_cli_deblind_rejects_dry_run_bundle(self, tmp_path):
+        """_cli_deblind must raise SystemExit on a dry-run-tagged bundle."""
+        mapping = {"T": "generic"}
+        bundle  = encrypt_mapping(mapping, dry_run=True)
+        import json as _json
+        bundle_file = tmp_path / "dry_bundle.json"
+        bundle_file.write_text(_json.dumps(bundle.to_dict()), encoding="utf-8")
+        with pytest.raises((DryRunBundle, SystemExit)):
+            bl._cli_deblind(str(bundle_file), "/nonexistent/key.pem")
+
+    def test_cli_deblind_rejects_missing_fields(self, tmp_path):
+        """_cli_deblind must exit on a bundle missing required fields."""
+        import json as _json
+        bundle_file = tmp_path / "incomplete.json"
+        bundle_file.write_text(_json.dumps({"algorithm": "AES-256-GCM+RSA-OAEP-SHA256-v1"}),
+                               encoding="utf-8")
+        with pytest.raises(SystemExit):
+            bl._cli_deblind(str(bundle_file), "/nonexistent/key.pem")
+
+
+# ---------------------------------------------------------------------------
+# T4B-06: RSA-4096 key validation tests
+# ---------------------------------------------------------------------------
+
+class TestRsa4096Validation:
+    def test_rsa4096_exponent65537_passes(self):
+        pub_path, priv_path = _make_temp_rsa4096_keypair()
+        try:
+            bl.validate_rsa4096_public_key(pub_path)  # no raise
+        finally:
+            pub_path.unlink(missing_ok=True)
+            priv_path.unlink(missing_ok=True)
+
+    def test_rsa2048_raises_key_compatibility_error(self):
+        from cryptography.hazmat.primitives.asymmetric.rsa import generate_private_key
+        from cryptography.hazmat.primitives.serialization import (
+            Encoding, PublicFormat,
+        )
+        priv = generate_private_key(public_exponent=65537, key_size=2048)
+        pub_pem = priv.public_key().public_bytes(Encoding.PEM, PublicFormat.SubjectPublicKeyInfo)
+        tmp = tempfile.NamedTemporaryFile(suffix=".pem", delete=False)
+        tmp.write(pub_pem); tmp.close()
+        try:
+            with pytest.raises(bl.KeyCompatibilityError, match="RSA-2048"):
+                bl.validate_rsa4096_public_key(Path(tmp.name))
+        finally:
+            Path(tmp.name).unlink(missing_ok=True)
+
+    def test_ec_key_raises_key_compatibility_error(self):
+        from cryptography.hazmat.primitives.asymmetric.ec import (
+            generate_private_key, SECP384R1,
+        )
+        from cryptography.hazmat.primitives.serialization import (
+            Encoding, PublicFormat,
+        )
+        priv = generate_private_key(SECP384R1())
+        pub_pem = priv.public_key().public_bytes(Encoding.PEM, PublicFormat.SubjectPublicKeyInfo)
+        tmp = tempfile.NamedTemporaryFile(suffix=".pem", delete=False)
+        tmp.write(pub_pem); tmp.close()
+        try:
+            with pytest.raises(bl.KeyCompatibilityError, match="not an RSA key"):
+                bl.validate_rsa4096_public_key(Path(tmp.name))
+        finally:
+            Path(tmp.name).unlink(missing_ok=True)
+
+    def test_placeholder_raises_placeholder_error(self):
+        with pytest.raises(PlaceholderPublicKey):
+            bl.validate_rsa4096_public_key(DEFAULT_PUBLIC_KEY_PATH)
+
+    def test_fingerprint_mismatch_detected(self, tmp_path):
+        pub_a, priv_a = _make_temp_rsa4096_keypair()
+        pub_b, priv_b = _make_temp_rsa4096_keypair()
+        try:
+            mapping = {"T": "generic"}
+            # Encrypt with key A
+            bundle = encrypt_mapping(mapping, pubkey_pem_path=pub_a, dry_run=False)
+            # Verify fingerprint against key B — must raise
+            with pytest.raises(bl.KeyCompatibilityError, match="fingerprint"):
+                bl.validate_key_fingerprint_matches(bundle, pub_b)
+            # Verify against key A — must pass
+            bl.validate_key_fingerprint_matches(bundle, pub_a)
+        finally:
+            for p in (pub_a, priv_a, pub_b, priv_b):
+                p.unlink(missing_ok=True)
+
+    def test_load_public_key_validates_rsa4096(self):
+        """_load_public_key must reject RSA-2048 keys."""
+        from cryptography.hazmat.primitives.asymmetric.rsa import generate_private_key
+        from cryptography.hazmat.primitives.serialization import (
+            Encoding, PublicFormat,
+        )
+        priv = generate_private_key(public_exponent=65537, key_size=2048)
+        pub_pem = priv.public_key().public_bytes(Encoding.PEM, PublicFormat.SubjectPublicKeyInfo)
+        tmp = tempfile.NamedTemporaryFile(suffix=".pem", delete=False)
+        tmp.write(pub_pem); tmp.close()
+        try:
+            with pytest.raises(bl.KeyCompatibilityError):
+                bl._load_public_key(Path(tmp.name))
+        finally:
+            Path(tmp.name).unlink(missing_ok=True)

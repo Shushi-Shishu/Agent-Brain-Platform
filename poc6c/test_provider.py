@@ -36,6 +36,8 @@ from provider import (
     MissingApiKey,
     ModelNotAvailable,
     ResponseModelMismatch,
+    MissingUsage,
+    CacheUsageViolation,
     compute_provider_cost_usd,
     load_pricing_lock,
     pricing_record_for_model,
@@ -405,3 +407,148 @@ class TestModelListAndGates:
         """response.model != locked model must raise, not silently continue."""
         from provider import ResponseModelMismatch
         assert issubclass(ResponseModelMismatch, Exception)
+
+
+# ---------------------------------------------------------------------------
+# T4B-07: MissingUsage, CacheUsageViolation, pricing applicable rate
+# ---------------------------------------------------------------------------
+
+class TestMissingUsageAndCacheViolation:
+    """Tests for new fail-closed behaviour in provider.call()."""
+
+    AGENT_MODEL = "claude-sonnet-5"
+    EVAL_MODEL  = "claude-opus-5"
+
+    def _adapter(self) -> AnthropicProviderAdapter:
+        return AnthropicProviderAdapter(
+            agent_model_id         = self.AGENT_MODEL,
+            evaluator_model_id     = self.EVAL_MODEL,
+            use_synthetic_fixtures = True,
+        )
+
+    def _make_response(self, *, model=None, msg_id="msg_test",
+                       input_tokens=100, output_tokens=50,
+                       cache_create=None, cache_read=None, stop="end_turn"):
+        from unittest.mock import MagicMock
+        resp = MagicMock()
+        resp.model      = model or self.AGENT_MODEL
+        resp.id         = msg_id
+        resp.stop_reason = stop
+        resp.content    = []
+        usage = MagicMock()
+        usage.input_tokens  = input_tokens
+        usage.output_tokens = output_tokens
+        usage.cache_creation_input_tokens = cache_create
+        usage.cache_read_input_tokens     = cache_read
+        resp.usage = usage
+        return resp
+
+    def _patch_call(self, adapter, response):
+        """Patch the adapter's internal client to return the given response."""
+        from unittest.mock import MagicMock, patch as _patch
+        raw = MagicMock()
+        raw.headers = {}
+        raw.parse.return_value = response
+        raw.__enter__ = lambda s: s
+        raw.__exit__  = MagicMock(return_value=False)
+        adapter._client = MagicMock()
+        adapter._client.messages.with_raw_response.create.return_value = raw
+        adapter.use_synthetic_fixtures = False  # force the live-call path
+
+    def test_missing_input_tokens_raises(self):
+        from provider import MissingUsage
+        adapter = self._adapter()
+        resp = self._make_response(input_tokens=None)
+        self._patch_call(adapter, resp)
+        with pytest.raises(MissingUsage, match="input_tokens"):
+            adapter.call(self.AGENT_MODEL, [{"role": "user", "content": "hi"}])
+
+    def test_missing_output_tokens_raises(self):
+        from provider import MissingUsage
+        adapter = self._adapter()
+        resp = self._make_response(output_tokens=None)
+        self._patch_call(adapter, resp)
+        with pytest.raises(MissingUsage, match="output_tokens"):
+            adapter.call(self.AGENT_MODEL, [{"role": "user", "content": "hi"}])
+
+    def test_missing_message_id_raises(self):
+        from provider import MissingUsage
+        adapter = self._adapter()
+        resp = self._make_response(msg_id=None)
+        self._patch_call(adapter, resp)
+        with pytest.raises(MissingUsage, match="message_id"):
+            adapter.call(self.AGENT_MODEL, [{"role": "user", "content": "hi"}])
+
+    def test_empty_message_id_raises(self):
+        from provider import MissingUsage
+        adapter = self._adapter()
+        resp = self._make_response(msg_id="")
+        self._patch_call(adapter, resp)
+        with pytest.raises(MissingUsage):
+            adapter.call(self.AGENT_MODEL, [{"role": "user", "content": "hi"}])
+
+    def test_cache_creation_tokens_raises_when_disabled(self):
+        from provider import CacheUsageViolation
+        adapter = self._adapter()
+        resp = self._make_response(cache_create=50, cache_read=0)
+        self._patch_call(adapter, resp)
+        with pytest.raises(CacheUsageViolation):
+            adapter.call(self.AGENT_MODEL, [{"role": "user", "content": "hi"}])
+
+    def test_cache_read_tokens_raises_when_disabled(self):
+        from provider import CacheUsageViolation
+        adapter = self._adapter()
+        resp = self._make_response(cache_create=0, cache_read=20)
+        self._patch_call(adapter, resp)
+        with pytest.raises(CacheUsageViolation):
+            adapter.call(self.AGENT_MODEL, [{"role": "user", "content": "hi"}])
+
+    def test_no_cache_tokens_does_not_raise(self):
+        adapter = self._adapter()
+        resp = self._make_response(cache_create=None, cache_read=None)
+        self._patch_call(adapter, resp)
+        text, telemetry = adapter.call(self.AGENT_MODEL, [{"role": "user", "content": "hi"}])
+        assert telemetry.input_tokens == 100
+
+    def test_zero_cache_tokens_does_not_raise(self):
+        adapter = self._adapter()
+        resp = self._make_response(cache_create=0, cache_read=0)
+        self._patch_call(adapter, resp)
+        text, telemetry = adapter.call(self.AGENT_MODEL, [{"role": "user", "content": "hi"}])
+        assert telemetry.input_tokens == 100
+
+
+class TestPricingLockApplicableRate:
+    def test_applicable_rate_field_present(self):
+        lock = load_pricing_lock()
+        assert "applicable_rate" in lock
+
+    def test_applicable_rate_is_introductory(self):
+        lock = load_pricing_lock()
+        assert lock["applicable_rate"] == "introductory"
+
+    def test_introductory_rate_in_agent_model(self):
+        record = pricing_record_for_model("claude-sonnet-5")
+        assert record["input_usd_per_million_tokens"] == 2.00
+        assert record["output_usd_per_million_tokens"] == 10.00
+
+    def test_standard_rate_recorded_separately(self):
+        record = pricing_record_for_model("claude-sonnet-5")
+        assert record["standard_input_usd_per_million_tokens"] == 3.00
+        assert record["standard_output_usd_per_million_tokens"] == 15.00
+
+    def test_verification_required_flag_present(self):
+        lock = load_pricing_lock()
+        assert lock.get("verification_required") is True
+
+    def test_source_sha256_note_present(self):
+        lock = load_pricing_lock()
+        assert "source_sha256_note" in lock or "source_sha256" in lock
+
+    def test_retrieval_datetime_present(self):
+        lock = load_pricing_lock()
+        assert "retrieval_datetime_utc" in lock
+
+    def test_applicable_rate_expires_present(self):
+        lock = load_pricing_lock()
+        assert "applicable_rate_expires" in lock

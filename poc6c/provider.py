@@ -134,7 +134,11 @@ class ResponseModelMismatch(ProviderAdapterError):
 
 
 class MissingUsage(ProviderAdapterError):
-    """Token usage fields are absent from the response."""
+    """Required token-usage or identity fields are absent from the response."""
+
+
+class CacheUsageViolation(ProviderAdapterError):
+    """Cache tokens were present when caching is disabled in the pricing lock."""
 
 
 # ---------------------------------------------------------------------------
@@ -273,6 +277,32 @@ class AnthropicProviderAdapter:
         output_tokens = getattr(usage, "output_tokens", None)
         cache_create  = getattr(usage, "cache_creation_input_tokens", None)
         cache_read    = getattr(usage, "cache_read_input_tokens",     None)
+
+        # Fail closed on missing required telemetry
+        if input_tokens is None or output_tokens is None:
+            raise MissingUsage(
+                f"response.usage is missing input_tokens or output_tokens "
+                f"for model '{model_id}'. "
+                "Missing token counts cannot be estimated; this call cannot "
+                "be used for confirmation cost accounting."
+            )
+        if not response.id:
+            raise MissingUsage(
+                f"response.id (message_id) is absent for model '{model_id}'. "
+                "Provider-supplied message identity is required for confirmation."
+            )
+
+        # Reject cache usage when caching is disabled
+        lock = self._pricing_lock
+        constraints = lock.get("confirmation_constraints", {})
+        if constraints.get("prompt_caching_disabled", False):
+            if (cache_create and cache_create > 0) or (cache_read and cache_read > 0):
+                raise CacheUsageViolation(
+                    f"Cache tokens present (creation={cache_create}, read={cache_read}) "
+                    f"but prompt_caching_disabled=true in pricing_lock.json. "
+                    "Disable caching before running a confirmation or update the "
+                    "pricing lock to apply cache pricing."
+                )
 
         cost = compute_provider_cost_usd(pricing, input_tokens, output_tokens)
 
