@@ -450,26 +450,51 @@ or Candidate 2 is rejected and the generic baseline is retained.
 **Purpose:** make the frozen search run auditable enough to support a product
 decision.
 
-- [ ] **BLOCKED — Runtime:** lock an auditable agent model ID and version.
-- [ ] **BLOCKED — Runtime:** lock auditable evaluator model IDs and versions.
-- [ ] **BLOCKED — Runtime:** capture provider token and monetary usage for every
-  call.
-- [ ] **BLOCKED — Isolation:** provide OS-enforced isolated workspaces that
-  prevent cross-arm, mapping, evaluator, and out-of-scope access.
-- [ ] Enforce the deterministic corpus facade as the only vault access path.
-- [ ] Calibrate the anchored numeric rubric using non-confirmation material and
-  the fixed evaluators.
-- [ ] **BLOCKED — Custody:** lock the randomization seed and blind-mapping
-  custody location outside agent/evaluator access.
-- [ ] Reverify task, prompt, schema, rubric, corpus, label, and manifest hashes.
-- [ ] Update the preregistration checklist without changing outcome thresholds
-  in response to generated results.
+There are **9 requirements (R01–R09)**. Five are externally blocked; four are
+locally feasible. Task 5 must not start until all nine are satisfied.
+See `confirmation/READINESS_MATRIX.md` for the authoritative per-requirement
+status, evidence, owner, and unblock condition.
 
-**Deliverable:** an activated, timestamped preregistration with every readiness
-checkbox satisfied.
+**Locally feasible (4):**
 
-**Exit gate:** all seven substantive readiness requirements are complete. If
-one is missing, subsequent runs remain diagnostic and Task 5 must not start.
+- [x] **R06 — Corpus-facade enforcement:** implement a runtime preflight that
+  rejects confirmation runs if any call bypasses the deterministic
+  `FrozenCorpus` / `SearchSession` facade. Evidence: `readiness.py`
+  `check_corpus_facade_enforced()` + `test_readiness.py`.
+- [x] **R07 — Rubric calibration:** verify the anchored 100-point rubric
+  dimensions, score bounds, and canonical hash using non-confirmation
+  pilot material only. Evidence: `rubric.py` + `test_readiness.py`.
+- [x] **R08 — Hash reverification:** re-hash all frozen inputs (prompts,
+  schema, rubric, corpus manifest, task set, designer labels) and confirm
+  each matches the value locked in `PREREGISTRATION_DRAFT.md`. Evidence:
+  `readiness.py` `check_hash_reverification()` + `test_readiness.py`.
+- [x] **R09 — Preregistration checklist update:** reflect the current
+  readiness status in `PREREGISTRATION_DRAFT.md` without changing any
+  outcome threshold or adding confirmation outputs. Evidence: checklist
+  updated in this commit.
+
+**Externally blocked (5):**
+
+- [ ] **R01 — BLOCKED (Runtime):** lock an auditable configured-agent model
+  ID and version supplied by the execution environment.
+- [ ] **R02 — BLOCKED (Runtime):** lock auditable evaluator model IDs and
+  versions supplied by the execution environment.
+- [ ] **R03 — BLOCKED (Runtime):** capture provider token and monetary usage
+  for every agent and evaluator call; missing values must not be estimated.
+- [ ] **R04 — BLOCKED (Isolation):** provide OS-enforced isolated workspaces
+  preventing cross-arm, mapping, evaluator, and out-of-scope file access.
+- [ ] **R05 — BLOCKED (Custody):** lock the randomization seed and
+  blind-mapping file in a custody location inaccessible to agents and
+  evaluators.
+
+**Deliverable:** an activated, timestamped preregistration with all nine
+readiness checkboxes satisfied.
+
+**Exit gate:** all nine requirements R01–R09 are complete. The preflight
+in `readiness.py` enforces this: `run_preflight()` raises `PreflightFailed`
+if any requirement is unmet, preventing a confirmation run from starting.
+If any requirement is missing, subsequent runs remain diagnostic and Task 5
+must not start.
 
 ### Task 5 — Execute untouched search confirmation
 

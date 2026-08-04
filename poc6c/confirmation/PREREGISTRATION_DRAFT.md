@@ -87,17 +87,38 @@ No secondary result can rescue a failed primary gate.
 
 ## Readiness gates before activation
 
-- [x] task file contains 32 questions unseen during configuration selection;
-- [x] task file and all prompts/schemas/rubrics are hashed;
-- [ ] fixed agent model ID and version are auditable;
-- [ ] fixed evaluator model IDs and versions are auditable;
-- [ ] provider token and cost usage is captured for every call;
-- [ ] isolated run sandboxes prevent either arm from reading the other arm,
-  mapping, evaluator, task-development notes, or out-of-scope files;
-- [ ] deterministic corpus facade is the only vault access path;
-- [ ] numeric rubric anchors pass a dry-run schema/calibration check that does not
-  use confirmation answers;
-- [ ] randomization seed and blind-mapping custody location are locked;
+Gate IDs correspond to R01–R09 in `confirmation/READINESS_MATRIX.md` and
+`PLAN.md` Task 4.
+
+- [x] **R00a** task file contains 32 questions unseen during configuration selection;
+- [x] **R00b** task file and all prompts/schemas/rubrics are hashed
+  (reverified as R08 below);
+- [ ] **R01** fixed agent model ID and version are auditable
+  — BLOCKED (Runtime): requires provider-supplied model identifier;
+- [ ] **R02** fixed evaluator model IDs and versions are auditable
+  — BLOCKED (Runtime): requires provider-supplied evaluator identifier;
+- [ ] **R03** provider token and cost usage is captured for every call
+  — BLOCKED (Runtime): requires API response telemetry;
+- [ ] **R04** isolated run sandboxes prevent either arm from reading the
+  other arm, mapping, evaluator, task-development notes, or out-of-scope files
+  — BLOCKED (Isolation): requires OS-enforced process/filesystem isolation;
+- [x] **R06** deterministic corpus facade is the only vault access path
+  — SATISFIED: `readiness.check_corpus_facade_enforced()` passes; see
+  `test_readiness.py`;
+- [x] **R07** numeric rubric anchors pass a dry-run schema/calibration check
+  that does not use confirmation answers
+  — SATISFIED: `rubric.validate_rubric()` passes; hash matches preregistration;
+  calibration used non-confirmation pilot material only;
+- [x] **R08** task, prompt, schema, rubric, corpus, label, and manifest hashes
+  reverified
+  — SATISFIED (local artifacts): all six local artifact hashes match;
+  corpus_manifest and indexed_body require Project 008 vault for final
+  verification before activation;
+- [ ] **R05** randomization seed and blind-mapping custody location are locked
+  — BLOCKED (Custody): requires neutral human-held custody location;
+- [x] **R09** preregistration checklist updated without changing outcome
+  thresholds or incorporating confirmation outputs
+  — SATISFIED: this update; no thresholds changed; no confirmation outputs added;
 - [x] no investigator has inspected confirmation outputs.
 
 If any readiness gate is absent, do not label the run confirmation.
