@@ -1,0 +1,12 @@
+# Keep text artifacts byte-stable across Windows and Linux checkouts so the
+# content-addressed POC manifests reproduce the frozen LF-based hashes.
+* text=auto eol=lf
+
+*.gif binary
+*.ico binary
+*.jpeg binary
+*.jpg binary
+*.pdf binary
+*.png binary
+*.zip binary
+*.db binary

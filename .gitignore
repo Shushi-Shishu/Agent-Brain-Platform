@@ -1,3 +1,9 @@
 __pycache__/
 *.py[cod]
 .pytest_cache/
+
+# Custody material must never enter this repository.
+custodian_private*.pem
+**/custodian_private*.pem
+confirmation_blind_seed*
+**/confirmation_blind_seed*

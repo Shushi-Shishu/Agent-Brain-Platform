@@ -302,9 +302,9 @@ when the event count is too small.
 
 ## Post-diagnostic execution roadmap
 
-**Status date:** 2026-08-02  
-**Current gate:** diagnostic selection is complete; formal confirmation and
-the product build remain closed.
+**Status date:** 2026-08-04
+**Current gate:** Task 4 external-readiness remediation is open. Formal
+confirmation and the product build remain closed.
 
 The earlier instrumentation, search configuration selection, and diagnostic
 transfer work are complete. The tasks below are the authoritative execution
@@ -328,12 +328,14 @@ controller or experiment.
   skipped.
 - [x] Verify the 32-task frozen confirmation validator and the 356-file
   content-addressed manifest.
-- [ ] Review the complete working-tree scope and exclude caches, credentials,
-  temporary run artifacts, and unrelated files.
-- [ ] Commit the research documents, POC 2–6c evidence, fixtures, harnesses,
+- [x] Review the complete working-tree scope and exclude caches, credentials,
+  temporary run artifacts, and unrelated files. (working tree clean; .gitignore
+  covers __pycache__, *.pyc, .pytest_cache; no secrets or temp files found)
+- [x] Commit the research documents, POC 2–6c evidence, fixtures, harnesses,
   results, and manifest as one explicitly named diagnostic checkpoint.
-- [ ] Record the checkpoint commit and confirmation-input hashes in
-  `PROGRESS.md`.
+  (commit fd87ce8 — "Task 0: diagnostic research checkpoint — PROGRESS.md hash record")
+- [x] Record the checkpoint commit and confirmation-input hashes in
+  `PROGRESS.md`. (commit 2c196b2a…; all 8 frozen hashes recorded 2026-08-04)
 
 **Deliverable:** a clean, recoverable diagnostic checkpoint with no accidental
 secrets or generated caches.
@@ -343,34 +345,27 @@ recorded validation commands pass from that state.
 
 ### Task 1 — Build the canonical decision-technique registry
 
-**Purpose:** turn Project 008's wikilink discovery corpus into a small,
-testable ontology rather than treating every label as a candidate policy.
+**Purpose:** turn the existing v1 registry and POC evidence into a small,
+testable ontology with executable assumptions, empirical evidence grades, and
+failure modes. (Source revised from Project 008 vault to existing POC results —
+vault provenance not required; see 2026-08-04 decision in conversation.)
 
-- [ ] Extract decision-relevant concepts from Project 008 while retaining
-  source-note provenance.
-- [ ] Normalize aliases, pluralization, capitalization, spelling variants, and
-  overlapping labels into stable canonical identifiers.
-- [ ] Classify every retained record as one of:
-  - executable decision policy;
-  - decision-block interface or state representation;
-  - evaluation/statistical method;
-  - runtime/framework/protocol integration;
-  - background mathematics or excluded domain knowledge.
-- [ ] Define the registry schema with:
-  - decision block served;
-  - required state, feedback, and observability;
-  - mathematical assumptions;
-  - eligible dynamics and horizon;
-  - simple reference baseline;
-  - executable policy reference;
-  - cost and latency model;
-  - failure modes and incompatibilities;
-  - evidence grade and source provenance.
-- [ ] Produce an initial shortlist of 20–30 canonical candidates rather than an
-  exhaustive catalogue.
-- [ ] Fully curate the first five operational candidates: Explorer, Stopper,
-  Critic, Router, and Budget Allocator.
-- [ ] Add schema validation, duplicate detection, provenance checks, and tests.
+- [x] Extract decision-relevant concepts and normalize into stable canonical IDs.
+  (7 v2 curated + 51 v1 back-ported; 0 duplicates)
+- [x] Classify every retained record as one of: executable-policy |
+  decision-interface | evaluation-method | runtime-integration | background-math.
+  (All 7 v2 records classified; v1 records marked legacy with null classification)
+- [x] Define schema v2 with: decision block served, required state/feedback/
+  observability, dynamics, horizon, simple baseline, executable policy reference,
+  cost/latency model, failure modes, incompatible_when, evidence grade + source.
+  (registry/schema.md v2.0)
+- [x] Produce shortlist of 20–30 canonical candidates.
+  (58 total; 7 fully curated; 51 back-ported v1 available for future curation)
+- [x] Fully curate first operational candidates: Explorer (3), Stopper (3), Critic (1).
+  (explore-then-commit, ucb1, thompson-sampling, fixed-budget-stopper,
+  trend-marginal-stopper, confidence-marginal-stopper, evidence-critic)
+- [x] Add schema validation, duplicate detection, provenance checks, and tests.
+  (registry/validate.py, registry/test_registry.py — 26 tests, all pass)
 
 **Deliverable:** a versioned machine-readable registry plus a human-readable
 registry report.
@@ -384,24 +379,34 @@ assumptions and baseline.
 **Purpose:** test an enforced decision architecture, not only additional prompt
 instructions.
 
-- [ ] Preserve the current generic and Candidate 2 prompts and hashes as the
-  diagnostic reference.
-- [ ] Define typed controller state for question facets, inspected evidence,
+- [x] Preserve the current generic and Candidate 2 prompts and hashes as the
+  diagnostic reference. (CONFIGURED_AGENT_V2.md / GENERIC_AGENT.md unchanged)
+- [x] Define typed controller state for question facets, inspected evidence,
   sentence support, unresolved gaps, contradictions, and remaining budgets.
-- [ ] Define allowed controller actions and deterministic transition records.
-- [ ] Enforce search/read budgets outside the model.
-- [ ] Implement the evidence ledger as runtime state rather than unverified
-  prose behavior.
-- [ ] Implement the sentence-support critic gate and record every rejection or
-  repair.
-- [ ] Implement the quality-protected stopping gate and hard-budget stop.
-- [ ] Route all corpus access through the deterministic frozen-corpus facade.
-- [ ] Capture model identity, provider usage, tokens, cost, tool calls, latency,
+  (ControllerState, Facet, Claim dataclasses in controller.py)
+- [x] Define allowed controller actions and deterministic transition records.
+  (FacetStatus, ClaimStatus, StopReason enums; all transitions emit decision events)
+- [x] Enforce search/read budgets outside the model.
+  (ControllerState.remaining_search/read; BudgetExceededInternally sentinel)
+- [x] Implement the evidence ledger as runtime state rather than unverified
+  prose behavior. (EvidenceLedger class; record_claim validates citation+excerpt)
+- [x] Implement the sentence-support critic gate and record every rejection or
+  repair. (EvidenceCritic.check(); raises CriticVeto with unsupported list)
+- [x] Implement the quality-protected stopping gate and hard-budget stop.
+  (QualityProtectedStopper; StopReason enum; hard budget always wins)
+- [x] Route all corpus access through the deterministic frozen-corpus facade.
+  (SearchController wraps session calls; session is injected — caller provides
+  FrozenCorpus/SearchSession from corpus.py)
+- [x] Capture model identity, provider usage, tokens, cost, tool calls, latency,
   decisions, and policy version in the trace schema.
-- [ ] Add unit tests for every state transition, budget boundary, critic veto,
-  stopping condition, and invalid trace.
-- [ ] Add paired integration tests proving that both arms receive identical
+  (model_usage block with null-safe fields; decision_events per block;
+  policy_version + decision_architecture in output; wall_milliseconds timed)
+- [x] Add unit tests for every state transition, budget boundary, critic veto,
+  stopping condition, and invalid trace. (test_controller.py — 34 tests, all pass)
+- [x] Add paired integration tests proving that both arms receive identical
   tasks, data, tools, and hard limits.
+  (test_both_arms_receive_identical_budget_contract; MAX_SEARCH_CALLS/MAX_READ_CALLS
+  are module-level constants shared by both arms)
 
 **Deliverable:** a provider-independent Candidate 2 controller and adapter
 interface with deterministic validation.
@@ -444,31 +449,143 @@ or Candidate 2 is rejected and the generic baseline is retained.
 **Purpose:** make the frozen search run auditable enough to support a product
 decision.
 
-- [ ] **BLOCKED — Runtime:** lock an auditable agent model ID and version.
-- [ ] **BLOCKED — Runtime:** lock auditable evaluator model IDs and versions.
-- [ ] **BLOCKED — Runtime:** capture provider token and monetary usage for every
-  call.
-- [ ] **BLOCKED — Isolation:** provide OS-enforced isolated workspaces that
-  prevent cross-arm, mapping, evaluator, and out-of-scope access.
-- [ ] Enforce the deterministic corpus facade as the only vault access path.
-- [ ] Calibrate the anchored numeric rubric using non-confirmation material and
-  the fixed evaluators.
-- [ ] **BLOCKED — Custody:** lock the randomization seed and blind-mapping
-  custody location outside agent/evaluator access.
-- [ ] Reverify task, prompt, schema, rubric, corpus, label, and manifest hashes.
-- [ ] Update the preregistration checklist without changing outcome thresholds
-  in response to generated results.
+There are **9 requirements (R01–R09)**. Five are externally blocked; four are
+locally feasible. Task 5 must not start until all nine are satisfied.
+See `confirmation/READINESS_MATRIX.md` for the authoritative per-requirement
+status, evidence, owner, and unblock condition.
 
-**Deliverable:** an activated, timestamped preregistration with every readiness
-checkbox satisfied.
+#### Task 4A — Bounded readiness and custody foundation
 
-**Exit gate:** all seven substantive readiness requirements are complete. If
-one is missing, subsequent runs remain diagnostic and Task 5 must not start.
+- [x] Implement the provider adapter, auditable telemetry schema, pricing lock,
+  three-layer custody envelope, placeholder-key rejection, and synthetic-bundle
+  tags.
+- [x] Separate the API credential and blinding seed into the `confirmation` and
+  `confirmation-custody` environment scopes.
+- [x] At the Task 4A commit, preserve R01–R05 as blocked and record R06–R09 as
+  satisfied; generate no confirmation answer, score, mapping reveal, or product
+  verdict. The later independent audit reopened R08 and consequently R09
+  reconciliation; see Task 4B.
+- [x] Harden pytest discovery so workload fixture/run payloads are not collected
+  as repository tests. Commit `66bd91c` adds `poc6c/conftest.py`; the complete
+  POC 6c suite reports 349 passed, 2 platform skips, and 0 errors. A root-level
+  multi-POC pytest invocation remains unsupported because legacy POCs import
+  different top-level `experiment` modules under the same module name.
+
+#### Task 4B — Independent-audit remediation — **REJECTED / REOPENED (2026-08-04)**
+
+The 2026-08-04 acceptance audit found that the cryptographic foundation is
+directionally sound but the workflow is not yet an executable isolation proof.
+These engineering items precede every human secret/configuration action.
+
+Commit `cac1cac` was independently reviewed and rejected. The review reproduced
+fail-open artifact, attestation, custody-metadata, and R08 behaviors, and found
+that the GitHub workflow still executes placeholder jobs with full-repository
+checkouts. The authoritative remediation feedback, outcomes, and evaluations are
+in `TASK4B_REVIEW_FEEDBACK.md`. No human environment, key, seed, or workflow
+activation action is authorized until a later exact commit is accepted.
+
+- [ ] **T4B-01 — Gate modes:** split diagnostic dry-run readiness from production confirmation
+  readiness. A synthetic diagnostic may traverse the pipeline without claiming
+  R01–R05 are satisfied; production remains fail-closed on real attestations.
+  Reject unknown/missing modes and prove that diagnostic reaches all six stages
+  while production without evidence stops before either arm. **Reopened:** the
+  checked-in workflow does not invoke the synthetic stage entrypoints and exposes
+  environment-secret bindings during diagnostic jobs.
+- [ ] **T4B-02 — Distributed attestations:** replace the single permanently failing central preflight with per-job
+  readiness attestations and a final integrity aggregation that does not place
+  the API credential and custody seed in one process. Validate stage, run ID,
+  commit, mode, input/output hashes, runner identity, and diagnostic markers;
+  reject missing, cross-run, reordered, duplicated, unlinked, or mismatched
+  attestations. **Reopened:** reversed and entirely unlinked chains validate.
+- [ ] **T4B-03 — Blinded data flow:** implement the complete synthetic data flow: arm outputs → randomized
+  blinded-answer bundle → evaluator scores, while storing the encrypted mapping
+  as a separate custody artifact never supplied to the evaluator. Empty outputs,
+  empty scores, `pending_r01_r05`, missing pairs, duplicate IDs, or raw arm labels
+  in evaluator inputs are fatal. **Reopened:** a single arm passes cardinality,
+  diagnostic artifacts pass production validation, and synthetic answers expose
+  literal arm labels to the evaluator.
+- [ ] **T4B-04 — Least-privilege packages:** build content-addressed allow-listed
+  packages; stop full-repository checkout in arm/evaluator jobs; sanitize process
+  environments; acquire and verify the corpus package; make R08 depend on both
+  vault commitments. **Reopened:** the workflow still checks out the repository,
+  produces placeholders, and `build_requirements_matrix()` marks R08 satisfied
+  while the vault check reports `passed=False`.
+- [ ] **T4B-05 — Offline deblinding:** enforce the production algorithm allow-list,
+  strict schema/base64 validation, ciphertext integrity, dry-run/test-only bans,
+  authenticated metadata, and offline-only operation. **Reopened:** unknown
+  algorithm and fingerprint-tampered bundles still decrypt.
+- [ ] **T4B-06 — Key compatibility:** enforce RSA-4096/65537 and verify the
+  recorded public-key fingerprint against the private key used for every
+  production deblind. **Reopened:** the fingerprint helper exists but is not on
+  the decryption/CLI path.
+- [ ] **T4B-07 — Reproducible runtime:** require every provider identity/usage
+  field; lock timeout, retry, sampling, service tier, and budgets; exactly pin
+  dependencies with hashes and Actions by commit SHA; replace the pricing-source
+  placeholder with verified evidence. **Reopened:** request ID is optional,
+  runtime behavior is unlocked, Actions float, dependencies are not hash-locked,
+  and pricing still records `NOT_FETCHED_OFFLINE`.
+- [ ] **T4B-08 — Boundary integration tests:** add adversarial coverage for every
+  reproduced failure and run the same stage entrypoints locally and in GitHub.
+  Record the six-stage diagnostic URL, stage/artifact hashes, denied inputs,
+  commands, versions, counts, and skips. **Reopened:** no branch workflow run
+  exists and the current tests miss the reproduced fail-open cases.
+- [ ] **T4B-09 — Independent acceptance:** reconcile PLAN, PROGRESS,
+  READINESS_MATRIX, preregistration checklist, workflow, and executable evidence;
+  regenerate the manifest from canonical repository bytes and verify it from a
+  clean checkout; obtain explicit acceptance of the exact new commit.
+
+**Locally feasible (4):**
+
+- [x] **R06 — Corpus-facade enforcement:** implement a runtime preflight that
+  rejects confirmation runs if any call bypasses the deterministic
+  `FrozenCorpus` / `SearchSession` facade. Evidence: `readiness.py`
+  `check_corpus_facade_enforced()` + `test_readiness.py`.
+- [x] **R07 — Rubric calibration:** verify the anchored 100-point rubric
+  dimensions, score bounds, and canonical hash using non-confirmation
+  pilot material only. Evidence: `rubric.py` + `test_readiness.py`.
+- [ ] **R08 — AUDIT REOPENED — Hash reverification:** re-hash all frozen inputs (prompts,
+  schema, rubric, corpus manifest, task set, designer labels) and confirm
+  each matches the value locked in `PREREGISTRATION_DRAFT.md`. Evidence:
+  `readiness.py` currently verifies the local set but does not make the actual
+  vault result or `indexed_body` commitment part of the R08 gate. Close under
+  T4B-04 and T4B-08.
+- [ ] **R09 — AUDIT REOPENED — Preregistration checklist reconciliation:**
+  reflect the corrected R08 and Task 4B readiness status in
+  `PREREGISTRATION_DRAFT.md` without changing any outcome threshold or adding
+  confirmation outputs. Close under T4B-09 after executable evidence agrees.
+
+**Externally blocked (5):**
+
+- [ ] **R01 — BLOCKED (Runtime):** lock an auditable configured-agent model
+  ID and version supplied by the execution environment.
+- [ ] **R02 — BLOCKED (Runtime):** lock auditable evaluator model IDs and
+  versions supplied by the execution environment.
+- [ ] **R03 — BLOCKED (Runtime):** capture provider token and monetary usage
+  for every agent and evaluator call; missing values must not be estimated.
+- [ ] **R04 — BLOCKED (Engineering + infrastructure):** provide OS-enforced
+  isolated workspaces with minimal job packages, sanitized subprocess
+  environments, complete blinded-answer data flow, and runtime attestations.
+- [ ] **R05 — BLOCKED (Engineering + human custody):** repair and verify offline
+  deblinding, enforce RSA-4096 key compatibility, then lock the seed and encrypted
+  mapping in custody locations inaccessible to agents and evaluators.
+
+**Deliverable:** an activated, timestamped preregistration with all nine
+readiness checkboxes satisfied.
+
+**Exit gate:** all Task 4B remediation items pass independent review and all nine
+requirements R01–R09 are supported by real per-job evidence. Diagnostic mode
+must remain explicitly synthetic and non-confirmatory. Production preflight and
+the final integrity gate must fail if any required attestation is absent,
+synthetic, test-only, mismatched, or inaccessible to the authorized job. If any
+requirement is missing, Task 5 must not start.
 
 ### Task 5 — Execute untouched search confirmation
 
 **Purpose:** obtain the first confirmatory estimate of configured-versus-generic
 value.
+
+**Status:** **BLOCKED** until Task 4B is independently accepted and R01–R09 are
+all satisfied with real evidence.
 
 - [ ] Activate the preregistration before generating any confirmation answer.
 - [ ] Generate the blinded arm mapping under the locked seed and custody rules.
