@@ -1,8 +1,8 @@
 {
   "schema": "poc6c-artifact-manifest-v1",
   "file_count": 382,
-  "total_bytes": 1616908,
-  "records_sha256": "29F6DED7BBA9A34258DF873A31E9166F52B8F3FA85BB39954A9DE28393554C55",
+  "total_bytes": 1624391,
+  "records_sha256": "7933B4F96A4424DB4EE5BD0D42AA6D9D654A3C30F0CF8050D8E7BB4DF2D46DDE",
   "files": [
     {
       "path": "PLAN.md",
@@ -286,8 +286,8 @@
     },
     {
       "path": "requirements-lock.txt",
-      "size_bytes": 1029,
-      "sha256": "D830186385F3B898AA0BEEBEA9E3492DFD5C8F9DC0E5C79B5A76AD0205867F6E"
+      "size_bytes": 8512,
+      "sha256": "E49F5137A7E74043DB6E9F6617A3D9C5CBF54E25F1141895393DB4FDEAA069E2"
     },
     {
       "path": "rubric.py",
