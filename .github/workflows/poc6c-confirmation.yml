@@ -546,7 +546,6 @@ jobs:
         with:
           pattern: '*-arm-outputs'
           path: arm-outputs/
-          merge-multiple: true
 
       - name: Run deterministic blinding
         id: run_blinding
