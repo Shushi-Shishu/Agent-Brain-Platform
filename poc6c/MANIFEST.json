@@ -1,8 +1,8 @@
 {
   "schema": "poc6c-artifact-manifest-v1",
   "file_count": 382,
-  "total_bytes": 1624391,
-  "records_sha256": "7933B4F96A4424DB4EE5BD0D42AA6D9D654A3C30F0CF8050D8E7BB4DF2D46DDE",
+  "total_bytes": 1626479,
+  "records_sha256": "4CBDD71E16CE0C7362F33D581AC6F87E63AA793734C73C8C35FB58D761429FBF",
   "files": [
     {
       "path": "PLAN.md",
@@ -71,8 +71,8 @@
     },
     {
       "path": "confirmation/READINESS_MATRIX.md",
-      "size_bytes": 12739,
-      "sha256": "25FC2CCEA45A61B593B11E008117B8506171F3F265F2B383AF00692C191C1061"
+      "size_bytes": 14827,
+      "sha256": "4A3D1F33C69B53FD576F379AEDB63494A01ED753D857C7424CA37CF90BC953ED"
     },
     {
       "path": "confirmation/__init__.py",

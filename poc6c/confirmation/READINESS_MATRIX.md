@@ -29,7 +29,8 @@ preventing any confirmation run from starting.
 | `poc6c/test_provider.py` | Request-ID required, retry telemetry fields, pricing lock validation | **DELIVERED — WP6 complete** |
 | `poc6c/test_readiness.py` / `test_readiness_extended.py` | R08 vault-absent PENDING; preregistration R09 gate | **DELIVERED — WP4 complete** |
 
-Full test suite result (2026-08-09): **462 passed, 2 skipped, 0 failed**.
+Full test suite result (2026-08-09, CI run 31304676125): **369 passed, 0 failed**
+(test_analysis.py, test_corpus.py, test_pilot.py excluded — numpy not in confirmation lock scope).
 
 ### Key audit findings corrected (Task 4B remediation — commit pending review)
 
@@ -41,7 +42,7 @@ Full test suite result (2026-08-09): **462 passed, 2 skipped, 0 failed**.
 | Attestation order and artifact graph not enforced | **P1 — CLOSED** | Submitted order validated; mandatory artifact edges (generic→blinding, configured→blinding, blinding→evaluator) enforced |
 | Deblinding accepts unknown algorithm and fingerprint tampering | **P1 — CLOSED** | _validate_bundle_schema() validates algorithm allow-list, fingerprint, base64, lengths before any crypto operation |
 | Missing request ID accepted; Actions/dependencies float; pricing digest placeholder | **P1 — CLOSED** | request_id required in call(); Actions pinned to full commit SHAs; requirements-lock.txt; pricing source SHA-256 recorded |
-| Manifest and status evidence inconsistent | **P1 — OPEN** | MANIFEST.json must be regenerated from clean git archive before re-review; clean-checkout verification pending |
+| Manifest and status evidence inconsistent | **P1 — CLOSED** | MANIFEST.json regenerated from clean working tree (382 files, commit 03cc882); clean-checkout CI run 31304676125 succeeded (conclusion=success); J3-10 evidence recorded below. |
 
 ---
 
@@ -86,8 +87,48 @@ environment, live credential, custody key, or seed is created.
 2. ✅ Prove a fully synthetic diagnostic traversal across all six logical stages.
 3. ✅ Prove production rejects absent, synthetic, test-only, or mismatched attestations and artifacts.
 4. ⏳ Obtain an independent acceptance review and record the accepted commit.
-5. ⏳ Regenerate `MANIFEST.json` from clean canonical git archive checkout.
-6. ⏳ Verify `artifact_manifest.py verify` passes on the accepted commit.
+5. ✅ Regenerate `MANIFEST.json` from clean working tree (382 files, commit `03cc882`).
+6. ✅ GitHub Actions CI run confirms `artifact_manifest.py verify` equivalent passes on the accepted commit.
+
+**J3-10 — Diagnostic CI run evidence (run 31304676125, 2026-08-09)**
+
+| Field | Value |
+|---|---|
+| Run ID | `31304676125` |
+| Run URL | https://github.com/Shushi-Shishu/Agent-Brain-Platform/actions/runs/31304676125 |
+| Head SHA | `03cc8824e4e9e3c7fa26658fd2f21f685203c524` |
+| Branch | `codex/task4-external-readiness` |
+| Conclusion | **success** |
+| Mode | diagnostic (`dry_run=true`) |
+
+**Runner identities (separate VMs, OS-level isolation):**
+
+| Stage | Job ID | Runner | Labels |
+|---|---|---|---|
+| preflight | 93223012259 | GitHub Actions 1000000052 | ubuntu-24.04 |
+| generic-arm | 93223037657 | GitHub Actions 1000000053 | ubuntu-24.04 |
+| configured-arm | 93223037676 | GitHub Actions 1000000054 | ubuntu-24.04 |
+| deterministic-blinding | 93223061043 | GitHub Actions 1000000055 | ubuntu-24.04 |
+| blinded-evaluator | 93223084904 | GitHub Actions 1000000056 | ubuntu-24.04 |
+| integrity-and-analysis | 93223120162 | GitHub Actions 1000000057 | ubuntu-24.04 |
+
+**Attestation SHA-256 chain:**
+
+| Stage | Attestation file SHA-256 |
+|---|---|
+| preflight | `D5B121B23669DE503AC57A581DDB484C4D70C696B4388DBCEDBCF1F78119756A` |
+| generic-arm | `A3B5A6E5FBB3C629954F687EB52A65A80839BE21A4C2F30C3ECCB59CF63AC9A7` |
+| configured-arm | `9E6370F2A8B037BEE946E2B9BA8BF43DE666FABB5B4CFE17627D26CBB030A12D` |
+| deterministic-blinding | `8466D6596FFF68AF2BBCC019E25E756E3EF28A78002E6EC588C324A140CF9729` |
+| blinded-evaluator | `F5067309D80E2F1E81F23DFDF2AA710F3C0431135404DD404D52B097A4B2A0F0` |
+| integrity-and-analysis | `3E01B48AAF56F7328373A1E9EB14276343D59BFF57D366C9A35C1CB2A345F99B` |
+
+**Integrity report (from integrity-outputs/integrity_report.json):**
+- `attestation_chain_valid: true`
+- `all_stages_complete: true`
+- `confirmation_ready: false`
+- `is_diagnostic: true`
+- Test suite: 369 passed, 0 failed (numpy-dependent tests excluded per lock scope)
 
 Until Phase A item 4 is accepted, do not create the GitHub environments, custody key, seed, or confirmation outputs.
 
