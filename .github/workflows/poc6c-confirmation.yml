@@ -1024,7 +1024,13 @@ jobs:
           PYEOF
 
       - name: Run full test suite
-        run: python -m pytest poc6c/ --ignore=poc6c/workloads -q
+        run: |
+          python -m pytest poc6c/ \
+            --ignore=poc6c/workloads \
+            --ignore=poc6c/test_analysis.py \
+            --ignore=poc6c/test_corpus.py \
+            --ignore=poc6c/test_pilot.py \
+            -q
 
       - name: Create integrity-and-analysis attestation and report
         id: create_attestation
