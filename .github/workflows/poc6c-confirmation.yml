@@ -1,0 +1,1096 @@
+# POC 6c Confirmation Workflow — Task 4B Remediation
+#
+# Six isolated VM jobs enforce OS-level process separation between arms,
+# evaluator, and blinding logic.  Every stage emits a signed Attestation
+# (attestation.py) and the integrity job validates the full chain.
+#
+# Action SHAs pinned for immutability (J3-08 / WP6):
+#   actions/checkout@v4.2.2         11bd71901bbe5b1630ceea73d27597364c9af683
+#   actions/setup-python@v5.3.0     0b93645e9fea7318ecaed2b359559ac225c90a2b
+#   actions/upload-artifact@v4.5.0  6f51ac03b9356f520e9adb1b1b7802705f340c2b
+#   actions/download-artifact@v4.1.8 fa0a91b85d4f404e444e00e005971372dc801d16
+#
+# Security invariants (J3-01 / WP1):
+# - Arm and evaluator jobs do NOT checkout the repository.
+#   They download only the content-addressed poc6c-package built by preflight.
+# - In dry_run (diagnostic) mode, no protected environment is bound:
+#   ANTHROPIC_API_KEY, CONFIRMATION_BLIND_SEED, and private-key variables
+#   are absent from all diagnostic jobs.
+# - In production mode, ANTHROPIC_API_KEY is scoped to the 'confirmation'
+#   environment; CONFIRMATION_BLIND_SEED is scoped to 'confirmation-custody'.
+# - Production without all nine readiness gates exits before either arm.
+# - Raw vault content is never uploaded.  Decrypted corpus data lives only
+#   inside the ephemeral arm runner VM and is decommissioned with the VM.
+#
+# CRITICAL: This workflow must NEVER be run in production mode until ALL nine
+# readiness gates (R01-R09) are SATISFIED.  R01-R05 remain BLOCKED.
+
+name: POC 6c Confirmation
+
+on:
+  workflow_dispatch:
+    inputs:
+      corpus_package_sha256:
+        description: >
+          SHA-256 of the encrypted corpus package (must match frozen
+          commitment in PREREGISTRATION_DRAFT.md). Required for production;
+          ignored in dry_run mode.
+        required: false
+        default: ''
+        type: string
+      dry_run:
+        description: >
+          'true' = diagnostic mode: synthetic fixtures, no live API calls,
+          no confirmation outputs. 'false' = production mode (R01-R05 blocked).
+        required: false
+        default: 'true'
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: poc6c-confirmation
+  cancel-in-progress: false
+
+env:
+  PYTHON_VERSION: '3.11'
+
+# ---------------------------------------------------------------------------
+# 1. PREFLIGHT
+# Only job that checks out the repository.
+# Builds the content-addressed poc6c-package consumed by all downstream jobs.
+# Verifies all readiness gates.  Emits stage attestation.
+# ---------------------------------------------------------------------------
+jobs:
+  preflight:
+    name: Preflight — Readiness Gates + Package Build
+    runs-on: ubuntu-24.04
+    environment: ${{ inputs.dry_run != 'true' && 'confirmation' || '' }}
+    permissions:
+      contents: read
+    outputs:
+      preflight_passed: ${{ steps.run_preflight.outputs.passed }}
+      pkg_sha256: ${{ steps.build_package.outputs.pkg_sha256 }}
+      att_sha256: ${{ steps.create_attestation.outputs.att_sha256 }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+
+      - name: Set up Python
+        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b  # v5.3.0
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies (hash-locked)
+        run: pip install --require-hashes -r poc6c/requirements-lock.txt
+
+      - name: Run preflight checks
+        id: run_preflight
+        env:
+          ANTHROPIC_API_KEY: ${{ inputs.dry_run != 'true' && secrets.ANTHROPIC_API_KEY || '' }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          python - <<'PYEOF'
+          import os, sys, json, hashlib
+          sys.path.insert(0, "poc6c")
+          from readiness import (
+              run_preflight, run_diagnostic_preflight,
+              PreflightFailed, DiagnosticPreflightFailed,
+          )
+          dry_run = os.environ.get("DRY_RUN", "false").lower() == "true"
+          passed = "false"
+          if dry_run:
+              try:
+                  matrix, infra = run_diagnostic_preflight(skip_r08_vault=True)
+                  print("Diagnostic preflight PASSED — local gates verified.")
+                  passed = "true"
+              except DiagnosticPreflightFailed as e:
+                  print(f"Diagnostic preflight FAILED: {e}", file=sys.stderr)
+                  sys.exit(1)
+          else:
+              try:
+                  matrix, infra = run_preflight()
+                  print("Production preflight PASSED.")
+                  passed = "true"
+              except PreflightFailed as e:
+                  print(f"Production preflight FAILED: {e}", file=sys.stderr)
+                  infra = getattr(e, "infra_checks", {})
+                  for name, result in infra.items():
+                      status = "OK" if result.get("passed") else "FAIL"
+                      print(f"  infra/{name}: {status}", file=sys.stderr)
+                  sys.exit(1)
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+              f.write(f"passed={passed}\n")
+          PYEOF
+
+      - name: Build content-addressed poc6c package
+        id: build_package
+        run: |
+          git archive HEAD poc6c/ --format=tar.gz -o poc6c-package.tar.gz
+          PKG_SHA=$(sha256sum poc6c-package.tar.gz | cut -d' ' -f1 | tr '[:lower:]' '[:upper:]')
+          echo "pkg_sha256=${PKG_SHA}" >> "$GITHUB_OUTPUT"
+          echo "poc6c-package SHA256=${PKG_SHA}"
+
+      - name: Create preflight attestation
+        id: create_attestation
+        env:
+          DRY_RUN: ${{ inputs.dry_run }}
+          PKG_SHA: ${{ steps.build_package.outputs.pkg_sha256 }}
+        run: |
+          python - <<'PYEOF'
+          import os, json, sys, hashlib
+          from datetime import datetime, timezone
+          sys.path.insert(0, "poc6c")
+          from attestation import create_attestation
+          dry_run = os.environ.get("DRY_RUN", "false").lower() == "true"
+          run_id = os.environ["GITHUB_RUN_ID"]
+          commit_sha = os.environ["GITHUB_SHA"]
+          runner_id = f"github-actions/{os.environ.get('RUNNER_NAME', 'unknown')}"
+          timestamp = datetime.now(tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+          pkg_sha = os.environ.get("PKG_SHA", "")
+          # Hash the preflight report (package hash is the auditable output)
+          report = {"passed": True, "pkg_sha256": pkg_sha, "dry_run": dry_run}
+          report_hash = hashlib.sha256(
+              json.dumps(report, sort_keys=True).encode()
+          ).hexdigest()
+          att = create_attestation(
+              stage="preflight",
+              mode="diagnostic" if dry_run else "production",
+              run_id=run_id,
+              commit_sha=commit_sha,
+              input_hashes={},
+              output_hashes={
+                  "preflight_report": report_hash,
+                  "poc6c_package":    pkg_sha.lower(),
+              },
+              runner_identity=runner_id,
+              timestamp_utc=timestamp,
+              provider_model_id=None,
+              is_diagnostic=dry_run,
+          )
+          os.makedirs("attestations", exist_ok=True)
+          att_dict = att.to_dict()
+          att_json = json.dumps(att_dict, sort_keys=True, indent=2)
+          with open("attestations/preflight-attestation.json", "w") as f:
+              f.write(att_json)
+          att_sha = att.sha256()
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+              f.write(f"att_sha256={att_sha}\n")
+          print(f"Preflight attestation SHA256={att_sha}")
+          PYEOF
+
+      - name: Upload poc6c package artifact
+        uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b  # v4.5.0
+        with:
+          name: poc6c-package
+          path: poc6c-package.tar.gz
+          retention-days: 30
+
+      - name: Upload preflight attestation
+        uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b  # v4.5.0
+        with:
+          name: attestation-preflight
+          path: attestations/preflight-attestation.json
+          retention-days: 30
+
+  # ---------------------------------------------------------------------------
+  # PRODUCTION-NEGATIVE: runs only when preflight fails in production mode.
+  # Records explicit evidence that neither arm was invoked (J3-01 / WP1).
+  # ---------------------------------------------------------------------------
+  production-arm-blocked:
+    name: Verify — Arms Blocked (Production Preflight Failed)
+    needs: preflight
+    if: always() && needs.preflight.result != 'success' && inputs.dry_run != 'true'
+    runs-on: ubuntu-24.04
+    permissions: {}
+    steps:
+      - name: Record production-negative evidence
+        run: |
+          echo "PRODUCTION-NEGATIVE: preflight result = ${{ needs.preflight.result }}"
+          echo "generic-arm was NOT invoked. configured-arm was NOT invoked."
+          echo "This is the required outcome: R01-R05 are BLOCKED."
+          echo "Production arm invocation is gated by preflight_passed='true'."
+          echo "No confirmation answer was generated, scored, or deblinded."
+
+  # ---------------------------------------------------------------------------
+  # 2. GENERIC ARM
+  # No repository checkout.  Downloads content-addressed poc6c-package only.
+  # In dry_run mode: no protected environment, no ANTHROPIC_API_KEY.
+  # ---------------------------------------------------------------------------
+  generic-arm:
+    name: Generic Arm — Baseline Agent
+    needs: preflight
+    if: needs.preflight.outputs.preflight_passed == 'true'
+    runs-on: ubuntu-24.04
+    environment: ${{ inputs.dry_run != 'true' && 'confirmation' || '' }}
+    permissions: {}
+    outputs:
+      results_sha256: ${{ steps.run_arm.outputs.results_sha256 }}
+      att_sha256: ${{ steps.create_attestation.outputs.att_sha256 }}
+
+    steps:
+      - name: Set up Python
+        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b  # v5.3.0
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Download poc6c package
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16  # v4.1.8
+        with:
+          name: poc6c-package
+          path: ./
+
+      - name: Verify and extract poc6c package
+        env:
+          EXPECTED_PKG_SHA: ${{ needs.preflight.outputs.pkg_sha256 }}
+        run: |
+          ACTUAL=$(sha256sum poc6c-package.tar.gz | cut -d' ' -f1 | tr '[:lower:]' '[:upper:]')
+          if [ "${ACTUAL}" != "${EXPECTED_PKG_SHA}" ]; then
+            echo "FATAL: Package hash mismatch: ${ACTUAL} != ${EXPECTED_PKG_SHA}" >&2
+            exit 1
+          fi
+          tar xzf poc6c-package.tar.gz
+          echo "Verified and extracted poc6c package SHA256=${ACTUAL}"
+
+      - name: Install dependencies (hash-locked)
+        run: pip install --require-hashes -r poc6c/requirements-lock.txt
+
+      - name: Assert forbidden variables absent
+        run: |
+          python - <<'PYEOF'
+          import sys
+          sys.path.insert(0, "poc6c")
+          from blinding import assert_seed_not_in_environment, assert_mapping_not_in_environment
+          assert_seed_not_in_environment()
+          assert_mapping_not_in_environment()
+          print("OK: CONFIRMATION_BLIND_SEED and mapping variables absent from generic arm.")
+          PYEOF
+
+      - name: Run generic arm
+        id: run_arm
+        env:
+          ANTHROPIC_API_KEY: ${{ inputs.dry_run != 'true' && secrets.ANTHROPIC_API_KEY || '' }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+        run: |
+          python - <<'PYEOF'
+          import os, json, sys, hashlib
+          sys.path.insert(0, "poc6c")
+          dry_run = os.environ.get("DRY_RUN", "false").lower() == "true"
+          run_id = os.environ["GITHUB_RUN_ID"]
+          arm = "generic"
+          if dry_run:
+              from synthetic_runner import _run_arm
+              from pipeline_artifacts import SCHEMA_VERSION
+              task_ids = [f"SYN-{i:03d}" for i in range(1, 6)]
+              results, _ = _run_arm(arm, run_id, task_ids)
+              results_dicts = [r.to_dict() for r in results]
+              print(f"Synthetic generic arm: {len(results)} results generated.")
+          else:
+              print("NOTE: Live arm execution requires R01-R05 unblocked.", file=sys.stderr)
+              sys.exit(1)
+          os.makedirs(f"arm-outputs/{arm}", exist_ok=True)
+          results_json = json.dumps(results_dicts, sort_keys=True, indent=2)
+          with open(f"arm-outputs/{arm}/results.json", "w") as f:
+              f.write(results_json)
+          results_sha = hashlib.sha256(results_json.encode()).hexdigest()
+          with open(f"arm-outputs/{arm}/results.sha256", "w") as f:
+              f.write(results_sha.upper())
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+              f.write(f"results_sha256={results_sha.upper()}\n")
+          print(f"Generic arm results SHA256={results_sha.upper()}")
+          PYEOF
+
+      - name: Create generic-arm attestation
+        id: create_attestation
+        env:
+          DRY_RUN: ${{ inputs.dry_run }}
+          PKG_SHA: ${{ needs.preflight.outputs.pkg_sha256 }}
+          RESULTS_SHA: ${{ steps.run_arm.outputs.results_sha256 }}
+        run: |
+          python - <<'PYEOF'
+          import os, json, sys
+          from datetime import datetime, timezone
+          sys.path.insert(0, "poc6c")
+          from attestation import create_attestation
+          dry_run = os.environ.get("DRY_RUN", "false").lower() == "true"
+          run_id = os.environ["GITHUB_RUN_ID"]
+          commit_sha = os.environ["GITHUB_SHA"]
+          runner_id = f"github-actions/{os.environ.get('RUNNER_NAME', 'unknown')}"
+          timestamp = datetime.now(tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+          results_sha = os.environ.get("RESULTS_SHA", "").lower()
+          pkg_sha = os.environ.get("PKG_SHA", "").lower()
+          att = create_attestation(
+              stage="generic-arm",
+              mode="diagnostic" if dry_run else "production",
+              run_id=run_id,
+              commit_sha=commit_sha,
+              input_hashes={"poc6c_package": pkg_sha},
+              output_hashes={"generic_arm_results": results_sha},
+              runner_identity=runner_id,
+              timestamp_utc=timestamp,
+              provider_model_id="synthetic" if dry_run else "claude-sonnet-5",
+              is_diagnostic=dry_run,
+          )
+          os.makedirs("attestations", exist_ok=True)
+          with open("attestations/generic-arm-attestation.json", "w") as f:
+              json.dump(att.to_dict(), f, indent=2)
+          att_sha = att.sha256()
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+              f.write(f"att_sha256={att_sha}\n")
+          print(f"Generic-arm attestation SHA256={att_sha}")
+          PYEOF
+
+      - name: Upload generic arm outputs
+        uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b  # v4.5.0
+        with:
+          name: generic-arm-outputs
+          path: arm-outputs/generic/
+          retention-days: 30
+
+      - name: Upload generic-arm attestation
+        uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b  # v4.5.0
+        with:
+          name: attestation-generic-arm
+          path: attestations/generic-arm-attestation.json
+          retention-days: 30
+
+  # ---------------------------------------------------------------------------
+  # 3. CONFIGURED ARM
+  # Separate fresh VM from generic-arm — OS-level isolation.
+  # No repository checkout.  Downloads content-addressed poc6c-package only.
+  # ---------------------------------------------------------------------------
+  configured-arm:
+    name: Configured Arm — Candidate Agent
+    needs: preflight
+    if: needs.preflight.outputs.preflight_passed == 'true'
+    runs-on: ubuntu-24.04
+    environment: ${{ inputs.dry_run != 'true' && 'confirmation' || '' }}
+    permissions: {}
+    outputs:
+      results_sha256: ${{ steps.run_arm.outputs.results_sha256 }}
+      att_sha256: ${{ steps.create_attestation.outputs.att_sha256 }}
+
+    steps:
+      - name: Set up Python
+        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b  # v5.3.0
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Download poc6c package
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16  # v4.1.8
+        with:
+          name: poc6c-package
+          path: ./
+
+      - name: Verify and extract poc6c package
+        env:
+          EXPECTED_PKG_SHA: ${{ needs.preflight.outputs.pkg_sha256 }}
+        run: |
+          ACTUAL=$(sha256sum poc6c-package.tar.gz | cut -d' ' -f1 | tr '[:lower:]' '[:upper:]')
+          if [ "${ACTUAL}" != "${EXPECTED_PKG_SHA}" ]; then
+            echo "FATAL: Package hash mismatch: ${ACTUAL} != ${EXPECTED_PKG_SHA}" >&2
+            exit 1
+          fi
+          tar xzf poc6c-package.tar.gz
+          echo "Verified and extracted poc6c package SHA256=${ACTUAL}"
+
+      - name: Install dependencies (hash-locked)
+        run: pip install --require-hashes -r poc6c/requirements-lock.txt
+
+      - name: Assert forbidden variables absent
+        run: |
+          python - <<'PYEOF'
+          import sys
+          sys.path.insert(0, "poc6c")
+          from blinding import assert_seed_not_in_environment, assert_mapping_not_in_environment
+          assert_seed_not_in_environment()
+          assert_mapping_not_in_environment()
+          print("OK: CONFIRMATION_BLIND_SEED and mapping variables absent from configured arm.")
+          PYEOF
+
+      - name: Run configured arm
+        id: run_arm
+        env:
+          ANTHROPIC_API_KEY: ${{ inputs.dry_run != 'true' && secrets.ANTHROPIC_API_KEY || '' }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+        run: |
+          python - <<'PYEOF'
+          import os, json, sys, hashlib
+          sys.path.insert(0, "poc6c")
+          dry_run = os.environ.get("DRY_RUN", "false").lower() == "true"
+          run_id = os.environ["GITHUB_RUN_ID"]
+          arm = "configured"
+          if dry_run:
+              from synthetic_runner import _run_arm
+              task_ids = [f"SYN-{i:03d}" for i in range(1, 6)]
+              results, _ = _run_arm(arm, run_id, task_ids)
+              results_dicts = [r.to_dict() for r in results]
+              print(f"Synthetic configured arm: {len(results)} results generated.")
+          else:
+              print("NOTE: Live arm execution requires R01-R05 unblocked.", file=sys.stderr)
+              sys.exit(1)
+          os.makedirs(f"arm-outputs/{arm}", exist_ok=True)
+          results_json = json.dumps(results_dicts, sort_keys=True, indent=2)
+          with open(f"arm-outputs/{arm}/results.json", "w") as f:
+              f.write(results_json)
+          results_sha = hashlib.sha256(results_json.encode()).hexdigest()
+          with open(f"arm-outputs/{arm}/results.sha256", "w") as f:
+              f.write(results_sha.upper())
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+              f.write(f"results_sha256={results_sha.upper()}\n")
+          print(f"Configured arm results SHA256={results_sha.upper()}")
+          PYEOF
+
+      - name: Create configured-arm attestation
+        id: create_attestation
+        env:
+          DRY_RUN: ${{ inputs.dry_run }}
+          PKG_SHA: ${{ needs.preflight.outputs.pkg_sha256 }}
+          RESULTS_SHA: ${{ steps.run_arm.outputs.results_sha256 }}
+        run: |
+          python - <<'PYEOF'
+          import os, json, sys
+          from datetime import datetime, timezone
+          sys.path.insert(0, "poc6c")
+          from attestation import create_attestation
+          dry_run = os.environ.get("DRY_RUN", "false").lower() == "true"
+          run_id = os.environ["GITHUB_RUN_ID"]
+          commit_sha = os.environ["GITHUB_SHA"]
+          runner_id = f"github-actions/{os.environ.get('RUNNER_NAME', 'unknown')}"
+          timestamp = datetime.now(tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+          results_sha = os.environ.get("RESULTS_SHA", "").lower()
+          pkg_sha = os.environ.get("PKG_SHA", "").lower()
+          att = create_attestation(
+              stage="configured-arm",
+              mode="diagnostic" if dry_run else "production",
+              run_id=run_id,
+              commit_sha=commit_sha,
+              input_hashes={"poc6c_package": pkg_sha},
+              output_hashes={"configured_arm_results": results_sha},
+              runner_identity=runner_id,
+              timestamp_utc=timestamp,
+              provider_model_id="synthetic" if dry_run else "claude-sonnet-5",
+              is_diagnostic=dry_run,
+          )
+          os.makedirs("attestations", exist_ok=True)
+          with open("attestations/configured-arm-attestation.json", "w") as f:
+              json.dump(att.to_dict(), f, indent=2)
+          att_sha = att.sha256()
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+              f.write(f"att_sha256={att_sha}\n")
+          print(f"Configured-arm attestation SHA256={att_sha}")
+          PYEOF
+
+      - name: Upload configured arm outputs
+        uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b  # v4.5.0
+        with:
+          name: configured-arm-outputs
+          path: arm-outputs/configured/
+          retention-days: 30
+
+      - name: Upload configured-arm attestation
+        uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b  # v4.5.0
+        with:
+          name: attestation-configured-arm
+          path: attestations/configured-arm-attestation.json
+          retention-days: 30
+
+  # ---------------------------------------------------------------------------
+  # 4. DETERMINISTIC BLINDING
+  # No repository checkout.  Reads CONFIRMATION_BLIND_SEED from
+  # confirmation-custody environment only (separate from arm/evaluator env).
+  # Does NOT receive ANTHROPIC_API_KEY.
+  # ---------------------------------------------------------------------------
+  deterministic-blinding:
+    name: Deterministic Blinding — Arm Assignment
+    needs: [preflight, generic-arm, configured-arm]
+    runs-on: ubuntu-24.04
+    environment: ${{ inputs.dry_run != 'true' && 'confirmation-custody' || '' }}
+    permissions: {}
+    outputs:
+      bundle_sha256: ${{ steps.run_blinding.outputs.bundle_sha256 }}
+      att_sha256: ${{ steps.create_attestation.outputs.att_sha256 }}
+
+    steps:
+      - name: Set up Python
+        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b  # v5.3.0
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Download poc6c package
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16  # v4.1.8
+        with:
+          name: poc6c-package
+          path: ./
+
+      - name: Verify and extract poc6c package
+        env:
+          EXPECTED_PKG_SHA: ${{ needs.preflight.outputs.pkg_sha256 }}
+        run: |
+          ACTUAL=$(sha256sum poc6c-package.tar.gz | cut -d' ' -f1 | tr '[:lower:]' '[:upper:]')
+          if [ "${ACTUAL}" != "${EXPECTED_PKG_SHA}" ]; then
+            echo "FATAL: Package hash mismatch: ${ACTUAL} != ${EXPECTED_PKG_SHA}" >&2
+            exit 1
+          fi
+          tar xzf poc6c-package.tar.gz
+
+      - name: Install dependencies (hash-locked)
+        run: pip install --require-hashes -r poc6c/requirements-lock.txt
+
+      - name: Download arm outputs
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16  # v4.1.8
+        with:
+          pattern: '*-arm-outputs'
+          path: arm-outputs/
+          merge-multiple: true
+
+      - name: Run deterministic blinding
+        id: run_blinding
+        env:
+          CONFIRMATION_BLIND_SEED: ${{ inputs.dry_run != 'true' && secrets.CONFIRMATION_BLIND_SEED || '' }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+          GENERIC_SHA: ${{ needs.generic-arm.outputs.results_sha256 }}
+          CONFIGURED_SHA: ${{ needs.configured-arm.outputs.results_sha256 }}
+        run: |
+          python - <<'PYEOF'
+          import os, json, sys, hashlib
+          sys.path.insert(0, "poc6c")
+          from blinding import (
+              generate_seed, assign_arms, encrypt_mapping,
+              read_seed_from_env, check_not_placeholder_key,
+          )
+          from pipeline_artifacts import (
+              ArmResult, SCHEMA_VERSION, build_blinded_answer_bundle,
+              assert_no_label_leakage,
+          )
+          from pathlib import Path
+
+          dry_run = os.environ.get("DRY_RUN", "false").lower() == "true"
+          run_id = os.environ["GITHUB_RUN_ID"]
+
+          # Load arm results
+          def load_results(arm):
+              path = f"arm-outputs/{arm}-arm-outputs/results.json" if not os.path.exists(f"arm-outputs/{arm}/results.json") else f"arm-outputs/{arm}/results.json"
+              # Try both path patterns (download-artifact merge layout)
+              for p in [
+                  f"arm-outputs/{arm}/results.json",
+                  f"arm-outputs/{arm}-arm-outputs/results.json",
+              ]:
+                  if os.path.exists(p):
+                      with open(p) as f:
+                          return [ArmResult(**d) for d in json.load(f)]
+              raise FileNotFoundError(f"No results.json found for arm={arm}")
+
+          generic_results    = load_results("generic")
+          configured_results = load_results("configured")
+          all_results = generic_results + configured_results
+
+          if dry_run:
+              seed = generate_seed()
+          else:
+              check_not_placeholder_key(Path("poc6c/custodian_public_key.pem"))
+              seed = read_seed_from_env()
+
+          rubric_path = Path("poc6c/confirmation/EVALUATION_RUBRIC_V1.md")
+          rubric_sha = hashlib.sha256(rubric_path.read_bytes()).hexdigest().upper() if rubric_path.exists() else "RUBRIC-ABSENT"
+          task_ids = sorted(set(r.task_id for r in all_results))
+
+          bundle, plain_mapping = build_blinded_answer_bundle(
+              arm_results=all_results,
+              expected_run_id=run_id,
+              expected_task_ids=task_ids,
+              rubric_sha256=rubric_sha,
+              is_diagnostic=dry_run,
+          )
+          assert_no_label_leakage(bundle)
+
+          mapping_bundle = encrypt_mapping(
+              {bid: f"{v['task_id']}/{v['arm']}" for bid, v in plain_mapping.items()},
+              pubkey_pem_path=None if dry_run else Path("poc6c/custodian_public_key.pem"),
+              dry_run=dry_run,
+          )
+
+          os.makedirs("blinding-outputs", exist_ok=True)
+          bundle_json = json.dumps(bundle.to_dict(), sort_keys=True, indent=2)
+          bundle_sha = hashlib.sha256(bundle_json.encode()).hexdigest()
+          with open("blinding-outputs/blinded_answer_bundle.json", "w") as f:
+              f.write(bundle_json)
+          with open("blinding-outputs/blinded_answer_bundle.sha256", "w") as f:
+              f.write(bundle_sha.upper())
+
+          mapping_json = json.dumps(mapping_bundle.to_dict(), sort_keys=True, indent=2)
+          mapping_sha = hashlib.sha256(mapping_json.encode()).hexdigest()
+          with open("blinding-outputs/mapping_bundle.json", "w") as f:
+              f.write(mapping_json)
+          with open("blinding-outputs/mapping_bundle.sha256", "w") as f:
+              f.write(mapping_sha.upper())
+
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+              f.write(f"bundle_sha256={bundle_sha.upper()}\n")
+              f.write(f"mapping_sha256={mapping_sha.upper()}\n")
+          print(f"Blinded bundle SHA256={bundle_sha.upper()}")
+          print(f"Mapping bundle SHA256={mapping_sha.upper()}")
+          PYEOF
+
+      - name: Create deterministic-blinding attestation
+        id: create_attestation
+        env:
+          DRY_RUN: ${{ inputs.dry_run }}
+          GENERIC_SHA: ${{ needs.generic-arm.outputs.results_sha256 }}
+          CONFIGURED_SHA: ${{ needs.configured-arm.outputs.results_sha256 }}
+          BUNDLE_SHA: ${{ steps.run_blinding.outputs.bundle_sha256 }}
+        run: |
+          python - <<'PYEOF'
+          import os, json, sys
+          from datetime import datetime, timezone
+          sys.path.insert(0, "poc6c")
+          from attestation import create_attestation
+          dry_run = os.environ.get("DRY_RUN", "false").lower() == "true"
+          run_id = os.environ["GITHUB_RUN_ID"]
+          commit_sha = os.environ["GITHUB_SHA"]
+          runner_id = f"github-actions/{os.environ.get('RUNNER_NAME', 'unknown')}"
+          timestamp = datetime.now(tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+          generic_sha    = os.environ.get("GENERIC_SHA", "").lower()
+          configured_sha = os.environ.get("CONFIGURED_SHA", "").lower()
+          bundle_sha     = os.environ.get("BUNDLE_SHA", "").lower()
+          # mapping_bundle SHA from blinding step output file
+          import hashlib
+          mapping_sha = ""
+          if os.path.exists("blinding-outputs/mapping_bundle.sha256"):
+              mapping_sha = open("blinding-outputs/mapping_bundle.sha256").read().strip().lower()
+          att = create_attestation(
+              stage="deterministic-blinding",
+              mode="diagnostic" if dry_run else "production",
+              run_id=run_id,
+              commit_sha=commit_sha,
+              input_hashes={
+                  "generic_arm_results":    generic_sha,
+                  "configured_arm_results": configured_sha,
+              },
+              output_hashes={
+                  "blinded_answer_bundle": bundle_sha,
+                  "mapping_bundle":        mapping_sha,
+              },
+              runner_identity=runner_id,
+              timestamp_utc=timestamp,
+              provider_model_id=None,
+              is_diagnostic=dry_run,
+          )
+          os.makedirs("attestations", exist_ok=True)
+          with open("attestations/deterministic-blinding-attestation.json", "w") as f:
+              json.dump(att.to_dict(), f, indent=2)
+          att_sha = att.sha256()
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+              f.write(f"att_sha256={att_sha}\n")
+          print(f"Deterministic-blinding attestation SHA256={att_sha}")
+          PYEOF
+
+      - name: Upload blinding outputs
+        uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b  # v4.5.0
+        with:
+          name: blinding-outputs
+          path: blinding-outputs/
+          retention-days: 30
+
+      - name: Upload deterministic-blinding attestation
+        uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b  # v4.5.0
+        with:
+          name: attestation-deterministic-blinding
+          path: attestations/deterministic-blinding-attestation.json
+          retention-days: 30
+
+  # ---------------------------------------------------------------------------
+  # 5. BLINDED EVALUATOR
+  # Third fresh VM.  No repository checkout.
+  # Does NOT receive: CONFIRMATION_BLIND_SEED, arm labels, plain mapping.
+  # Verifies bundle hash; rejects dry-run bundles in production.
+  # ---------------------------------------------------------------------------
+  blinded-evaluator:
+    name: Blinded Evaluator — Blind Scoring
+    needs: [preflight, deterministic-blinding]
+    runs-on: ubuntu-24.04
+    environment: ${{ inputs.dry_run != 'true' && 'confirmation' || '' }}
+    permissions: {}
+    outputs:
+      eval_sha256: ${{ steps.run_evaluator.outputs.eval_sha256 }}
+      att_sha256: ${{ steps.create_attestation.outputs.att_sha256 }}
+
+    steps:
+      - name: Set up Python
+        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b  # v5.3.0
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Download poc6c package
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16  # v4.1.8
+        with:
+          name: poc6c-package
+          path: ./
+
+      - name: Verify and extract poc6c package
+        env:
+          EXPECTED_PKG_SHA: ${{ needs.preflight.outputs.pkg_sha256 }}
+        run: |
+          ACTUAL=$(sha256sum poc6c-package.tar.gz | cut -d' ' -f1 | tr '[:lower:]' '[:upper:]')
+          if [ "${ACTUAL}" != "${EXPECTED_PKG_SHA}" ]; then
+            echo "FATAL: Package hash mismatch: ${ACTUAL} != ${EXPECTED_PKG_SHA}" >&2
+            exit 1
+          fi
+          tar xzf poc6c-package.tar.gz
+
+      - name: Install dependencies (hash-locked)
+        run: pip install --require-hashes -r poc6c/requirements-lock.txt
+
+      - name: Assert seed, mapping, and private-key vars absent
+        run: |
+          python - <<'PYEOF'
+          import sys
+          sys.path.insert(0, "poc6c")
+          from blinding import assert_seed_not_in_environment, assert_mapping_not_in_environment
+          assert_seed_not_in_environment()
+          assert_mapping_not_in_environment()
+          print("OK: All custody/mapping variables absent from evaluator.")
+          PYEOF
+
+      - name: Download blinding outputs
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16  # v4.1.8
+        with:
+          name: blinding-outputs
+          path: blinding-outputs/
+
+      - name: Verify bundle hash and reject dry-run bundles in production
+        env:
+          EXPECTED_BUNDLE_SHA: ${{ needs.deterministic-blinding.outputs.bundle_sha256 }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          python - <<'PYEOF'
+          import hashlib, json, os, sys
+          sys.path.insert(0, "poc6c")
+          from blinding import check_not_dry_run_bundle
+
+          expected = os.environ.get("EXPECTED_BUNDLE_SHA", "").upper()
+          with open("blinding-outputs/blinded_answer_bundle.json", "rb") as f:
+              data = f.read()
+          actual = hashlib.sha256(data).hexdigest().upper()
+          if actual != expected:
+              print(f"FATAL: Bundle hash mismatch: {actual} != {expected}", file=sys.stderr)
+              sys.exit(1)
+          print(f"Bundle hash verified: {actual}")
+          dry_run = os.environ.get("DRY_RUN", "false").lower() == "true"
+          if not dry_run:
+              bundle_dict = json.loads(data)
+              check_not_dry_run_bundle(bundle_dict)
+              print("Production: bundle is not a dry-run bundle.")
+          PYEOF
+
+      - name: Run blinded evaluation
+        id: run_evaluator
+        env:
+          ANTHROPIC_API_KEY: ${{ inputs.dry_run != 'true' && secrets.ANTHROPIC_API_KEY || '' }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+        run: |
+          python - <<'PYEOF'
+          import os, json, sys, hashlib
+          sys.path.insert(0, "poc6c")
+          dry_run = os.environ.get("DRY_RUN", "false").lower() == "true"
+          run_id = os.environ["GITHUB_RUN_ID"]
+          from pipeline_artifacts import (
+              BlindedAnswerBundle, EvaluatorResult, SCHEMA_VERSION,
+              assert_no_label_leakage, validate_evaluator_result,
+          )
+          if dry_run:
+              with open("blinding-outputs/blinded_answer_bundle.json") as f:
+                  bundle = BlindedAnswerBundle(**json.load(f))
+              assert_no_label_leakage(bundle)
+              scores = {bid: {"total": 75, "is_diagnostic": True} for bid in bundle.blind_ids}
+              result = EvaluatorResult(
+                  schema_version=SCHEMA_VERSION,
+                  run_id=run_id,
+                  scores_by_blind_id=scores,
+                  is_diagnostic=True,
+              )
+              validate_evaluator_result(result, bundle, mode="diagnostic")
+              print(f"Synthetic evaluator: scored {len(scores)} blind IDs.")
+          else:
+              print("NOTE: Live evaluation requires R01-R05 unblocked.", file=sys.stderr)
+              sys.exit(1)
+          os.makedirs("eval-outputs", exist_ok=True)
+          result_json = json.dumps(result.to_dict(), sort_keys=True, indent=2)
+          eval_sha = hashlib.sha256(result_json.encode()).hexdigest()
+          with open("eval-outputs/evaluation_results.json", "w") as f:
+              f.write(result_json)
+          with open("eval-outputs/evaluation_results.sha256", "w") as f:
+              f.write(eval_sha.upper())
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+              f.write(f"eval_sha256={eval_sha.upper()}\n")
+          print(f"Evaluation results SHA256={eval_sha.upper()}")
+          PYEOF
+
+      - name: Create blinded-evaluator attestation
+        id: create_attestation
+        env:
+          DRY_RUN: ${{ inputs.dry_run }}
+          BUNDLE_SHA: ${{ needs.deterministic-blinding.outputs.bundle_sha256 }}
+          EVAL_SHA: ${{ steps.run_evaluator.outputs.eval_sha256 }}
+        run: |
+          python - <<'PYEOF'
+          import os, json, sys
+          from datetime import datetime, timezone
+          sys.path.insert(0, "poc6c")
+          from attestation import create_attestation
+          dry_run = os.environ.get("DRY_RUN", "false").lower() == "true"
+          run_id = os.environ["GITHUB_RUN_ID"]
+          commit_sha = os.environ["GITHUB_SHA"]
+          runner_id = f"github-actions/{os.environ.get('RUNNER_NAME', 'unknown')}"
+          timestamp = datetime.now(tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+          bundle_sha = os.environ.get("BUNDLE_SHA", "").lower()
+          eval_sha   = os.environ.get("EVAL_SHA", "").lower()
+          mapping_sha = ""
+          if os.path.exists("blinding-outputs/mapping_bundle.sha256"):
+              mapping_sha = open("blinding-outputs/mapping_bundle.sha256").read().strip().lower()
+          att = create_attestation(
+              stage="blinded-evaluator",
+              mode="diagnostic" if dry_run else "production",
+              run_id=run_id,
+              commit_sha=commit_sha,
+              input_hashes={
+                  "blinded_answer_bundle": bundle_sha,
+                  "mapping_bundle":        mapping_sha,
+              },
+              output_hashes={"evaluation_results": eval_sha},
+              runner_identity=runner_id,
+              timestamp_utc=timestamp,
+              provider_model_id="synthetic" if dry_run else "claude-opus-5",
+              is_diagnostic=dry_run,
+          )
+          os.makedirs("attestations", exist_ok=True)
+          with open("attestations/blinded-evaluator-attestation.json", "w") as f:
+              json.dump(att.to_dict(), f, indent=2)
+          att_sha = att.sha256()
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+              f.write(f"att_sha256={att_sha}\n")
+          print(f"Blinded-evaluator attestation SHA256={att_sha}")
+          PYEOF
+
+      - name: Upload evaluation results
+        uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b  # v4.5.0
+        with:
+          name: evaluation-results
+          path: eval-outputs/
+          retention-days: 30
+
+      - name: Upload blinded-evaluator attestation
+        uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b  # v4.5.0
+        with:
+          name: attestation-blinded-evaluator
+          path: attestations/blinded-evaluator-attestation.json
+          retention-days: 30
+
+  # ---------------------------------------------------------------------------
+  # 6. INTEGRITY AND ANALYSIS
+  # No secrets.  Validates full attestation chain, runs test suite, rejects
+  # dry-run or test-only bundles in production analysis, produces final report.
+  # ---------------------------------------------------------------------------
+  integrity-and-analysis:
+    name: Integrity and Analysis
+    needs: [preflight, generic-arm, configured-arm, deterministic-blinding, blinded-evaluator]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+
+      - name: Set up Python
+        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b  # v5.3.0
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies (hash-locked)
+        run: pip install --require-hashes -r poc6c/requirements-lock.txt
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16  # v4.1.8
+        with:
+          path: all-artifacts/
+
+      - name: Collect and validate attestation chain
+        env:
+          DRY_RUN: ${{ inputs.dry_run }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+        run: |
+          python - <<'PYEOF'
+          import json, os, sys
+          from pathlib import Path
+          sys.path.insert(0, "poc6c")
+          from attestation import Attestation, validate_attestation_chain, EXPECTED_STAGES
+
+          dry_run = os.environ.get("DRY_RUN", "false").lower() == "true"
+          run_id = os.environ["GITHUB_RUN_ID"]
+          commit_sha = os.environ["GITHUB_SHA"]
+          mode = "diagnostic" if dry_run else "production"
+
+          stage_to_file = {
+              "preflight":               "attestation-preflight/preflight-attestation.json",
+              "generic-arm":             "attestation-generic-arm/generic-arm-attestation.json",
+              "configured-arm":          "attestation-configured-arm/configured-arm-attestation.json",
+              "deterministic-blinding":  "attestation-deterministic-blinding/deterministic-blinding-attestation.json",
+              "blinded-evaluator":       "attestation-blinded-evaluator/blinded-evaluator-attestation.json",
+          }
+
+          attestations = []
+          for stage in [s for s in EXPECTED_STAGES if s != "integrity-and-analysis"]:
+              rel_path = stage_to_file.get(stage)
+              full_path = Path("all-artifacts") / rel_path if rel_path else None
+              if full_path and full_path.exists():
+                  with open(full_path) as f:
+                      att = Attestation.from_dict(json.load(f))
+                  attestations.append(att)
+                  print(f"Loaded attestation: {stage} SHA256={att.sha256()}")
+              else:
+                  print(f"MISSING attestation for stage: {stage}", file=sys.stderr)
+                  sys.exit(1)
+
+          expected_upstream = tuple(s for s in EXPECTED_STAGES if s != "integrity-and-analysis")
+          try:
+              validate_attestation_chain(attestations, run_id, commit_sha, mode, expected_upstream)
+              print("Attestation chain VALID across 5 upstream stages.")
+          except Exception as e:
+              print(f"FATAL: Attestation chain invalid: {e}", file=sys.stderr)
+              sys.exit(1)
+          PYEOF
+
+      - name: Verify artifact hashes
+        env:
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          python - <<'PYEOF'
+          import hashlib, json, os, sys
+          from pathlib import Path
+          sys.path.insert(0, "poc6c")
+          from blinding import check_not_dry_run_bundle, check_not_test_only_bundle
+
+          dry_run = os.environ.get("DRY_RUN", "false").lower() == "true"
+          errors = []
+
+          def verify_hash_file(json_path, sha_path, label):
+              if not Path(json_path).exists() or not Path(sha_path).exists():
+                  errors.append(f"{label}: files missing")
+                  return None
+              data = Path(json_path).read_bytes()
+              actual = hashlib.sha256(data).hexdigest().upper()
+              expected = Path(sha_path).read_text().strip().upper()
+              if actual != expected:
+                  errors.append(f"{label}: hash mismatch {actual} != {expected}")
+                  return None
+              print(f"OK {label}: {actual}")
+              return data
+
+          base = Path("all-artifacts")
+          eval_data = verify_hash_file(
+              base / "evaluation-results/evaluation_results.json",
+              base / "evaluation-results/evaluation_results.sha256",
+              "evaluation_results",
+          )
+          bundle_data = verify_hash_file(
+              base / "blinding-outputs/blinded_answer_bundle.json",
+              base / "blinding-outputs/blinded_answer_bundle.sha256",
+              "blinded_answer_bundle",
+          )
+          mapping_data = verify_hash_file(
+              base / "blinding-outputs/mapping_bundle.json",
+              base / "blinding-outputs/mapping_bundle.sha256",
+              "mapping_bundle",
+          )
+          if not dry_run and mapping_data:
+              try:
+                  bd = json.loads(mapping_data)
+                  check_not_dry_run_bundle(bd)
+                  check_not_test_only_bundle(bd)
+              except Exception as e:
+                  errors.append(f"Bundle rejected by analysis: {e}")
+
+          if errors:
+              for e in errors:
+                  print(f"ERROR: {e}", file=sys.stderr)
+              sys.exit(1)
+          print("All artifact hashes verified.")
+          PYEOF
+
+      - name: Run full test suite
+        run: python -m pytest poc6c/ --ignore=poc6c/workloads -q
+
+      - name: Create integrity-and-analysis attestation and report
+        id: create_attestation
+        env:
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          python - <<'PYEOF'
+          import os, json, sys, hashlib
+          from datetime import datetime, timezone
+          from pathlib import Path
+          sys.path.insert(0, "poc6c")
+          from attestation import create_attestation
+          from pipeline_artifacts import IntegrityReport, SCHEMA_VERSION
+          from pipeline_mode import PipelineMode
+
+          dry_run = os.environ.get("DRY_RUN", "false").lower() == "true"
+          run_id = os.environ["GITHUB_RUN_ID"]
+          commit_sha = os.environ["GITHUB_SHA"]
+          runner_id = f"github-actions/{os.environ.get('RUNNER_NAME', 'unknown')}"
+          timestamp = datetime.now(tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+          mode = "diagnostic" if dry_run else "production"
+
+          report = IntegrityReport(
+              schema_version=SCHEMA_VERSION,
+              run_id=run_id,
+              mode=mode,
+              attestation_chain_valid=True,
+              all_stages_complete=True,
+              confirmation_ready=False,
+              is_diagnostic=dry_run,
+              notes=[
+                  "Six-stage pipeline completed.",
+                  "No confirmation answer was generated, scored, or deblinded.",
+                  "R01-R05 remain BLOCKED; Task 5 must not start.",
+                  "confirmation_ready=False is the only valid outcome.",
+              ],
+          )
+          report_json = json.dumps(report.to_dict(), sort_keys=True, indent=2)
+          report_sha = hashlib.sha256(report_json.encode()).hexdigest()
+
+          att = create_attestation(
+              stage="integrity-and-analysis",
+              mode=mode,
+              run_id=run_id,
+              commit_sha=commit_sha,
+              input_hashes={},
+              output_hashes={"integrity_report": report_sha},
+              runner_identity=runner_id,
+              timestamp_utc=timestamp,
+              provider_model_id=None,
+              is_diagnostic=dry_run,
+          )
+          os.makedirs("integrity-outputs", exist_ok=True)
+          with open("integrity-outputs/integrity_report.json", "w") as f:
+              f.write(report_json)
+          with open("integrity-outputs/integrity-attestation.json", "w") as f:
+              json.dump(att.to_dict(), f, indent=2)
+          print(f"Integrity report SHA256={report_sha.upper()}")
+          print(f"Integrity attestation SHA256={att.sha256()}")
+          print(json.dumps(report.to_dict(), indent=2))
+          PYEOF
+
+      - name: Upload integrity outputs
+        uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b  # v4.5.0
+        with:
+          name: integrity-outputs
+          path: integrity-outputs/
+          retention-days: 30
