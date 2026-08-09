@@ -256,28 +256,35 @@ def check_rubric_calibration(
 def check_hash_reverification(
     paths: dict[str, Path] | None = None,
     expected: dict[str, str] | None = None,
+    vault_root: Path | None = None,
 ) -> dict[str, Any]:
     """
     Re-hash every frozen input and confirm each matches PREREGISTRATION_DRAFT.md.
 
     Local artifacts (prompts, schema, rubric, task set, labels) are hashed
     directly.  Vault-dependent hashes (corpus_manifest, indexed_body) are
-    reported as "vault_absent" when the Project 008 vault is not on disk.
+    verified when the Project 008 vault is available via vault_root or the
+    PROJECT008_PATH environment variable.
 
     Returns:
-      passed         : True only when all local hashes match and vault status
-                       is noted (vault absence does not fail this check, but
-                       is recorded as requiring verification before activation).
+      passed         : True only when ALL eight hashes match (six local + two
+                       vault).  Vault absence makes this False — both vault
+                       commitments are required for R08 to be SATISFIED.
+      vault_pending  : True when vault is absent (signals PENDING not BLOCKED).
       local_results  : per-artifact match/mismatch for local files.
-      vault_results  : per-artifact vault-absent/match for vault-dependent hashes.
+      vault_results  : per-artifact status for vault-dependent hashes.
       errors         : list of local mismatches or missing files.
+      vault_errors   : list of vault mismatches or missing vault files.
     """
+    import os as _os
+
     file_paths = paths or _PATHS
     expected_h = expected or EXPECTED_HASHES
 
     local_results: dict[str, dict[str, Any]] = {}
     vault_results: dict[str, dict[str, Any]] = {}
     errors: list[str] = []
+    vault_errors: list[str] = []
 
     for key in LOCAL_HASH_KEYS:
         path = file_paths.get(key)
@@ -298,17 +305,51 @@ def check_hash_reverification(
                 f"(expected {expected_h[key][:16]}…, got {actual[:16]}…)"
             )
 
-    for key in VAULT_HASH_KEYS:
-        vault_results[key] = {
-            "status": "vault_absent_requires_verification",
-            "expected": expected_h.get(key, ""),
-            "note": (
-                "Project 008 vault not present locally. "
-                "This hash must be verified before activation using "
-                "corpus.manifest_content_commitment() and "
-                "corpus.indexed_content_commitment()."
-            ),
-        }
+    # Resolve vault location — no hardcoded default path
+    resolved_vault: Path | None = vault_root
+    if resolved_vault is None:
+        env_path = _os.environ.get("PROJECT008_PATH", "").strip()
+        if env_path:
+            resolved_vault = Path(env_path)
+
+    vault_pending = False
+    if resolved_vault is None or not resolved_vault.exists():
+        vault_pending = True
+        note = (
+            "Project 008 vault not present. Set PROJECT008_PATH or pass vault_root. "
+            "corpus_manifest and indexed_body commitments are required before activation."
+        )
+        for key in VAULT_HASH_KEYS:
+            vault_results[key] = {
+                "status": "vault_absent_requires_verification",
+                "expected": expected_h.get(key, ""),
+                "note": note,
+            }
+            vault_errors.append(f"{key}: vault absent — verification required before activation")
+    else:
+        vault_check = check_vault_hashes_with_actual_vault(
+            vault_root=resolved_vault,
+            expected_manifest_sha256=expected_h.get("corpus_manifest", ""),
+            expected_indexed_body_sha256=expected_h.get("indexed_body", ""),
+        )
+        for key in VAULT_HASH_KEYS:
+            artifact_label = "identity-manifest.json" if key == "corpus_manifest" else "indexed_body.json"
+            if vault_check["passed"] and not vault_check["errors"]:
+                vault_results[key] = {
+                    "status": "match",
+                    "expected": expected_h.get(key, ""),
+                }
+            else:
+                relevant = [e for e in vault_check["errors"] if artifact_label in e or key in e]
+                status = "mismatch" if relevant else "vault_check_failed"
+                vault_results[key] = {
+                    "status": status,
+                    "expected": expected_h.get(key, ""),
+                    "errors": relevant or vault_check["errors"],
+                }
+                vault_errors.extend(relevant or vault_check["errors"])
+
+    all_passed = len(errors) == 0 and len(vault_errors) == 0
 
     return {
         "requirement": "R08",
@@ -316,8 +357,9 @@ def check_hash_reverification(
         "local_results": local_results,
         "vault_results": vault_results,
         "errors": errors,
-        "passed": len(errors) == 0,
-        "vault_verification_required_before_activation": True,
+        "vault_errors": vault_errors,
+        "passed": all_passed,
+        "vault_pending": vault_pending,
         "selection_limitation": (
             "Hash reverification confirms frozen-input integrity only. "
             "No confirmation outputs exist. "
@@ -359,20 +401,34 @@ def check_preregistration_checklist(
             "activation requires all nine requirements"
         )
 
-    # Three newly-satisfied gates must be checked
+    # R06 and R07 must be checked [x] — they are SATISFIED
     for gate_phrase in (
         "deterministic corpus facade",
         "numeric rubric anchors",
-        "task file and all prompts",
     ):
-        # Find lines containing this phrase and check for [x]
         lines = [ln for ln in text.splitlines() if gate_phrase.lower() in ln.lower()]
         if not lines:
             errors.append(f"gate '{gate_phrase}' not found in preregistration")
         elif not any("[x]" in ln for ln in lines):
-            errors.append(
-                f"gate '{gate_phrase}' exists but is not marked [x]"
-            )
+            errors.append(f"gate '{gate_phrase}' exists but is not marked [x]")
+
+    # R08 must be unchecked [ ] — it is PENDING (vault commitments required)
+    r08_lines = [ln for ln in text.splitlines() if "**R08**" in ln or ("R08" in ln and "hashes" in ln.lower())]
+    if not r08_lines:
+        errors.append("R08 gate not found in preregistration")
+    elif any("[x]" in ln for ln in r08_lines):
+        errors.append(
+            "R08 gate is marked [x] but must be [ ] — "
+            "vault commitments (corpus_manifest, indexed_body) are required "
+            "before R08 can be SATISFIED"
+        )
+
+    # R09 itself must be checked [x]
+    r09_lines = [ln for ln in text.splitlines() if "**R09**" in ln]
+    if not r09_lines:
+        errors.append("R09 gate not found in preregistration")
+    elif not any("[x]" in ln for ln in r09_lines):
+        errors.append("R09 gate exists but is not marked [x]")
 
     # Must not contain confirmation outputs
     forbidden = ("confirmation run", "confirmation score", "confirmed effect")
@@ -402,6 +458,11 @@ def check_provider_adapter(
     """
     Verify that provider.py and pricing_lock.json exist and have expected
     structure.  Does not call the live API (no key required).
+
+    Checks for R03 fail-closed telemetry enforcement:
+    - MissingUsage raised on absent token counts or message ID
+    - CacheUsageViolation raised on cache tokens when caching is disabled
+    - pricing_lock.json has verification_required=true and expiry note
     """
     errors: list[str] = []
     provider_path = provider_module_path or (HERE / "provider.py")
@@ -411,12 +472,31 @@ def check_provider_adapter(
         errors.append(f"provider.py not found at {provider_path}")
     else:
         src = provider_path.read_text(encoding="utf-8")
+        # Core adapter symbols
         for symbol in ("AnthropicProviderAdapter", "ResponseTelemetry",
                        "MissingApiKey", "ResponseModelMismatch",
                        "compute_provider_cost_usd", "verify_models_available",
                        "ANTHROPIC_API_KEY"):
             if symbol not in src:
                 errors.append(f"provider.py missing expected symbol: {symbol}")
+        # R03 fail-closed telemetry enforcement (T4B-07)
+        for symbol in ("MissingUsage", "CacheUsageViolation"):
+            if symbol not in src:
+                errors.append(
+                    f"provider.py missing R03 fail-closed symbol: {symbol} — "
+                    "provider must raise on absent usage or cache violation"
+                )
+        # Confirm raise-on-missing-usage is wired (not just defined)
+        if "raise MissingUsage" not in src:
+            errors.append(
+                "provider.py does not raise MissingUsage — "
+                "missing token counts must not be silently accepted"
+            )
+        if "raise CacheUsageViolation" not in src:
+            errors.append(
+                "provider.py does not raise CacheUsageViolation — "
+                "cache tokens must be rejected when caching is disabled"
+            )
 
     if not p_lock_path.exists():
         errors.append(f"pricing_lock.json not found at {p_lock_path}")
@@ -433,8 +513,22 @@ def check_provider_adapter(
                         errors.append(
                             f"pricing_lock.json missing model entry with role='{required_role}'"
                         )
-                if "confirmation_constraints" not in lock:
-                    errors.append("pricing_lock.json missing 'confirmation_constraints'")
+            if "confirmation_constraints" not in lock:
+                errors.append("pricing_lock.json missing 'confirmation_constraints'")
+            # R03: pricing source must be flagged for re-verification
+            if not lock.get("verification_required", False):
+                errors.append(
+                    "pricing_lock.json: verification_required must be true — "
+                    "pricing source must be re-verified before any confirmation run"
+                )
+            # R03: introductory rate expiry must be documented
+            models = lock.get("models", [])
+            agent_model = next((m for m in models if m.get("role") == "agent"), None)
+            if agent_model and "introductory_expires" not in agent_model:
+                errors.append(
+                    "pricing_lock.json agent model missing 'introductory_expires' — "
+                    "rate expiry must be documented so lock is re-checked before confirmation"
+                )
         except Exception as exc:
             errors.append(f"pricing_lock.json parse error: {exc}")
 
@@ -444,7 +538,8 @@ def check_provider_adapter(
         "errors": errors,
         "passed": len(errors) == 0,
         "evidence": (
-            "provider.py and pricing_lock.json present with required structure."
+            "provider.py and pricing_lock.json present with required structure "
+            "including R03 fail-closed telemetry enforcement."
             if not errors else "; ".join(errors)
         ),
     }
@@ -489,6 +584,33 @@ def check_github_actions_workflow(
     # Check workflow is manual-trigger only (no automatic push triggers)
     if "on:\n  push:" in content or "on:\n  pull_request:" in content:
         errors.append("Workflow has automatic triggers (push/pull_request); must be manual only")
+
+    # R04: each job must emit an attestation (per-job contract)
+    required_attestation_stages = [
+        "preflight_attestation",
+        "generic_arm_attestation",
+        "configured_arm_attestation",
+        "blinding_attestation",
+        "evaluator_attestation",
+    ]
+    for stage_file in required_attestation_stages:
+        if stage_file not in content:
+            errors.append(
+                f"Workflow missing per-job attestation for '{stage_file}' — "
+                "R04 requires each stage to emit and upload an attestation record"
+            )
+
+    # R04: integrity job must validate the attestation chain
+    if "aggregate_attestations" not in content:
+        errors.append(
+            "Workflow integrity job does not call aggregate_attestations — "
+            "R04 requires chain validation before producing the integrity report"
+        )
+    if "ChainValidationError" not in content:
+        errors.append(
+            "Workflow integrity job does not handle ChainValidationError — "
+            "chain validation failures must be fatal"
+        )
 
     return {
         "requirement": "github_actions_workflow",
@@ -721,17 +843,21 @@ def build_requirements_matrix(
     rubric_path: Path | None = None,
     hash_paths: dict[str, Path] | None = None,
     preregistration_path: Path | None = None,
+    vault_root: Path | None = None,
 ) -> list[Requirement]:
     """
     Build and return the full R01–R09 requirements matrix.
 
     Feasible checks (R06–R09) are run here.
     Blocked requirements (R01–R05) are always BLOCKED with no mock bypass.
+
+    vault_root: optional explicit path to the Project 008 vault for R08
+    vault-hash verification.  Falls back to PROJECT008_PATH env var.
     """
     # Run the three feasible checks
     corpus_result = check_corpus_facade_enforced(corpus_path)
     rubric_result = check_rubric_calibration(rubric_path)
-    hash_result   = check_hash_reverification(hash_paths)
+    hash_result   = check_hash_reverification(hash_paths, vault_root=vault_root)
     prereg_result = check_preregistration_checklist(preregistration_path)
 
     matrix: list[Requirement] = [
@@ -907,9 +1033,9 @@ def build_requirements_matrix(
             req_id="R08",
             category=RequirementCategory.HASHES,
             description=(
-                "All frozen inputs re-hashed and confirmed against "
-                "PREREGISTRATION_DRAFT.md values; vault-dependent hashes "
-                "require Project 008 on disk."
+                "All eight frozen inputs re-hashed and confirmed against "
+                "PREREGISTRATION_DRAFT.md values: six local artifacts plus "
+                "corpus_manifest and indexed_body from Project 008 vault."
             ),
             status=(
                 RequirementStatus.SATISFIED
@@ -917,18 +1043,21 @@ def build_requirements_matrix(
                 else RequirementStatus.PENDING
             ),
             evidence=(
-                f"all {len(LOCAL_HASH_KEYS)} local hashes match; "
-                "vault hashes require Project 008 for final verification"
+                f"all {len(LOCAL_HASH_KEYS)} local hashes match and "
+                "corpus_manifest + indexed_body vault hashes verified"
                 if hash_result["passed"]
-                else "; ".join(hash_result["errors"])
+                else (
+                    "; ".join(hash_result["vault_errors"])
+                    if hash_result.get("vault_pending") and not hash_result["errors"]
+                    else "; ".join(hash_result["errors"] + hash_result.get("vault_errors", []))
+                )
             ),
             owner="local",
             unblock_condition=(
-                "All six local-artifact hashes must match. "
-                "corpus_manifest and indexed_body hashes must also be "
-                "verified once the Project 008 vault is present "
-                "(using corpus.manifest_content_commitment() and "
-                "corpus.indexed_content_commitment())."
+                "All six local-artifact hashes must match AND corpus_manifest "
+                "and indexed_body must be verified against the frozen commitments "
+                "in PREREGISTRATION_DRAFT.md. Set PROJECT008_PATH to the vault "
+                "root and re-run. Vault absence keeps R08 PENDING."
             ),
             required_for_confirmation=True,
             check_result=hash_result,
@@ -1037,6 +1166,7 @@ def run_preflight(
     rubric_path: Path | None = None,
     hash_paths: dict[str, Path] | None = None,
     preregistration_path: Path | None = None,
+    vault_root: Path | None = None,
 ) -> tuple[list[Requirement], dict[str, Any]]:
     """
     Run all nine readiness checks AND the Task-4 external-readiness
@@ -1059,6 +1189,7 @@ def run_preflight(
         rubric_path=rubric_path,
         hash_paths=hash_paths,
         preregistration_path=preregistration_path,
+        vault_root=vault_root,
     )
     unmet = [
         req.req_id
@@ -1078,6 +1209,8 @@ def run_diagnostic_preflight(
     rubric_path: Path | None = None,
     hash_paths: dict[str, Path] | None = None,
     preregistration_path: Path | None = None,
+    vault_root: Path | None = None,
+    skip_r08_vault: bool = False,
 ) -> tuple[list[Requirement], dict[str, Any]]:
     """
     Diagnostic-mode preflight: verifies locally feasible gates (R06–R09)
@@ -1088,6 +1221,12 @@ def run_diagnostic_preflight(
 
     Use this in dry_run / diagnostic pipeline mode to allow downstream jobs
     to exercise the full synthetic data flow without live secrets.
+
+    skip_r08_vault : set True in purely synthetic pipelines that have no
+        access to the Project 008 vault.  R08 vault-pending is not raised,
+        but the matrix still records vault_pending=True so human reviewers
+        see that vault verification has not been performed.  Must not be
+        used in any run that will be presented as confirmation evidence.
     """
     infra = _run_infra_checks()
 
@@ -1096,16 +1235,25 @@ def run_diagnostic_preflight(
         rubric_path=rubric_path,
         hash_paths=hash_paths,
         preregistration_path=preregistration_path,
+        vault_root=vault_root,
     )
 
-    # Only check locally verifiable requirements
+    # Only check locally verifiable requirements; optionally exclude R08
+    # vault gate when explicitly skipped by a synthetic-only caller.
     local_ids = {"R06", "R07", "R08", "R09"}
-    unmet_local = [
-        req.req_id
-        for req in matrix
-        if req.req_id in local_ids
-        and req.status != RequirementStatus.SATISFIED
-    ]
+    unmet_local = []
+    for req in matrix:
+        if req.req_id not in local_ids:
+            continue
+        if req.status == RequirementStatus.SATISFIED:
+            continue
+        if req.req_id == "R08" and skip_r08_vault:
+            r08_result = req.check_result
+            if r08_result.get("vault_pending") and not r08_result.get("errors"):
+                # Only skip when the sole failure is vault-absent; local hashes are fine
+                continue
+        unmet_local.append(req.req_id)
+
     if unmet_local:
         exc = DiagnosticPreflightFailed(unmet_local, matrix)
         exc.infra_checks = infra  # type: ignore[attr-defined]

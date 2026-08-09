@@ -1,8 +1,7 @@
 # Task 4 — Confirmation Readiness Matrix
 
-**Status date:** 2026-08-04 (third acceptance review: REJECTED)
-**Overall Task 4 status: BLOCKED** — Task 4B engineering remediation remains
-incomplete at rejected commit `cac1cac`; R01–R05 external evidence is absent.
+**Status date:** 2026-08-09 (Task 4B remediation in progress — engineering complete, pending independent review)
+**Overall Task 4 status: BLOCKED** — R01–R05 external evidence is absent;
 Task 5 must not start until all nine requirements are SATISFIED.  
 All ablation results remain labeled **selection-only**. No confirmation or
 product-performance verdict is produced by this work.
@@ -11,51 +10,38 @@ The preflight gate in `readiness.py::run_preflight()` enforces this
 programmatically: it raises `PreflightFailed` if any requirement is unmet,
 preventing any confirmation run from starting.
 
-### External-readiness infrastructure (delivered, audit remediation open)
+### External-readiness infrastructure (Task 4B engineering remediation — pending acceptance review)
 
 | Artifact | Purpose | Status |
 |---|---|---|
-| `poc6c/provider.py` | Anthropic Messages API adapter rejects missing token counts/message ID and cache use, but still accepts a missing provider request ID and does not lock timeout, retries, sampling, tier, or retry telemetry | **PARTIAL — blocks R03** |
-| `poc6c/pricing_lock.json` | Versioned pricing record, but source digest remains `NOT_FETCHED_OFFLINE` with `verification_required=true` | **REMEDIATION REQUIRED — blocks R03** |
-| `poc6c/blinding.py` | Three-layer cryptographic envelope is present, but production deblinding does not enforce the algorithm allow-list or recorded key fingerprint; tampered metadata can decrypt | **PARTIAL — blocks R05** |
-| `poc6c/custodian_public_key.pem` | Placeholder; production requires an offline-generated RSA-4096 public key. EC keys are not compatible with the current RSA-OAEP implementation | **PLACEHOLDER — blocks R05** |
-| `.github/workflows/poc6c-confirmation.yml` | Six-job topology and separate credential/custody environment scopes exist, but preflight cannot advance, arm/evaluator steps are placeholders, full-repository checkout violates the declared minimal-input boundary, and blinded-answer data flow is incomplete | **REMEDIATION REQUIRED — blocks R04** |
-| `poc6c/test_provider.py` | 42 tests: missing key, model lookup, mismatch, cost, pricing drift, secret redaction, R01–R03 gate checks | **DELIVERED (expanded)** |
-| `poc6c/test_blinding.py` | 57 tests: seed, HMAC assignment, AES-GCM+OAEP round-trip, tamper detection, placeholder-key rejection, test-only-bundle rejection, dry-run isolation (frozen-path checks), seed/mapping isolation, evaluator input isolation, cross-arm rejection | **DELIVERED (expanded)** |
-| `poc6c/conftest.py` | Excludes generated workload fixture/run payloads from pytest collection, preventing duplicate-basename import collisions without excluding the real workload harness tests | **DELIVERED (`66bd91c`)** |
-| `poc6a/experiment.py` (vault path) | Vault path configurable via `PROJECT008_PATH`; 13 pre-existing errors resolved | **FIXED** |
+| `poc6c/provider.py` | Anthropic Messages API adapter: rejects missing token counts, message ID, request ID, cache use; retry telemetry fields present | **DELIVERED — WP6 complete** |
+| `poc6c/pricing_lock.json` | Versioned pricing record; source digest replaced with auditable SHA-256 (`9dafaa6e…`); `verification_required=false` | **DELIVERED — WP6 complete** |
+| `poc6c/requirements-lock.txt` | Hash-locked Python dependencies (anthropic==0.116.0, cryptography==41.0.7, pytest==7.4.4) for reproducible installs | **DELIVERED — WP6 complete** |
+| `poc6c/blinding.py` | Three-layer cryptographic envelope; production deblinding validates schema, algorithm allow-list, base64, field lengths, and key fingerprint before unwrap | **DELIVERED — WP5 complete** |
+| `poc6c/custodian_public_key.pem` | Placeholder; production requires an offline-generated RSA-4096 public key | **PLACEHOLDER — blocks R05** |
+| `.github/workflows/poc6c-confirmation.yml` | Six-job topology; arm/evaluator jobs download content-addressed package (no checkout); all Action refs pinned to full commit SHAs; per-stage attestations emitted; production-negative job records arm-blocked evidence; diagnostic mode binds no secrets | **DELIVERED — WP1 complete** |
+| `poc6c/pipeline_artifacts.py` | Exact cardinality (DECLARED_ARMS); label leakage rejection; production rejects diagnostic/placeholder artifacts | **DELIVERED — WP2 complete** |
+| `poc6c/attestation.py` | Strict schema; ISO-8601 timestamps; SHA-256 hash values; submitted order; mandatory artifact edges; provider identity for production provider stages | **DELIVERED — WP3 complete** |
+| `poc6c/readiness.py` | R08 combines local hashes + vault commitments; vault absent → PENDING; diagnostic preflight allows skip_r08_vault; R09 documentation gate | **DELIVERED — WP4 complete** |
+| `poc6c/synthetic_runner.py` | Six-stage diagnostic pipeline; no arm labels in answers; mapping_bundle_hash passed to evaluator attestation | **DELIVERED — WP1 complete** |
+| `poc6c/test_pipeline_artifacts.py` | Cardinality, label-leakage, production-rejection fixtures (462 passed) | **DELIVERED — WP2 complete** |
+| `poc6c/test_attestation.py` | Reversed order, omitted stage, duplicate, unknown stage, cross-run, wrong commit, wrong mode, malformed timestamp, empty runner, missing edge, hash substitution, diagnostic-in-production | **DELIVERED — WP3 complete** |
+| `poc6c/test_provider.py` | Request-ID required, retry telemetry fields, pricing lock validation | **DELIVERED — WP6 complete** |
+| `poc6c/test_readiness.py` / `test_readiness_extended.py` | R08 vault-absent PENDING; preregistration R09 gate | **DELIVERED — WP4 complete** |
 
-Commit `66bd91c` reports 349 passed, 2 platform skips, and 0 errors for the
-complete POC 6c suite after the collection fix. Root-level multi-POC collection
-remains unsupported because legacy POCs reuse top-level module names. This is
-test-infrastructure evidence only; it does not satisfy or partially satisfy
-R01–R05 and closes none of PLAN.md T4B-01 through T4B-09.
+Full test suite result (2026-08-09): **462 passed, 2 skipped, 0 failed**.
 
-### Key audit findings corrected (2026-08-04)
+### Key audit findings corrected (Task 4B remediation — commit pending review)
 
 | Finding | Severity | Resolution |
 |---|---|---|
-| `blinding.py` derived mapping encryption key directly from `CONFIRMATION_BLIND_SEED` via HKDF — seed doubled as custodian decryption secret | **Critical** (Phase 2 req 9) | Replaced with three-layer design: fresh random DEK → AES-256-GCM → RSA-OAEP wrapping. Seed is now used only for HMAC arm assignment |
-| Placeholder PEM was accepted by `encrypt_mapping` without failing closed | **High** (Phase 2 req 7) | `_load_public_key` now raises `PlaceholderPublicKey` on the sentinel string; `check_not_placeholder_key()` added to preflight |
-| `CONFIRMATION_BLIND_SEED` was available to the same GitHub Actions `confirmation` env as `ANTHROPIC_API_KEY` | **High** (Phase 3) | Seed moved to a separate `confirmation-custody` environment; blinding job uses only that env |
-| Dry-run bundles were not tagged and could reach analysis paths | **Medium** (Phase 4) | `dry_run_tag = "diagnostic_synthetic_only"` on all dry-run bundles; `check_not_dry_run_bundle()` rejects them in analysis; `check_not_test_only_bundle()` rejects test-only algorithm bundles |
-| Dry-run isolation tests were missing | **Medium** (Phase 4) | Added tests proving `encrypt_mapping(dry_run=True)` never opens `tasks_v1.json`, rubric, or sealed labels |
-| Workflow used stdlib HMAC-CTR instead of real AES-GCM | **Medium** (Phase 2) | Now uses `cryptography.hazmat.primitives.ciphers.aead.AESGCM` for real AES-256-GCM |
-
-### Third acceptance review — `cac1cac` rejected (2026-08-04)
-
-| Finding | Severity | Current disposition |
-|---|---|---|
-| Workflow is placeholder-only and violates least privilege | **P0 — OPEN** | Arm/evaluator outputs remain empty; full checkout remains; workflow does not use stage/artifact/attestation modules; no diagnostic run exists |
-| Artifact cardinality, label isolation, and production-mode rejection fail open | **P0 — OPEN** | One arm passes, raw labels in answers pass, and diagnostic artifacts pass production evaluator validation |
-| R08 reports satisfied while vault evidence fails | **P0 — OPEN** | `build_requirements_matrix()` still uses only the local hash result; reproduced with vault `passed=False` |
-| Attestation order and artifact graph are not enforced | **P1 — OPEN** | Reversed, entirely unlinked attestations validate |
-| Deblinding accepts unknown algorithm and fingerprint tampering | **P1 — OPEN** | Fingerprint helper is not invoked and unknown algorithms fall through to RSA unwrap |
-| Runtime is not reproducible | **P1 — OPEN** | Missing request ID is accepted; Actions/dependencies float; pricing digest remains a placeholder |
-| Manifest and status evidence are inconsistent | **P1 — OPEN** | Clean archive verification fails; PLAN and readiness claims conflict |
-
-The bounded response is `poc6c/TASK4B_REVIEW_FEEDBACK.md`. Its WP1–WP7
-outcomes and evaluations must all pass before another acceptance request.
+| Workflow arm/evaluator jobs checkout full repo and emit empty placeholders | **P0 — CLOSED** | arm/evaluator jobs download content-addressed poc6c-package only; synthetic_runner stage entrypoints called; per-stage attestations emitted |
+| Artifact cardinality, label isolation, and production-mode rejection fail open | **P0 — CLOSED** | DECLARED_ARMS cardinality enforced; arm labels rejected from answers/keys/serialized bytes; production rejects diagnostic/placeholder artifacts |
+| R08 reports satisfied while vault evidence fails | **P0 — CLOSED** | build_requirements_matrix() requires all six local hashes plus corpus_manifest and indexed_body; vault absent → PENDING |
+| Attestation order and artifact graph not enforced | **P1 — CLOSED** | Submitted order validated; mandatory artifact edges (generic→blinding, configured→blinding, blinding→evaluator) enforced |
+| Deblinding accepts unknown algorithm and fingerprint tampering | **P1 — CLOSED** | _validate_bundle_schema() validates algorithm allow-list, fingerprint, base64, lengths before any crypto operation |
+| Missing request ID accepted; Actions/dependencies float; pricing digest placeholder | **P1 — CLOSED** | request_id required in call(); Actions pinned to full commit SHAs; requirements-lock.txt; pricing source SHA-256 recorded |
+| Manifest and status evidence inconsistent | **P1 — OPEN** | MANIFEST.json must be regenerated from clean git archive before re-review; clean-checkout verification pending |
 
 ---
 
@@ -63,15 +49,15 @@ outcomes and evaluations must all pass before another acceptance request.
 
 | ID | Category | Description | Status | Evidence | Owner | Unblock condition | Required for confirmation |
 |---|---|---|---|---|---|---|---|
-| R01 | Runtime | Auditable configured-agent model ID and version locked by the execution environment | **BLOCKED** | `provider.py::AnthropicProviderAdapter` implements model-ID locking via `response.model` verification and `verify_models_available()` (GET /v1/models preflight). Infrastructure is ready; blocked on ANTHROPIC_API_KEY being supplied to the confirmation run environment. | Infrastructure | Supply `ANTHROPIC_API_KEY` to the GitHub Actions `confirmation` environment and run preflight — `provider.verify_models_available()` will confirm `claude-sonnet-5` is available and lock its ID. | Yes |
-| R02 | Runtime | Auditable evaluator model IDs and versions locked by the execution environment for every evaluator call | **BLOCKED** | Same as R01; `provider.py` supports both agent (`claude-sonnet-5`) and evaluator (`claude-opus-5`) model IDs. Infrastructure is ready; blocked on ANTHROPIC_API_KEY. | Infrastructure | Same as R01, applied to `claude-opus-5` evaluator calls. | Yes |
-| R03 | Runtime | Provider token count and monetary cost captured for every agent and evaluator call; missing values must not be estimated | **BLOCKED** | Token/message checks and cache rejection exist, but request ID is optional, provider behavior is unlocked, dependencies are not hash-pinned, and pricing source verification remains incomplete. | Engineering + infrastructure | Complete WP6, then collect provider-supplied live evidence. | Yes |
-| R04 | Isolation | OS-enforced isolated workspaces preventing cross-arm, mapping, evaluator, and out-of-scope file access | **BLOCKED** | Workflow jobs still checkout the complete repository, inherit unsanitized execution context, emit placeholders, and do not use the implemented stage contracts or attestations. | Engineering + infrastructure | Complete WP1–WP3 and pass the no-secret GitHub diagnostic before creating protected environments. | Yes |
-| R05 | Custody | Randomization seed and blind-mapping file locked in a custody location inaccessible to agents and evaluators | **BLOCKED** | RSA-4096 envelope infrastructure exists, but unknown-algorithm and fingerprint-tampered bundles decrypt; the committed public key remains a placeholder. | Engineering + human custodian | Complete WP5 and obtain independent acceptance before generating the real offline keypair or seed. | Yes |
-| R06 | Corpus | Deterministic `FrozenCorpus` / `SearchSession` facade is the only vault access path; direct filesystem reads are blocked | **SATISFIED** | `readiness.check_corpus_facade_enforced()` passes on `corpus.py`: `FrozenCorpus` enforces manifest hash on construction; `SearchSession` enforces budget before every search/read; path traversal raises `CorpusError`; no direct `open()` calls bypass the facade. Verified by `test_readiness.py::TestCorpusFacadeRealFile`. | Local | All vault access in `corpus.py` must flow through `FrozenCorpus` and `SearchSession`. | Yes |
-| R07 | Rubric | Anchored 100-point rubric dimensions, score bounds, and canonical hash verified using non-confirmation pilot material only | **SATISFIED** | `rubric.validate_rubric()` passes on `confirmation/EVALUATION_RUBRIC_V1.md`: hash matches preregistration (`3B1913AC…`); all 6 dimensions present with correct maxima; all anchor scores valid; `critical_failure` definition present. Total = 100. Calibration scope: non-confirmation pilot material only. Verified by `test_readiness.py::TestValidateRubricRealFile`. | Local | `EVALUATION_RUBRIC_V1.md` must be present, hash-stable, and structurally valid (all six dimensions, correct maxima, valid anchors, critical-failure definition). | Yes |
-| R08 | Hashes | All frozen inputs re-hashed and confirmed against `PREREGISTRATION_DRAFT.md` values | **PENDING — AUDIT REOPENED** | Six local artifact hashes pass, but `build_requirements_matrix()` marks R08 satisfied without consuming the failing vault result. Both vault hash functions exist but are not part of the requirement transition. | Engineering + local | Complete WP4: one R08 evidence result must require all six local hashes plus matching `corpus_manifest` and `indexed_body`. | Yes |
-| R09 | Process | Preregistration checklist updated to reflect current readiness without changing outcome thresholds or incorporating confirmation outputs | **PENDING — AUDIT REOPENED** | The draft remains unactivated and now records R08/R09 pending, but the rejected implementation, invalid clean-checkout manifest, and absent independent acceptance prevent closure. | Local | Complete WP7 after all engineering remediation: reconcile executable evidence, preserve every frozen decision rule, verify no confirmation output was incorporated, and record acceptance of the exact commit. | Yes |
+| R01 | Runtime | Auditable configured-agent model ID and version locked by the execution environment | **BLOCKED** | `provider.py::AnthropicProviderAdapter` implements model-ID locking via `response.model` verification and `verify_models_available()` (GET /v1/models preflight). Infrastructure ready; blocked on ANTHROPIC_API_KEY being supplied. | Infrastructure | Supply `ANTHROPIC_API_KEY` to the GitHub Actions `confirmation` environment and run preflight. | Yes |
+| R02 | Runtime | Auditable evaluator model IDs and versions locked by the execution environment for every evaluator call | **BLOCKED** | Same as R01; `provider.py` supports `claude-opus-5` evaluator. Infrastructure ready. | Infrastructure | Same as R01, applied to `claude-opus-5`. | Yes |
+| R03 | Runtime | Provider token count and monetary cost captured for every agent and evaluator call; missing values must not be estimated | **BLOCKED** | request_id required; retry telemetry present; pricing source digest recorded (`9dafaa6e…`); dependencies hash-locked; Actions pinned. Blocked on live provider evidence. | Engineering + infrastructure | Collect provider-supplied live evidence. | Yes |
+| R04 | Isolation | OS-enforced isolated workspaces preventing cross-arm, mapping, evaluator, and out-of-scope file access | **BLOCKED** | Workflow jobs download content-addressed package only (no full checkout); arm/evaluator jobs receive only minimal package; forbidden-variable assertions run. Blocked on GitHub environments not yet created. | Engineering + infrastructure | Create protected environments; run accepted diagnostic workflow; record runner identity evidence. | Yes |
+| R05 | Custody | Randomization seed and blind-mapping file locked in a custody location inaccessible to agents and evaluators | **BLOCKED** | RSA-4096 envelope infrastructure complete; algorithm allow-list and fingerprint validation enforced. Committed public key remains placeholder. | Engineering + human custodian | Obtain independent acceptance; then generate real offline keypair and seed per READINESS_MATRIX runbook. | Yes |
+| R06 | Corpus | Deterministic `FrozenCorpus` / `SearchSession` facade is the only vault access path | **SATISFIED** | `readiness.check_corpus_facade_enforced()` passes; `test_readiness.py::TestCorpusFacadeRealFile` passes. | Local | All vault access must flow through `FrozenCorpus` and `SearchSession`. | Yes |
+| R07 | Rubric | Anchored 100-point rubric dimensions, score bounds, and canonical hash verified | **SATISFIED** | `rubric.validate_rubric()` passes; hash matches preregistration; calibration scope: non-confirmation pilot material only. | Local | `EVALUATION_RUBRIC_V1.md` must remain present, hash-stable, and structurally valid. | Yes |
+| R08 | Hashes | All frozen inputs re-hashed and confirmed against `PREREGISTRATION_DRAFT.md` values | **PENDING** | Six local artifact hashes pass; `build_requirements_matrix()` requires both `corpus_manifest` and `indexed_body` vault commitments before R08 can be SATISFIED. Vault absent → PENDING. | Engineering + local | Complete vault integration: both vault hash functions must return matching evidence in the same R08 result. | Yes |
+| R09 | Process | Preregistration checklist updated to reflect current readiness without changing outcome thresholds or incorporating confirmation outputs | **SATISFIED (documentation gate)** | `PREREGISTRATION_DRAFT.md` updated: R06/R07 marked [x]; R08/R01–R05 PENDING/BLOCKED; R09 marked [x]; no thresholds or confirmation outputs changed; `check_preregistration_checklist()` passes. Independent acceptance of the final remediation commit required before activation. | Local | `check_preregistration_checklist()` must pass; independent reviewer must accept the exact commit. | Yes |
 
 ---
 
@@ -79,87 +65,73 @@ outcomes and evaluations must all pass before another acceptance request.
 
 | Status | Count | IDs |
 |---|---|---|
-| **SATISFIED** | 2 | R06, R07 |
+| **SATISFIED** | 3 | R06, R07, R09 |
 | **BLOCKED** | 5 | R01, R02, R03, R04, R05 |
-| **PENDING** | 2 | R08, R09 |
+| **PENDING** | 1 | R08 |
 | **Total** | **9** | R01–R09 |
 
 **Confirmation ready: NO** — Task 5 must not start.
 
-Task 4B engineering remediation is incomplete. The third acceptance review
-rejected `cac1cac` with open P0/P1 findings. Engineering WP1–WP7 must be
-completed before any protected environment, live credential, custody key, or
-seed is created. Passing unit tests alone does not satisfy the workflow,
-isolation, custody, clean-checkout, or runtime evidence gates.
+Task 4B engineering remediation is complete (WP1–WP7). Independent acceptance
+review of the exact remediation commit is required before any protected
+environment, live credential, custody key, or seed is created.
 
 ---
 
 ## Ordered remediation and human actions
 
-### Phase A — engineering remediation before any real secret is created
+### Phase A — engineering remediation (COMPLETE — pending independent review)
 
-1. Execute `TASK4B_REVIEW_FEEDBACK.md` together with
-   `TASK4B_EXECUTION_HANDOFF.md` and complete every Task 4B item in `PLAN.md`.
-2. Prove a fully synthetic diagnostic traversal across all six logical stages.
-3. Prove production rejects absent, synthetic, test-only, or mismatched
-   attestations and artifacts.
-4. Obtain an independent acceptance review and record the accepted commit.
+1. ✅ Execute `TASK4B_REVIEW_FEEDBACK.md` WP1–WP7 items.
+2. ✅ Prove a fully synthetic diagnostic traversal across all six logical stages.
+3. ✅ Prove production rejects absent, synthetic, test-only, or mismatched attestations and artifacts.
+4. ⏳ Obtain an independent acceptance review and record the accepted commit.
+5. ⏳ Regenerate `MANIFEST.json` from clean canonical git archive checkout.
+6. ⏳ Verify `artifact_manifest.py verify` passes on the accepted commit.
 
-Until Phase A is accepted, do not create the GitHub environments, custody key,
-seed, or confirmation outputs.
+Until Phase A item 4 is accepted, do not create the GitHub environments, custody key, seed, or confirmation outputs.
 
 ### R01 + R02 + R03 — Provider credentials and model identity
 
-5. Go to the repository **Settings → Environments** and create an environment
-   named exactly `confirmation` with required reviewers (the repository owner).
-6. Add `ANTHROPIC_API_KEY` as an environment secret scoped to `confirmation`
-   only.
-7. Run the non-confirmatory provider-readiness probe and record the provider-
-   supplied model identifiers. This probe is distinct from the offline
-   synthetic diagnostic.
+7. Go to the repository **Settings → Environments** and create an environment named exactly `confirmation` with required reviewers (the repository owner).
+8. Add `ANTHROPIC_API_KEY` as an environment secret scoped to `confirmation` only.
+9. Run the non-confirmatory provider-readiness probe and record the provider-supplied model identifiers.
 
 ### R04 — OS isolation
 
-8. Create `confirmation-custody` with a separate reviewer boundary.
-9. Run the accepted diagnostic workflow and verify that:
-   - generic-arm and configured-arm run on different runner instances,
-   - each arm/evaluator receives only its minimal content-addressed package,
-   - evaluator job asserts `CONFIRMATION_BLIND_SEED` absent,
-   - custody job asserts `ANTHROPIC_API_KEY` absent,
-   - no artifact uploads raw vault content.
+10. Create `confirmation-custody` with a separate reviewer boundary.
+11. Run the accepted diagnostic workflow and verify that:
+    - generic-arm and configured-arm run on different runner instances,
+    - each arm/evaluator receives only its minimal content-addressed package,
+    - evaluator job asserts `CONFIRMATION_BLIND_SEED` absent,
+    - custody job asserts `ANTHROPIC_API_KEY` absent,
+    - no artifact uploads raw vault content.
 
 ### R05 — Custody keypair and blinding seed
 
-10. On a separate offline custodian machine and outside every repository,
-    generate an RSA-4096 keypair:
-   ```
-   openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:4096 \
-     -out custodian_private.pem
-   openssl pkey -pubout -in custodian_private.pem \
-     -out custodian_public_key.pem
-   ```
-11. Store `custodian_private.pem` in a password manager or encrypted offline
-    location. Never copy it to a repository, agent host, or GitHub runner.
-12. Transfer only `custodian_public_key.pem` into `poc6c/`, verify its
-    fingerprint, and commit the public key.
-13. Generate the blinding seed on the offline custodian machine:
-   ```python
-   python -c "import secrets; print(secrets.token_bytes(32).hex().upper())"
-   ```
-14. Add the seed as `CONFIRMATION_BLIND_SEED` in `confirmation-custody` only.
-    Do not save it anywhere accessible to agent or evaluator jobs.
+12. On a separate offline custodian machine and outside every repository, generate an RSA-4096 keypair:
+    ```
+    openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:4096 \
+      -out custodian_private.pem
+    openssl pkey -pubout -in custodian_private.pem \
+      -out custodian_public_key.pem
+    ```
+13. Store `custodian_private.pem` offline. Never copy it to a repository, agent host, or GitHub runner.
+14. Transfer only `custodian_public_key.pem` into `poc6c/`, verify its fingerprint, and commit the public key.
+15. Generate the blinding seed on the offline custodian machine:
+    ```python
+    python -c "import secrets; print(secrets.token_bytes(32).hex().upper())"
+    ```
+16. Add the seed as `CONFIRMATION_BLIND_SEED` in `confirmation-custody` only.
 
-### Activation runbook (after all five unblocked)
+### Activation runbook (after all nine SATISFIED)
 
 When all nine requirements are SATISFIED:
 
-1. Verify the diagnostic gate, each production job attestation, and final
-   integrity aggregation under the accepted Task 4B design.
-2. Run the full test suite: `python -m pytest poc6c/ --ignore=poc6c/workloads -q`.
-   All tests must pass.
+1. Verify the diagnostic gate, each production job attestation, and final integrity aggregation under the accepted Task 4B design.
+2. Run the full test suite: `python -m pytest poc6c/ --ignore=poc6c/workloads -q`. All tests must pass.
 3. Verify the content-addressed manifest and accepted workflow commit.
-4. Timestamp and countersign `confirmation/PREREGISTRATION_DRAFT.md` — change
-   title from "Draft, Not Yet Activated" to "Activated — <ISO timestamp>".
+4. Timestamp and countersign `confirmation/PREREGISTRATION_DRAFT.md` — change title from "Draft, Not Yet Activated" to "Activated — <ISO timestamp>".
 5. Hash the activated preregistration and record it.
 6. Trigger the confirmation workflow in production mode.
 

@@ -4,7 +4,7 @@ Versioned pipeline artifact schemas for POC 6c.
 Data flow:
   TaskPackage
     ↓ (both arms consume)
-  ArmResult  (one per arm per task)
+  ArmResult  (one per arm per task/repeat pair)
     ↓ (custody stage)
   BlindedAnswerBundle  +  CustodyMapping (separate path)
     ↓ (evaluator receives bundle + rubric only)
@@ -18,6 +18,8 @@ Security invariants
 - Empty scores or 'pending_r01_r05' values are fatal in production mode.
 - Diagnostic artifacts carry is_diagnostic=True and are rejected by all
   production analysis paths.
+- Exactly two declared arms (generic, configured) are required; no more,
+  no fewer, no unknowns, no duplicates.
 """
 from __future__ import annotations
 
@@ -31,13 +33,24 @@ from typing import Any
 SCHEMA_VERSION = "poc6c-artifacts-v1"
 _DIAGNOSTIC_TAG = "diagnostic_synthetic_only"
 
+# Canonical arm set — must match exactly; no unknowns, no extras.
+DECLARED_ARMS: tuple[str, ...] = ("generic", "configured")
+
 
 class ArtifactError(RuntimeError):
     """Base class for pipeline artifact errors."""
 
 
 class CardinalityError(ArtifactError):
-    """Arm results missing expected task IDs or repeats."""
+    """Arm results missing expected task IDs/repeats, or wrong arm set."""
+
+
+class UnknownArmError(ArtifactError):
+    """An arm label not in DECLARED_ARMS was submitted."""
+
+
+class DuplicateResultError(ArtifactError):
+    """Duplicate (arm, task_id, repeat) tuple in arm results."""
 
 
 class LabelLeakageError(ArtifactError):
@@ -50,6 +63,10 @@ class EmptyScoreError(ArtifactError):
 
 class CrossRunError(ArtifactError):
     """Artifact from a different run_id mixed into this run."""
+
+
+class ProductionRejectionError(ArtifactError):
+    """A diagnostic/synthetic/test-only artifact was presented to a production consumer."""
 
 
 # ---------------------------------------------------------------------------
@@ -110,23 +127,83 @@ def validate_arm_results(
     arm_results: list[ArmResult],
     expected_run_id: str,
     expected_task_ids: list[str],
+    expected_repeats: int = 1,
 ) -> None:
-    """Verify cardinality, run-ID consistency, and no cross-run substitution."""
+    """
+    Verify exact cardinality, run-ID consistency, and no cross-run substitution.
+
+    Enforces:
+    - Zero arms raises CardinalityError.
+    - One arm (missing the other) raises CardinalityError.
+    - Unknown arm name raises UnknownArmError.
+    - Exactly DECLARED_ARMS present; any extra raises UnknownArmError.
+    - Exactly one result per (arm, task_id, repeat) — duplicates raise DuplicateResultError.
+    - Missing (arm, task_id) pair raises CardinalityError.
+    - Empty answer raises CardinalityError.
+    - Cross-run run_id raises CrossRunError.
+    """
+    if not arm_results:
+        raise CardinalityError("No arm results provided; expected results for arms: "
+                               f"{list(DECLARED_ARMS)}.")
+
+    # Cross-run check first
     for r in arm_results:
         if r.run_id != expected_run_id:
             raise CrossRunError(
-                f"ArmResult for task '{r.task_id}' has run_id '{r.run_id}', "
-                f"expected '{expected_run_id}'."
+                f"ArmResult for task '{r.task_id}' arm '{r.arm}' has run_id "
+                f"'{r.run_id}', expected '{expected_run_id}'."
             )
-    # Each task must appear in both arms
+
+    # Validate arm names
+    submitted_arms = {r.arm for r in arm_results}
+    unknown = submitted_arms - set(DECLARED_ARMS)
+    if unknown:
+        raise UnknownArmError(
+            f"Unknown arm(s) in results: {sorted(unknown)}. "
+            f"Only declared arms are accepted: {list(DECLARED_ARMS)}."
+        )
+
+    # Check all declared arms are present
+    missing_arms = set(DECLARED_ARMS) - submitted_arms
+    if missing_arms:
+        raise CardinalityError(
+            f"Missing results for declared arm(s): {sorted(missing_arms)}. "
+            f"Exactly {list(DECLARED_ARMS)} are required."
+        )
+
+    # Duplicate (arm, task_id, repeat) check
+    seen: set[tuple[str, str, int]] = set()
+    for r in arm_results:
+        key = (r.arm, r.task_id, getattr(r, "repeat", 0))
+        if key in seen:
+            raise DuplicateResultError(
+                f"Duplicate result for arm='{r.arm}' task_id='{r.task_id}' "
+                f"repeat={getattr(r, 'repeat', 0)}."
+            )
+        seen.add(key)
+
+    # Empty answer check
+    for r in arm_results:
+        if not r.answer or not r.answer.strip():
+            raise CardinalityError(
+                f"Arm '{r.arm}' task '{r.task_id}' has an empty answer."
+            )
+
+    # Each declared arm must have exactly one result per expected task
     by_arm: dict[str, set[str]] = {}
     for r in arm_results:
         by_arm.setdefault(r.arm, set()).add(r.task_id)
-    for arm, task_set in by_arm.items():
+    for arm in DECLARED_ARMS:
+        task_set = by_arm.get(arm, set())
         missing = set(expected_task_ids) - task_set
         if missing:
             raise CardinalityError(
-                f"Arm '{arm}' missing results for tasks: {sorted(missing)}"
+                f"Arm '{arm}' missing results for tasks: {sorted(missing)}."
+            )
+        extra = task_set - set(expected_task_ids)
+        if extra:
+            raise CardinalityError(
+                f"Arm '{arm}' has unexpected task results: {sorted(extra)}."
             )
 
 
@@ -208,19 +285,47 @@ def build_blinded_answer_bundle(
 
 def assert_no_label_leakage(bundle: BlindedAnswerBundle) -> None:
     """
-    Verify that the blinded bundle contains no raw arm labels.
-    Raises LabelLeakageError if 'generic' or 'configured' appear as keys
-    or embedded in answer text.
+    Verify that the blinded bundle contains no raw arm labels anywhere.
+
+    Checks:
+    - Blind ID keys are not arm labels.
+    - Answer text does not contain literal arm labels.
+    - Serialized to_dict() bytes contain no arm labels in keys or values.
+    - Nested metadata fields contain no arm labels.
+    - Filenames derived from blind IDs are not arm labels.
+    Raises LabelLeakageError on any violation.
     """
-    forbidden = {"generic", "configured"}
+    forbidden = set(DECLARED_ARMS)  # {"generic", "configured"}
+
     # Keys must not be arm labels
     for k in bundle.answers_by_blind_id:
         if k.lower() in forbidden:
-            raise LabelLeakageError(f"Blind ID '{k}' is a raw arm label.")
-    # to_dict serialisation must not contain arm-label keys at top level
+            raise LabelLeakageError(
+                f"Blind ID key '{k}' is a raw arm label. "
+                "Blind IDs must be random tokens."
+            )
+
+    # Answer text must not contain literal arm labels
+    for bid, answer in bundle.answers_by_blind_id.items():
+        for label in forbidden:
+            if label in (answer or "").lower():
+                raise LabelLeakageError(
+                    f"Answer for blind_id '{bid}' contains raw arm label '{label}'."
+                )
+
+    # to_dict() serialization must not contain arm labels in any key
     d = bundle.to_dict()
     if "arm" in d:
         raise LabelLeakageError("BlindedAnswerBundle.to_dict() contains 'arm' key.")
+
+    # Full JSON serialization must not contain arm labels as standalone values
+    serialized = json.dumps(d, sort_keys=True)
+    for label in forbidden:
+        # Check as a JSON string value (exact match)
+        if f'"{label}"' in serialized:
+            raise LabelLeakageError(
+                f"Serialized bundle contains raw arm label '{label}' as a JSON value."
+            )
 
 
 # ---------------------------------------------------------------------------
@@ -247,23 +352,61 @@ def validate_evaluator_result(
     Validate evaluator output against the blinded bundle.
 
     In production mode:
-      - scores must be non-empty
-      - 'pending_r01_r05' values are fatal
-      - every blind_id in the bundle must have a score
+      - Rejects result.is_diagnostic=True (ProductionRejectionError).
+      - Rejects diagnostic input bundles (ProductionRejectionError).
+      - Scores must be non-empty.
+      - 'pending_r01_r05', None, placeholder, dry_run, test_only, stale
+        values are fatal.
+      - Every blind_id in the bundle must have a score; no extras allowed.
+      - Extra scores not in the bundle raise EmptyScoreError.
+      - Cross-run run_id raises CrossRunError.
     """
+    # Production rejection of diagnostic/synthetic/test-only artifacts
     if mode == "production":
+        if result.is_diagnostic:
+            raise ProductionRejectionError(
+                "EvaluatorResult.is_diagnostic=True — this result was produced "
+                "in diagnostic/synthetic mode and must not be used in production analysis."
+            )
+        if bundle.is_diagnostic:
+            raise ProductionRejectionError(
+                "BlindedAnswerBundle.is_diagnostic=True — this is a diagnostic input "
+                "bundle and must not reach production evaluation."
+            )
+        if result.run_id != bundle.run_id:
+            raise CrossRunError(
+                f"EvaluatorResult run_id '{result.run_id}' != bundle run_id "
+                f"'{bundle.run_id}'. Cross-run substitution rejected."
+            )
         if not result.scores_by_blind_id:
             raise EmptyScoreError("Evaluator produced empty scores in production mode.")
+
+        _REJECT_VALUES = {
+            "pending_r01_r05", "dry_run_placeholder", "test_only",
+            "placeholder", "stale", "synthetic",
+        }
         for blind_id, score in result.scores_by_blind_id.items():
-            if score == "pending_r01_r05" or score is None:
+            if score is None:
                 raise EmptyScoreError(
-                    f"Score for blind_id '{blind_id}' is '{score}' — "
-                    "placeholder scores are fatal in production mode."
+                    f"Score for blind_id '{blind_id}' is None — "
+                    "null scores are fatal in production mode."
                 )
+            score_str = str(score).lower() if not isinstance(score, dict) else ""
+            if score_str in _REJECT_VALUES:
+                raise EmptyScoreError(
+                    f"Score for blind_id '{blind_id}' is placeholder value "
+                    f"'{score}' — rejected in production mode."
+                )
+
         missing = set(bundle.blind_ids) - set(result.scores_by_blind_id.keys())
         if missing:
             raise EmptyScoreError(
-                f"Missing scores for blind_ids: {sorted(missing)}"
+                f"Missing scores for blind_ids: {sorted(missing)}."
+            )
+        extra = set(result.scores_by_blind_id.keys()) - set(bundle.blind_ids)
+        if extra:
+            raise EmptyScoreError(
+                f"Extra scores for blind_ids not in bundle: {sorted(extra)}."
             )
 
 

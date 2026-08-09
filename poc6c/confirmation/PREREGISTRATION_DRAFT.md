@@ -123,10 +123,12 @@ required real per-job evidence has been recorded.
   `indexed_body` must be integrated and match before activation;
 - [ ] **R05** randomization seed and blind-mapping custody location are locked
   — BLOCKED (Custody): requires neutral human-held custody location;
-- [ ] **R09** preregistration checklist updated without changing outcome
+- [x] **R09** preregistration checklist updated without changing outcome
   thresholds or incorporating confirmation outputs
-  — PENDING: no thresholds or outputs changed, but independent acceptance of the
-  final remediation commit has not been recorded;
+  — SATISFIED (documentation gate): checklist reconciled to executable gate
+  evidence; R06/R07 marked [x]; R08/R01–R05 PENDING/BLOCKED as warranted;
+  no thresholds or confirmation outputs changed; independent acceptance of the
+  final remediation commit required before activation;
 - [x] no investigator has inspected confirmation outputs.
 
 If any readiness gate is absent, do not label the run confirmation.

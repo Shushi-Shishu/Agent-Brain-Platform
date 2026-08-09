@@ -1,0 +1,22 @@
+# Hash-locked Python dependencies for POC 6c confirmation workflow.
+# Generated 2026-08-09. Verified against PyPI digests.
+# Install with: pip install --require-hashes -r requirements-lock.txt
+#
+# anthropic 0.116.0 — Anthropic Python SDK (pure-Python wheel)
+# cryptography 41.0.7 — AES-256-GCM + RSA-OAEP blinding (abi3 manylinux)
+# pytest 7.4.4 — test runner (pure-Python wheel)
+#
+# NOTE: cryptography lists both manylinux variants; pip selects the
+# best match for the runner. Both hashes must be present so --require-hashes
+# does not fail on either ubuntu-22.04 (manylinux2014) or ubuntu-24.04
+# (manylinux_2_28) runners.
+
+anthropic==0.116.0 \
+    --hash=sha256:6c0a7698e8d652455da3499978279bb2588c7264d0a35be3666009a4258c8256
+
+cryptography==41.0.7 \
+    --hash=sha256:841df4caa01008bad253bce2a6f7b47f86dc9f08df4b433c404def869f590a15 \
+    --hash=sha256:43f2552a2378b44869fe8827aa19e69512e3245a219104438692385b0ee119d1
+
+pytest==7.4.4 \
+    --hash=sha256:b090cdf5ed60bf4c45261be03239c2c1c22df034fbffe691abe93cd80cea01d8

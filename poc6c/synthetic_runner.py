@@ -88,7 +88,7 @@ def _rubric_sha256() -> str:
 
 def _stage_preflight(run_id: str) -> Attestation:
     from readiness import run_diagnostic_preflight
-    run_diagnostic_preflight()
+    run_diagnostic_preflight(skip_r08_vault=True)
     corpus_hash = _sha256_str("synthetic-corpus-package")
     return create_attestation(
         stage            = "preflight",
@@ -114,7 +114,8 @@ def _run_arm(arm: str, run_id: str, task_ids: list[str]) -> tuple[list[ArmResult
 
     results: list[ArmResult] = []
     for task_id in task_ids:
-        answer = f"Synthetic answer from {arm} arm for task {task_id}. [{_DIAGNOSTIC_TAG}]"
+        # Answers must not contain raw arm labels (J3-03)
+        answer = f"Synthetic answer for task {task_id}. [{_DIAGNOSTIC_TAG}]"
         results.append(ArmResult(
             schema_version = SCHEMA_VERSION,
             run_id         = run_id,
@@ -151,7 +152,7 @@ def _stage_blinding(
     all_arm_results: list[ArmResult],
     run_id: str,
     task_ids: list[str],
-) -> tuple[BlindedAnswerBundle, CustodyMapping, Attestation]:
+) -> tuple[BlindedAnswerBundle, CustodyMapping, Attestation, str]:
     # Synthetic seed — never persisted
     seed = generate_seed()
     rubric_sha = _rubric_sha256()
@@ -178,24 +179,28 @@ def _stage_blinding(
     )
 
     bundle_hash = bundle.sha256()
+    mapping_bundle_hash = _sha256_str(json.dumps(mapping_bundle.to_dict(), sort_keys=True))
     att = create_attestation(
         stage            = "deterministic-blinding",
         mode             = PipelineMode.DIAGNOSTIC.value,
         run_id           = run_id,
         commit_sha       = _COMMIT_SHA,
         input_hashes     = {
-            "generic_arm_results":   _sha256_str(json.dumps(
+            "generic_arm_results":    _sha256_str(json.dumps(
                 [r.to_dict() for r in all_arm_results if r.arm == "generic"], sort_keys=True)),
             "configured_arm_results": _sha256_str(json.dumps(
                 [r.to_dict() for r in all_arm_results if r.arm == "configured"], sort_keys=True)),
         },
-        output_hashes    = {"blinded_answer_bundle": bundle_hash},
+        output_hashes    = {
+            "blinded_answer_bundle": bundle_hash,
+            "mapping_bundle":        mapping_bundle_hash,
+        },
         runner_identity  = _RUNNER_IDENTITY,
         timestamp_utc    = _now_utc(),
         provider_model_id = None,
         is_diagnostic    = True,
     )
-    return bundle, custody, att
+    return bundle, custody, att, mapping_bundle_hash
 
 
 # ---------------------------------------------------------------------------
@@ -204,6 +209,7 @@ def _stage_blinding(
 
 def _stage_evaluator(
     bundle: BlindedAnswerBundle,
+    mapping_bundle_hash: str,
     run_id: str,
 ) -> tuple[EvaluatorResult, Attestation]:
     # Evaluator receives ONLY: blinded bundle + rubric. Verify no labels present.
@@ -237,7 +243,10 @@ def _stage_evaluator(
         mode             = PipelineMode.DIAGNOSTIC.value,
         run_id           = run_id,
         commit_sha       = _COMMIT_SHA,
-        input_hashes     = {"blinded_answer_bundle": bundle.sha256()},
+        input_hashes     = {
+            "blinded_answer_bundle": bundle.sha256(),
+            "mapping_bundle":        mapping_bundle_hash,
+        },
         output_hashes    = {"evaluation_results": result_hash},
         runner_identity  = _RUNNER_IDENTITY,
         timestamp_utc    = _now_utc(),
@@ -343,11 +352,11 @@ def run_diagnostic_pipeline(
     all_arm_results = generic_results + configured_results
 
     # Stage 4
-    bundle, custody, att_blinding = _stage_blinding(all_arm_results, run_id, task_ids)
+    bundle, custody, att_blinding, mapping_bundle_hash = _stage_blinding(all_arm_results, run_id, task_ids)
     attestations.append(att_blinding)
 
     # Stage 5
-    eval_result, att_evaluator = _stage_evaluator(bundle, run_id)
+    eval_result, att_evaluator = _stage_evaluator(bundle, mapping_bundle_hash, run_id)
     attestations.append(att_evaluator)
 
     # Stage 6

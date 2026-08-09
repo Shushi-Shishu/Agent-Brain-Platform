@@ -49,6 +49,48 @@ def load_pricing_lock() -> dict[str, Any]:
     return json.loads(PRICING_LOCK_PATH.read_text(encoding="utf-8"))
 
 
+def validate_pricing_lock(lock: dict[str, Any] | None = None) -> None:
+    """
+    Validate the pricing lock for production use.
+
+    Raises PricingLockExpiredError if:
+    - source_sha256 is NOT_FETCHED_OFFLINE (not replaced with an auditable digest).
+    - verification_required is True (pricing must be re-verified before use).
+    - applicable_rate_expires date has passed (introductory rate expired).
+    - Any required key is missing.
+    """
+    import datetime
+    if lock is None:
+        lock = load_pricing_lock()
+
+    if lock.get("source_sha256", "") in ("NOT_FETCHED_OFFLINE", "", None):
+        raise PricingLockExpiredError(
+            "pricing_lock.json source_sha256 is 'NOT_FETCHED_OFFLINE'. "
+            "Fetch the Anthropic pricing page, compute its SHA-256, and replace "
+            "this sentinel before any confirmation run."
+        )
+    if lock.get("verification_required", False):
+        raise PricingLockExpiredError(
+            "pricing_lock.json has verification_required=true. "
+            "Re-verify the pricing source and clear this flag before confirmation."
+        )
+    expires = lock.get("applicable_rate_expires", "")
+    if expires:
+        try:
+            expiry_date = datetime.date.fromisoformat(expires)
+            today = datetime.date.today()
+            if today > expiry_date:
+                raise PricingLockExpiredError(
+                    f"pricing_lock.json applicable_rate expired on {expires} "
+                    f"(today is {today}). Re-lock the applicable rate before confirmation."
+                )
+        except ValueError:
+            raise PricingLockExpiredError(
+                f"pricing_lock.json applicable_rate_expires '{expires}' "
+                "is not a valid ISO date."
+            )
+
+
 def pricing_record_for_model(model_id: str) -> dict[str, Any]:
     """Return the pricing entry for the given model ID.  Raises KeyError if absent."""
     lock = load_pricing_lock()
@@ -99,15 +141,18 @@ class ResponseTelemetry:
     model_id_requested: str
     model_id_returned: str
     message_id: str | None
+    request_id: str | None           # HTTP request-id header — required for confirmation
     input_tokens: int | None
     output_tokens: int | None
     cache_creation_input_tokens: int | None
     cache_read_input_tokens: int | None
     stop_reason: str | None
-    http_request_id: str | None
+    http_request_id: str | None      # alias for request_id (same value)
     latency_ms: float
     pricing_lock_sha256: str
     provider_cost_usd: float | None
+    retry_count: int                  # number of retries attempted (0 = no retry)
+    retry_exhausted: bool             # True if all retries were consumed
 
     def to_dict(self) -> dict[str, Any]:
         return dataclasses.asdict(self)
@@ -139,6 +184,14 @@ class MissingUsage(ProviderAdapterError):
 
 class CacheUsageViolation(ProviderAdapterError):
     """Cache tokens were present when caching is disabled in the pricing lock."""
+
+
+class PricingLockExpiredError(ProviderAdapterError):
+    """The pricing lock applicable rate has expired or digest validation fails."""
+
+
+class RetryTelemetryError(ProviderAdapterError):
+    """Retry telemetry fields are missing or malformed."""
 
 
 # ---------------------------------------------------------------------------
@@ -291,6 +344,11 @@ class AnthropicProviderAdapter:
                 f"response.id (message_id) is absent for model '{model_id}'. "
                 "Provider-supplied message identity is required for confirmation."
             )
+        if not request_id:
+            raise MissingUsage(
+                f"HTTP request-id header is absent for model '{model_id}'. "
+                "Provider-supplied request identity is required for confirmation."
+            )
 
         # Reject cache usage when caching is disabled
         lock = self._pricing_lock
@@ -310,6 +368,7 @@ class AnthropicProviderAdapter:
             model_id_requested              = model_id,
             model_id_returned               = response.model,
             message_id                      = response.id,
+            request_id                      = request_id,
             input_tokens                    = input_tokens,
             output_tokens                   = output_tokens,
             cache_creation_input_tokens     = cache_create,
@@ -319,6 +378,8 @@ class AnthropicProviderAdapter:
             latency_ms                      = latency_ms,
             pricing_lock_sha256             = self._pricing_lock_sha,
             provider_cost_usd               = cost,
+            retry_count                     = 0,
+            retry_exhausted                 = False,
         )
 
         text_blocks = [b.text for b in response.content if b.type == "text"]
@@ -342,6 +403,7 @@ class AnthropicProviderAdapter:
             model_id_requested              = model_id,
             model_id_returned               = model_id,
             message_id                      = "msg_synthetic_fixture",
+            request_id                      = "req_synthetic_fixture",
             input_tokens                    = 100,
             output_tokens                   = 50,
             cache_creation_input_tokens     = None,
@@ -351,6 +413,8 @@ class AnthropicProviderAdapter:
             latency_ms                      = 0.0,
             pricing_lock_sha256             = self._pricing_lock_sha,
             provider_cost_usd               = cost,
+            retry_count                     = 0,
+            retry_exhausted                 = False,
         )
         return "Synthetic response for unit tests.", telemetry
 

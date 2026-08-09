@@ -13,9 +13,13 @@ from pipeline_artifacts import (
     BlindedAnswerBundle,
     CardinalityError,
     CrossRunError,
+    DuplicateResultError,
     EmptyScoreError,
     EvaluatorResult,
     LabelLeakageError,
+    ProductionRejectionError,
+    UnknownArmError,
+    DECLARED_ARMS,
     SCHEMA_VERSION,
     assert_no_label_leakage,
     build_blinded_answer_bundle,
@@ -29,19 +33,40 @@ _RUBRIC   = "RUBRICHASH"
 
 
 def _make_arm_results(run_id: str = _RUN_ID, tasks: list = _TASKS) -> list[ArmResult]:
+    """Create valid arm results with NO arm labels in answer text."""
     results = []
-    for arm in ("generic", "configured"):
+    for arm in DECLARED_ARMS:
         for task_id in tasks:
             results.append(ArmResult(
                 schema_version = SCHEMA_VERSION,
                 run_id         = run_id,
                 arm            = arm,
                 task_id        = task_id,
-                answer         = f"Answer from {arm} for {task_id}",
+                answer         = f"Synthetic answer for task {task_id}.",
                 telemetry      = {},
                 is_diagnostic  = True,
             ))
     return results
+
+
+def _make_production_bundle():
+    """Create a non-diagnostic bundle suitable for production validation tests."""
+    results = []
+    for arm in DECLARED_ARMS:
+        for task_id in _TASKS:
+            results.append(ArmResult(
+                schema_version = SCHEMA_VERSION,
+                run_id         = _RUN_ID,
+                arm            = arm,
+                task_id        = task_id,
+                answer         = f"Production answer for task {task_id}.",
+                telemetry      = {},
+                is_diagnostic  = False,
+            ))
+    bundle, _ = build_blinded_answer_bundle(
+        results, _RUN_ID, _TASKS, _RUBRIC, is_diagnostic=False
+    )
+    return bundle
 
 
 class TestValidateArmResults:
@@ -51,13 +76,52 @@ class TestValidateArmResults:
     def test_cross_run_id_raises(self):
         results = _make_arm_results()
         results[0] = ArmResult(SCHEMA_VERSION, "wrong-run", "generic", _TASKS[0],
-                                "x", {}, True)
+                                "answer text", {}, True)
         with pytest.raises(CrossRunError):
             validate_arm_results(results, _RUN_ID, _TASKS)
 
     def test_missing_task_raises(self):
         results = [r for r in _make_arm_results() if r.task_id != _TASKS[1] or r.arm != "generic"]
         with pytest.raises(CardinalityError):
+            validate_arm_results(results, _RUN_ID, _TASKS)
+
+    def test_no_arms_raises(self):
+        with pytest.raises(CardinalityError, match="No arm results"):
+            validate_arm_results([], _RUN_ID, _TASKS)
+
+    def test_one_arm_missing_raises(self):
+        results = [r for r in _make_arm_results() if r.arm == "generic"]
+        with pytest.raises(CardinalityError, match="Missing results"):
+            validate_arm_results(results, _RUN_ID, _TASKS)
+
+    def test_unknown_arm_raises(self):
+        results = _make_arm_results()
+        results[0] = ArmResult(SCHEMA_VERSION, _RUN_ID, "unknown_arm", _TASKS[0],
+                                "answer text", {}, True)
+        with pytest.raises(UnknownArmError):
+            validate_arm_results(results, _RUN_ID, _TASKS)
+
+    def test_duplicate_arm_task_raises(self):
+        results = _make_arm_results()
+        # Add duplicate
+        results.append(ArmResult(SCHEMA_VERSION, _RUN_ID, "generic", _TASKS[0],
+                                  "answer text", {}, True))
+        with pytest.raises(DuplicateResultError):
+            validate_arm_results(results, _RUN_ID, _TASKS)
+
+    def test_empty_answer_raises(self):
+        results = _make_arm_results()
+        results[0] = ArmResult(SCHEMA_VERSION, _RUN_ID, "generic", _TASKS[0],
+                                "", {}, True)
+        with pytest.raises(CardinalityError, match="empty answer"):
+            validate_arm_results(results, _RUN_ID, _TASKS)
+
+    def test_extra_task_raises(self):
+        results = _make_arm_results()
+        for arm in DECLARED_ARMS:
+            results.append(ArmResult(SCHEMA_VERSION, _RUN_ID, arm, "EXTRA-TASK",
+                                      "answer text", {}, True))
+        with pytest.raises(CardinalityError, match="unexpected"):
             validate_arm_results(results, _RUN_ID, _TASKS)
 
 
@@ -78,9 +142,8 @@ class TestBuildBlindedAnswerBundle:
     def test_no_arm_labels_in_bundle(self):
         bundle, _ = self._build()
         assert_no_label_leakage(bundle)
-        # Keys must not be 'generic' or 'configured'
         for bid in bundle.blind_ids:
-            assert bid.lower() not in ("generic", "configured")
+            assert bid.lower() not in DECLARED_ARMS
 
     def test_bundle_sha256_stable(self):
         bundle, _ = self._build()
@@ -90,7 +153,7 @@ class TestBuildBlindedAnswerBundle:
     def test_plain_mapping_contains_arm_labels(self):
         _, plain_mapping = self._build()
         arms_seen = {v["arm"] for v in plain_mapping.values()}
-        assert arms_seen == {"generic", "configured"}
+        assert arms_seen == set(DECLARED_ARMS)
 
 
 class TestAssertNoLabelLeakage:
@@ -112,52 +175,102 @@ class TestAssertNoLabelLeakage:
         with pytest.raises(LabelLeakageError):
             assert_no_label_leakage(bundle)
 
+    def test_arm_label_in_answer_text_raises(self):
+        bundle = BlindedAnswerBundle(
+            schema_version      = SCHEMA_VERSION,
+            run_id              = _RUN_ID,
+            blind_ids           = ["BLINDID01"],
+            answers_by_blind_id = {"BLINDID01": "This is the generic arm answer."},
+            rubric_sha256       = _RUBRIC,
+            is_diagnostic       = True,
+        )
+        with pytest.raises(LabelLeakageError, match="(?i)answer.*generic"):
+            assert_no_label_leakage(bundle)
+
+    def test_arm_label_in_serialized_value_raises(self):
+        bundle = BlindedAnswerBundle(
+            schema_version      = SCHEMA_VERSION,
+            run_id              = _RUN_ID,
+            blind_ids           = ["BLINDID01"],
+            answers_by_blind_id = {"BLINDID01": "generic"},
+            rubric_sha256       = _RUBRIC,
+            is_diagnostic       = True,
+        )
+        with pytest.raises(LabelLeakageError):
+            assert_no_label_leakage(bundle)
+
 
 class TestValidateEvaluatorResult:
-    def _bundle(self):
-        bundle, _ = build_blinded_answer_bundle(
+    def test_production_rejects_diagnostic_result(self):
+        """J3-04: diagnostic result must be rejected by production consumer."""
+        bundle = _make_production_bundle()
+        result = EvaluatorResult(SCHEMA_VERSION, _RUN_ID, {}, is_diagnostic=True)
+        with pytest.raises(ProductionRejectionError, match="is_diagnostic"):
+            validate_evaluator_result(result, bundle, mode="production")
+
+    def test_production_rejects_diagnostic_bundle(self):
+        """J3-04: diagnostic bundle must be rejected by production consumer."""
+        diag_bundle, _ = build_blinded_answer_bundle(
             _make_arm_results(), _RUN_ID, _TASKS, _RUBRIC, is_diagnostic=True
         )
-        return bundle
+        result = EvaluatorResult(SCHEMA_VERSION, _RUN_ID, {}, is_diagnostic=False)
+        with pytest.raises(ProductionRejectionError, match="is_diagnostic"):
+            validate_evaluator_result(result, diag_bundle, mode="production")
 
     def test_production_empty_scores_raises(self):
-        bundle = self._bundle()
-        result = EvaluatorResult(SCHEMA_VERSION, _RUN_ID, {}, True)
+        bundle = _make_production_bundle()
+        result = EvaluatorResult(SCHEMA_VERSION, _RUN_ID, {}, is_diagnostic=False)
         with pytest.raises(EmptyScoreError):
             validate_evaluator_result(result, bundle, mode="production")
 
     def test_production_pending_score_raises(self):
-        bundle = self._bundle()
+        bundle = _make_production_bundle()
         scores = {bid: "pending_r01_r05" for bid in bundle.blind_ids}
-        result = EvaluatorResult(SCHEMA_VERSION, _RUN_ID, scores, False)
+        result = EvaluatorResult(SCHEMA_VERSION, _RUN_ID, scores, is_diagnostic=False)
         with pytest.raises(EmptyScoreError):
             validate_evaluator_result(result, bundle, mode="production")
 
     def test_production_none_score_raises(self):
-        bundle = self._bundle()
+        bundle = _make_production_bundle()
         scores = {bid: None for bid in bundle.blind_ids}
-        result = EvaluatorResult(SCHEMA_VERSION, _RUN_ID, scores, False)
+        result = EvaluatorResult(SCHEMA_VERSION, _RUN_ID, scores, is_diagnostic=False)
         with pytest.raises(EmptyScoreError):
             validate_evaluator_result(result, bundle, mode="production")
 
     def test_production_missing_blind_id_raises(self):
-        bundle = self._bundle()
-        # Only score half the blind_ids
+        bundle = _make_production_bundle()
         half = bundle.blind_ids[:1]
         scores = {bid: {"total": 80} for bid in half}
-        result = EvaluatorResult(SCHEMA_VERSION, _RUN_ID, scores, False)
+        result = EvaluatorResult(SCHEMA_VERSION, _RUN_ID, scores, is_diagnostic=False)
         with pytest.raises(EmptyScoreError):
             validate_evaluator_result(result, bundle, mode="production")
 
+    def test_production_extra_blind_id_raises(self):
+        bundle = _make_production_bundle()
+        scores = {bid: {"total": 80} for bid in bundle.blind_ids}
+        scores["EXTRA_BLIND_ID"] = {"total": 80}
+        result = EvaluatorResult(SCHEMA_VERSION, _RUN_ID, scores, is_diagnostic=False)
+        with pytest.raises(EmptyScoreError, match="Extra"):
+            validate_evaluator_result(result, bundle, mode="production")
+
+    def test_production_cross_run_raises(self):
+        bundle = _make_production_bundle()
+        scores = {bid: {"total": 80} for bid in bundle.blind_ids}
+        result = EvaluatorResult(SCHEMA_VERSION, "different-run-id", scores, is_diagnostic=False)
+        with pytest.raises(CrossRunError):
+            validate_evaluator_result(result, bundle, mode="production")
+
     def test_diagnostic_empty_scores_ok(self):
-        bundle = self._bundle()
-        result = EvaluatorResult(SCHEMA_VERSION, _RUN_ID, {}, True)
-        validate_evaluator_result(result, bundle, mode="diagnostic")  # no raise
+        diag_bundle, _ = build_blinded_answer_bundle(
+            _make_arm_results(), _RUN_ID, _TASKS, _RUBRIC, is_diagnostic=True
+        )
+        result = EvaluatorResult(SCHEMA_VERSION, _RUN_ID, {}, is_diagnostic=True)
+        validate_evaluator_result(result, diag_bundle, mode="diagnostic")  # no raise
 
     def test_production_valid_scores_pass(self):
-        bundle = self._bundle()
+        bundle = _make_production_bundle()
         scores = {bid: {"total": 75} for bid in bundle.blind_ids}
-        result = EvaluatorResult(SCHEMA_VERSION, _RUN_ID, scores, False)
+        result = EvaluatorResult(SCHEMA_VERSION, _RUN_ID, scores, is_diagnostic=False)
         validate_evaluator_result(result, bundle, mode="production")  # no raise
 
 

@@ -244,9 +244,13 @@ def validate_key_fingerprint_matches(bundle: "MappingBundle", pem_path: Path) ->
     Verify that the bundle's recorded pubkey_fingerprint_sha256 matches
     the fingerprint of the key at pem_path.
 
+    pem_path may be a public key PEM or a private key PEM; both are supported.
+    For deblinding, this is always the private key — its public component is
+    extracted to compute the fingerprint.
+
     Raises KeyCompatibilityError on mismatch.
     """
-    actual_fp = _pubkey_fingerprint(pem_path)
+    actual_fp = _pubkey_fingerprint_from_any_key(pem_path)
     if bundle.pubkey_fingerprint_sha256.upper() != actual_fp.upper():
         raise KeyCompatibilityError(
             f"Bundle fingerprint '{bundle.pubkey_fingerprint_sha256[:16]}…' "
@@ -256,11 +260,29 @@ def validate_key_fingerprint_matches(bundle: "MappingBundle", pem_path: Path) ->
 
 
 def _pubkey_fingerprint(pem_path: Path) -> str:
-    """SHA-256 of the DER-encoded public key (hex, uppercase)."""
+    """SHA-256 of the DER-encoded public key (hex, uppercase). Accepts public key PEM."""
     from cryptography.hazmat.primitives.serialization import (
         Encoding, PublicFormat
     )
     key = _load_public_key(pem_path)
+    der = key.public_bytes(Encoding.DER, PublicFormat.SubjectPublicKeyInfo)
+    return hashlib.sha256(der).hexdigest().upper()
+
+
+def _pubkey_fingerprint_from_any_key(pem_path: Path) -> str:
+    """SHA-256 of the DER-encoded public key, accepting either public or private PEM."""
+    from cryptography.hazmat.primitives.serialization import (
+        Encoding, PublicFormat, load_pem_public_key, load_pem_private_key
+    )
+    pem_bytes = pem_path.read_bytes()
+    pem_text = pem_bytes.decode("utf-8")
+    # Try as public key first
+    if "PUBLIC KEY" in pem_text:
+        key = load_pem_public_key(pem_bytes)
+    else:
+        # Private key — extract public component
+        priv = load_pem_private_key(pem_bytes, password=None)
+        key = priv.public_key()
     der = key.public_bytes(Encoding.DER, PublicFormat.SubjectPublicKeyInfo)
     return hashlib.sha256(der).hexdigest().upper()
 
@@ -507,37 +529,174 @@ def decrypt_mapping(
         Path to the custodian's private key PEM (offline only).
     _test_only_unwrap : bool
         Internal flag for test use; accepted only when bundle.algorithm
-        is _ALGO_TEST_ONLY.  Never set this in production code.
+        is _ALGO_TEST_ONLY.  Setting this for a production bundle raises
+        BlindingError — it cannot bypass production algorithm validation.
     """
-    ciphertext = base64.b64decode(bundle.encrypted_mapping_b64)
-    nonce      = base64.b64decode(bundle.nonce_b64)
-    auth_tag   = base64.b64decode(bundle.auth_tag_b64)
-    wrapped_dek = base64.b64decode(bundle.wrapped_dek_b64)
+    # Strict schema validation before any decryption attempt
+    _validate_bundle_schema(bundle)
 
-    # Verify ciphertext hash before decryption
+    # Reject _test_only_unwrap on production bundles (cannot bypass algorithm check)
+    if _test_only_unwrap and bundle.algorithm != _ALGO_TEST_ONLY:
+        raise BlindingError(
+            "_test_only_unwrap=True was set but bundle.algorithm is not "
+            f"'{_ALGO_TEST_ONLY}' (it is '{bundle.algorithm}'). "
+            "_test_only_unwrap cannot bypass production algorithm validation."
+        )
+
+    # Strict base64 decoding
+    try:
+        ciphertext = base64.b64decode(bundle.encrypted_mapping_b64, validate=True)
+    except Exception as e:
+        raise BlindingError(f"encrypted_mapping_b64 base64 decode error: {e}") from e
+    try:
+        nonce = base64.b64decode(bundle.nonce_b64, validate=True)
+    except Exception as e:
+        raise BlindingError(f"nonce_b64 base64 decode error: {e}") from e
+    try:
+        auth_tag = base64.b64decode(bundle.auth_tag_b64, validate=True)
+    except Exception as e:
+        raise BlindingError(f"auth_tag_b64 base64 decode error: {e}") from e
+    try:
+        wrapped_dek = base64.b64decode(bundle.wrapped_dek_b64, validate=True)
+    except Exception as e:
+        raise BlindingError(f"wrapped_dek_b64 base64 decode error: {e}") from e
+
+    # Validate field lengths
+    if len(nonce) != _GCM_NONCE_BYTES:
+        raise BlindingError(
+            f"nonce length {len(nonce)} != expected {_GCM_NONCE_BYTES}."
+        )
+    if len(auth_tag) != 16:
+        raise BlindingError(
+            f"auth_tag length {len(auth_tag)} != expected 16."
+        )
+    if len(ciphertext) == 0:
+        raise BlindingError("ciphertext is empty.")
+
+    # Verify ciphertext hash before decryption (tamper detection)
     actual_hash = hashlib.sha256(ciphertext).hexdigest().upper()
-    if actual_hash != bundle.ciphertext_sha256:
+    if actual_hash != bundle.ciphertext_sha256.upper():
         raise BlindingError(
             f"Ciphertext hash mismatch: expected {bundle.ciphertext_sha256[:16]}…, "
             f"actual {actual_hash[:16]}…. Bundle may have been tampered with."
         )
 
-    if bundle.algorithm == _ALGO_TEST_ONLY or _test_only_unwrap:
-        if not (bundle.algorithm == _ALGO_TEST_ONLY or _test_only_unwrap):
-            raise BlindingError(
-                "Attempt to use test-only unwrap on a production bundle."
-            )
-        dek = _unwrap_dek_test_only(wrapped_dek)
-    else:
+    if bundle.algorithm == _ALGO_REAL:
         if private_key_pem_path is None:
             raise BlindingError(
                 "private_key_pem_path is required to decrypt a production bundle. "
                 "This is an offline custodian step."
             )
+        # Verify the decrypting key's public fingerprint matches the bundle record
+        validate_key_fingerprint_matches(bundle, private_key_pem_path)
         dek = _unwrap_dek_real(wrapped_dek, private_key_pem_path)
+    elif bundle.algorithm == _ALGO_TEST_ONLY or _test_only_unwrap:
+        dek = _unwrap_dek_test_only(wrapped_dek)
+    else:
+        raise BlindingError(
+            f"Unknown algorithm '{bundle.algorithm}'. "
+            f"Only '{_ALGO_REAL}' is accepted for production deblinding."
+        )
 
     plaintext = _aes256gcm_decrypt(dek, ciphertext, nonce, auth_tag)
     return json.loads(plaintext.decode("utf-8"))
+
+
+# ---------------------------------------------------------------------------
+# Bundle schema validation
+# ---------------------------------------------------------------------------
+
+_BUNDLE_REQUIRED_FIELDS: dict[str, type] = {
+    "encrypted_mapping_b64":     str,
+    "nonce_b64":                 str,
+    "auth_tag_b64":              str,
+    "wrapped_dek_b64":           str,
+    "pubkey_fingerprint_sha256": str,
+    "algorithm":                 str,
+    "ciphertext_sha256":         str,
+}
+_BUNDLE_OPTIONAL_FIELDS = {"dry_run_tag"}
+
+_VALID_ALGORITHMS = {_ALGO_REAL, _ALGO_TEST_ONLY}
+
+# SHA-256 hex pattern (64 hex chars, upper or lower)
+import re as _re
+_SHA256_HEX_RE = _re.compile(r"^[0-9a-fA-F]{64}$")
+
+# Strict base64 character set (standard, no URL-safe, with padding)
+_BASE64_RE = _re.compile(r"^[A-Za-z0-9+/]*={0,2}$")
+
+
+def _validate_bundle_schema(bundle: "MappingBundle") -> None:
+    """
+    Strictly validate all MappingBundle fields before any cryptographic operation.
+
+    Raises BlindingError on:
+    - Missing required fields.
+    - Extra unknown fields.
+    - Wrong field types.
+    - Invalid base64 characters or padding in encoded fields.
+    - algorithm not in allowed set.
+    - ciphertext_sha256 not a 64-hex string.
+    - pubkey_fingerprint_sha256 not a 64-hex string (for real bundles).
+    """
+    d = dataclasses.asdict(bundle)
+    present = set(d.keys())
+    required = set(_BUNDLE_REQUIRED_FIELDS.keys())
+    allowed = required | _BUNDLE_OPTIONAL_FIELDS
+
+    missing = required - present
+    if missing:
+        raise BlindingError(
+            f"MappingBundle missing required fields: {sorted(missing)}."
+        )
+    extra = present - allowed
+    if extra:
+        raise BlindingError(
+            f"MappingBundle has unknown fields: {sorted(extra)}."
+        )
+
+    # Type checks
+    for field, expected_type in _BUNDLE_REQUIRED_FIELDS.items():
+        val = d[field]
+        if not isinstance(val, expected_type):
+            raise BlindingError(
+                f"MappingBundle field '{field}' must be {expected_type.__name__}, "
+                f"got {type(val).__name__}."
+            )
+
+    # Algorithm validation
+    if bundle.algorithm not in _VALID_ALGORITHMS:
+        raise BlindingError(
+            f"MappingBundle algorithm '{bundle.algorithm}' is not in allowed set: "
+            f"{sorted(_VALID_ALGORITHMS)}."
+        )
+
+    # Base64 validation for encoded fields
+    for field in ("encrypted_mapping_b64", "nonce_b64", "auth_tag_b64", "wrapped_dek_b64"):
+        val = getattr(bundle, field)
+        if not val:
+            raise BlindingError(f"MappingBundle field '{field}' is empty.")
+        if not _BASE64_RE.match(val):
+            raise BlindingError(
+                f"MappingBundle field '{field}' contains invalid base64 characters."
+            )
+
+    # ciphertext_sha256 must be 64-hex
+    if not _SHA256_HEX_RE.match(bundle.ciphertext_sha256):
+        raise BlindingError(
+            f"MappingBundle.ciphertext_sha256 '{bundle.ciphertext_sha256[:16]}…' "
+            "is not a valid 64-hex SHA-256 string."
+        )
+
+    # pubkey_fingerprint_sha256 must be 64-hex for real bundles
+    if bundle.algorithm == _ALGO_REAL:
+        if not _SHA256_HEX_RE.match(bundle.pubkey_fingerprint_sha256):
+            raise BlindingError(
+                f"MappingBundle.pubkey_fingerprint_sha256 "
+                f"'{bundle.pubkey_fingerprint_sha256[:16]}…' "
+                "is not a valid 64-hex SHA-256 string for a production bundle."
+            )
 
 
 # ---------------------------------------------------------------------------

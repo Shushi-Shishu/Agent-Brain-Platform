@@ -113,9 +113,13 @@ def _make_valid_preregistration_text() -> str:
         "# Search Confirmation Preregistration — Draft, Not Yet Activated\n\n"
         "## Readiness gates before activation\n\n"
         "- [x] task file and all prompts/schemas/rubrics are hashed (reverified as R08 below);\n"
-        "- [x] deterministic corpus facade is the only vault access path\n"
+        "- [x] **R06** deterministic corpus facade is the only vault access path\n"
         "  — SATISFIED;\n"
-        "- [x] numeric rubric anchors pass a dry-run schema/calibration check\n"
+        "- [x] **R07** numeric rubric anchors pass a dry-run schema/calibration check\n"
+        "  — SATISFIED;\n"
+        "- [ ] **R08** all eight frozen inputs re-hashed and confirmed\n"
+        "  — PENDING: vault commitments require Project 008 vault;\n"
+        "- [x] **R09** preregistration checklist reconciled to executable gate evidence\n"
         "  — SATISFIED;\n"
         "- [x] no investigator has inspected confirmation outputs.\n"
     )
@@ -338,11 +342,10 @@ class TestHashReverification(unittest.TestCase):
             paths[key] = p
         return paths
 
-    def test_vault_keys_always_reported_as_vault_absent(self):
+    def test_vault_keys_always_reported_in_vault_results(self):
         result = check_hash_reverification()
         for key in VAULT_HASH_KEYS:
             self.assertIn(key, result["vault_results"])
-            self.assertIn("vault_absent", result["vault_results"][key]["status"])
 
     def test_vault_results_contain_expected_hash(self):
         result = check_hash_reverification()
@@ -353,15 +356,19 @@ class TestHashReverification(unittest.TestCase):
             )
 
     def test_real_local_files_all_match(self):
-        # Uses default paths (the actual poc6c files)
+        # Uses default paths (the actual poc6c files).
+        # passed=False is expected when vault is absent (vault_pending=True).
         result = check_hash_reverification()
-        self.assertTrue(result["passed"], result["errors"])
+        self.assertEqual(result["errors"], [], result["errors"])
         for key in LOCAL_HASH_KEYS:
             self.assertEqual(
                 result["local_results"][key]["status"],
                 "match",
                 f"{key} should match",
             )
+        # Vault absent → passed=False, vault_pending=True
+        self.assertTrue(result["vault_pending"])
+        self.assertFalse(result["passed"])
 
     def test_missing_file_fails(self):
         paths = {k: Path(f"/nonexistent/{k}") for k in LOCAL_HASH_KEYS}
@@ -383,9 +390,10 @@ class TestHashReverification(unittest.TestCase):
         result = check_hash_reverification()
         self.assertIn("selection-only", result["selection_limitation"])
 
-    def test_vault_verification_required_flag(self):
+    def test_vault_pending_flag_when_vault_absent(self):
         result = check_hash_reverification()
-        self.assertTrue(result["vault_verification_required_before_activation"])
+        self.assertIn("vault_pending", result)
+        self.assertTrue(result["vault_pending"])
 
 
 # ---------------------------------------------------------------------------
@@ -427,7 +435,7 @@ class TestPreregistrationChecklist(unittest.TestCase):
 
     def test_unchecked_rubric_gate_fails(self):
         text = _make_valid_preregistration_text().replace(
-            "- [x] numeric rubric", "- [ ] numeric rubric"
+            "- [x] **R07** numeric rubric", "- [ ] **R07** numeric rubric"
         )
         with tempfile.TemporaryDirectory() as d:
             p = Path(d) / "PREREGISTRATION_DRAFT.md"
@@ -482,10 +490,12 @@ class TestBuildRequirementsMatrix(unittest.TestCase):
         r07 = next(r for r in matrix if r.req_id == "R07")
         self.assertEqual(r07.status, RequirementStatus.SATISFIED)
 
-    def test_r08_satisfied_on_real_local_files(self):
+    def test_r08_pending_when_vault_absent(self):
+        # R08 is PENDING (not SATISFIED) when vault is absent — both
+        # vault commitments are required.
         matrix = build_requirements_matrix()
         r08 = next(r for r in matrix if r.req_id == "R08")
-        self.assertEqual(r08.status, RequirementStatus.SATISFIED)
+        self.assertEqual(r08.status, RequirementStatus.PENDING)
 
     def test_all_requirements_have_unblock_condition(self):
         matrix = build_requirements_matrix()
