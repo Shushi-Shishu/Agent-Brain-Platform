@@ -552,3 +552,114 @@ class TestPricingLockApplicableRate:
     def test_applicable_rate_expires_present(self):
         lock = load_pricing_lock()
         assert "applicable_rate_expires" in lock
+
+
+class TestCheckProviderAdapterReadiness:
+    """Tests for check_provider_adapter() R03 fail-closed enforcement checks."""
+
+    def test_real_provider_passes(self):
+        from readiness import check_provider_adapter
+        result = check_provider_adapter()
+        assert result["passed"] is True, result["errors"]
+
+    def test_missing_provider_file_fails(self, tmp_path):
+        from readiness import check_provider_adapter
+        result = check_provider_adapter(provider_module_path=tmp_path / "no_provider.py")
+        assert result["passed"] is False
+        assert any("provider.py not found" in e for e in result["errors"])
+
+    def test_provider_missing_missing_usage_fails(self, tmp_path):
+        from readiness import check_provider_adapter
+        p = tmp_path / "provider.py"
+        # Write a stub that has core symbols but not MissingUsage
+        p.write_text(
+            "AnthropicProviderAdapter = None\n"
+            "ResponseTelemetry = None\n"
+            "MissingApiKey = None\n"
+            "ResponseModelMismatch = None\n"
+            "compute_provider_cost_usd = None\n"
+            "verify_models_available = None\n"
+            "ANTHROPIC_API_KEY = None\n"
+            "CacheUsageViolation = None\n"
+            "raise CacheUsageViolation\n",
+            encoding="utf-8",
+        )
+        from readiness import check_provider_adapter, HERE as READINESS_HERE
+        result = check_provider_adapter(
+            provider_module_path=p,
+            pricing_lock_path=READINESS_HERE / "pricing_lock.json",
+        )
+        assert result["passed"] is False
+        assert any("MissingUsage" in e for e in result["errors"])
+
+    def test_provider_missing_raise_missing_usage_fails(self, tmp_path):
+        from readiness import check_provider_adapter
+        p = tmp_path / "provider.py"
+        # Has the class but no raise statement
+        p.write_text(
+            "AnthropicProviderAdapter = None\n"
+            "ResponseTelemetry = None\n"
+            "MissingApiKey = None\n"
+            "ResponseModelMismatch = None\n"
+            "compute_provider_cost_usd = None\n"
+            "verify_models_available = None\n"
+            "ANTHROPIC_API_KEY = None\n"
+            "MissingUsage = None\n"
+            "CacheUsageViolation = None\n"
+            "raise CacheUsageViolation\n",
+            encoding="utf-8",
+        )
+        from readiness import HERE as READINESS_HERE
+        result = check_provider_adapter(
+            provider_module_path=p,
+            pricing_lock_path=READINESS_HERE / "pricing_lock.json",
+        )
+        assert result["passed"] is False
+        assert any("raise MissingUsage" in e for e in result["errors"])
+
+    def test_pricing_lock_missing_verification_required_fails(self, tmp_path):
+        import json
+        from readiness import check_provider_adapter
+        lock = {
+            "models": [
+                {"role": "agent", "model_id": "m1", "introductory_expires": "2026-08-31",
+                 "input_usd_per_million_tokens": 2, "output_usd_per_million_tokens": 10},
+                {"role": "evaluator", "model_id": "m2",
+                 "input_usd_per_million_tokens": 5, "output_usd_per_million_tokens": 25},
+            ],
+            "confirmation_constraints": {},
+            # verification_required intentionally absent
+        }
+        p = tmp_path / "pricing_lock.json"
+        p.write_text(json.dumps(lock), encoding="utf-8")
+        from poc6c.readiness import HERE
+        result = check_provider_adapter(
+            provider_module_path=HERE / "provider.py",
+            pricing_lock_path=p,
+        )
+        assert result["passed"] is False
+        assert any("verification_required" in e for e in result["errors"])
+
+    def test_pricing_lock_missing_introductory_expires_fails(self, tmp_path):
+        import json
+        from readiness import check_provider_adapter
+        lock = {
+            "models": [
+                {"role": "agent", "model_id": "m1",
+                 "input_usd_per_million_tokens": 2, "output_usd_per_million_tokens": 10},
+                 # introductory_expires absent
+                {"role": "evaluator", "model_id": "m2",
+                 "input_usd_per_million_tokens": 5, "output_usd_per_million_tokens": 25},
+            ],
+            "confirmation_constraints": {},
+            "verification_required": True,
+        }
+        p = tmp_path / "pricing_lock.json"
+        p.write_text(json.dumps(lock), encoding="utf-8")
+        from poc6c.readiness import HERE
+        result = check_provider_adapter(
+            provider_module_path=HERE / "provider.py",
+            pricing_lock_path=p,
+        )
+        assert result["passed"] is False
+        assert any("introductory_expires" in e for e in result["errors"])

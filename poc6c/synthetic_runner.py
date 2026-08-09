@@ -88,7 +88,9 @@ def _rubric_sha256() -> str:
 
 def _stage_preflight(run_id: str) -> Attestation:
     from readiness import run_diagnostic_preflight
-    run_diagnostic_preflight()
+    # skip_r08_vault=True: synthetic runner has no Project 008 vault.
+    # vault_pending is recorded in the matrix but does not block synthetic execution.
+    run_diagnostic_preflight(skip_r08_vault=True)
     corpus_hash = _sha256_str("synthetic-corpus-package")
     return create_attestation(
         stage            = "preflight",

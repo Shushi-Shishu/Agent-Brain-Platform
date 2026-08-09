@@ -153,6 +153,49 @@ jobs:
               f.write(f"sha256={sha256}\n")
           PYEOF
 
+      - name: Emit preflight attestation
+        env:
+          DRY_RUN: ${{ inputs.dry_run }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+          GITHUB_SHA: ${{ github.sha }}
+          PREFLIGHT_SHA256: ${{ steps.run_preflight.outputs.sha256 }}
+        run: |
+          python - <<'PYEOF'
+          import json, os, sys
+          sys.path.insert(0, "poc6c")
+          from attestation import create_attestation
+          from datetime import datetime, timezone
+
+          dry_run = os.environ.get("DRY_RUN", "false").lower() == "true"
+          run_id     = os.environ["GITHUB_RUN_ID"]
+          commit_sha = os.environ["GITHUB_SHA"]
+          mode       = "diagnostic" if dry_run else "production"
+
+          att = create_attestation(
+              stage            = "preflight",
+              mode             = mode,
+              run_id           = run_id,
+              commit_sha       = commit_sha,
+              input_hashes     = {},
+              output_hashes    = {"preflight_report": os.environ.get("PREFLIGHT_SHA256", "")},
+              runner_identity  = "github-actions/ubuntu-24.04",
+              timestamp_utc    = datetime.now(tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+              provider_model_id = None,
+              is_diagnostic    = dry_run,
+          )
+          os.makedirs("attestations", exist_ok=True)
+          with open("attestations/preflight_attestation.json", "w") as f:
+              json.dump(att.to_dict(), f, indent=2)
+          print(f"Preflight attestation emitted: {att.sha256()[:16]}…")
+          PYEOF
+
+      - name: Upload preflight attestation
+        uses: actions/upload-artifact@v4
+        with:
+          name: attestation-preflight
+          path: attestations/preflight_attestation.json
+          retention-days: 30
+
       - name: Verify corpus package hash
         run: |
           python - <<'PYEOF'
@@ -241,6 +284,52 @@ jobs:
           path: arm-outputs/generic/
           retention-days: 30
 
+      - name: Emit generic-arm attestation
+        env:
+          DRY_RUN: ${{ inputs.dry_run }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+          GITHUB_SHA: ${{ github.sha }}
+        run: |
+          python - <<'PYEOF'
+          import json, os, sys, hashlib
+          from pathlib import Path
+          sys.path.insert(0, "poc6c")
+          from attestation import create_attestation
+          from datetime import datetime, timezone
+
+          dry_run    = os.environ.get("DRY_RUN", "false").lower() == "true"
+          run_id     = os.environ["GITHUB_RUN_ID"]
+          commit_sha = os.environ["GITHUB_SHA"]
+          mode       = "diagnostic" if dry_run else "production"
+
+          results_path = Path("arm-outputs/generic/results.json")
+          out_hash = hashlib.sha256(results_path.read_bytes()).hexdigest().upper() if results_path.exists() else ""
+
+          att = create_attestation(
+              stage            = "generic-arm",
+              mode             = mode,
+              run_id           = run_id,
+              commit_sha       = commit_sha,
+              input_hashes     = {},
+              output_hashes    = {"generic_arm_results": out_hash},
+              runner_identity  = "github-actions/ubuntu-24.04",
+              timestamp_utc    = datetime.now(tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+              provider_model_id = None,
+              is_diagnostic    = dry_run,
+          )
+          os.makedirs("attestations", exist_ok=True)
+          with open("attestations/generic_arm_attestation.json", "w") as f:
+              json.dump(att.to_dict(), f, indent=2)
+          print(f"Generic-arm attestation emitted: {att.sha256()[:16]}…")
+          PYEOF
+
+      - name: Upload generic-arm attestation
+        uses: actions/upload-artifact@v4
+        with:
+          name: attestation-generic-arm
+          path: attestations/generic_arm_attestation.json
+          retention-days: 30
+
   # =========================================================================
   # 3. CONFIGURED ARM
   # Different fresh VM from generic-arm — OS-level isolation.
@@ -309,6 +398,52 @@ jobs:
         with:
           name: configured-arm-outputs
           path: arm-outputs/configured/
+          retention-days: 30
+
+      - name: Emit configured-arm attestation
+        env:
+          DRY_RUN: ${{ inputs.dry_run }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+          GITHUB_SHA: ${{ github.sha }}
+        run: |
+          python - <<'PYEOF'
+          import json, os, sys, hashlib
+          from pathlib import Path
+          sys.path.insert(0, "poc6c")
+          from attestation import create_attestation
+          from datetime import datetime, timezone
+
+          dry_run    = os.environ.get("DRY_RUN", "false").lower() == "true"
+          run_id     = os.environ["GITHUB_RUN_ID"]
+          commit_sha = os.environ["GITHUB_SHA"]
+          mode       = "diagnostic" if dry_run else "production"
+
+          results_path = Path("arm-outputs/configured/results.json")
+          out_hash = hashlib.sha256(results_path.read_bytes()).hexdigest().upper() if results_path.exists() else ""
+
+          att = create_attestation(
+              stage            = "configured-arm",
+              mode             = mode,
+              run_id           = run_id,
+              commit_sha       = commit_sha,
+              input_hashes     = {},
+              output_hashes    = {"configured_arm_results": out_hash},
+              runner_identity  = "github-actions/ubuntu-24.04",
+              timestamp_utc    = datetime.now(tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+              provider_model_id = None,
+              is_diagnostic    = dry_run,
+          )
+          os.makedirs("attestations", exist_ok=True)
+          with open("attestations/configured_arm_attestation.json", "w") as f:
+              json.dump(att.to_dict(), f, indent=2)
+          print(f"Configured-arm attestation emitted: {att.sha256()[:16]}…")
+          PYEOF
+
+      - name: Upload configured-arm attestation
+        uses: actions/upload-artifact@v4
+        with:
+          name: attestation-configured-arm
+          path: attestations/configured_arm_attestation.json
           retention-days: 30
 
   # =========================================================================
@@ -408,6 +543,60 @@ jobs:
         with:
           name: mapping-bundle
           path: blinding-outputs/
+          retention-days: 30
+
+      - name: Emit blinding attestation
+        env:
+          DRY_RUN: ${{ inputs.dry_run }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+          GITHUB_SHA: ${{ github.sha }}
+          BUNDLE_HASH: ${{ steps.blinding.outputs.bundle_hash }}
+        run: |
+          python - <<'PYEOF'
+          import json, os, sys, hashlib
+          from pathlib import Path
+          sys.path.insert(0, "poc6c")
+          from attestation import create_attestation
+          from datetime import datetime, timezone
+
+          dry_run    = os.environ.get("DRY_RUN", "false").lower() == "true"
+          run_id     = os.environ["GITHUB_RUN_ID"]
+          commit_sha = os.environ["GITHUB_SHA"]
+          mode       = "diagnostic" if dry_run else "production"
+          bundle_hash = os.environ.get("BUNDLE_HASH", "")
+
+          # Input hashes: the two arm output artifacts
+          generic_path    = Path("arm-outputs/generic-arm-outputs/results.json")
+          configured_path = Path("arm-outputs/configured-arm-outputs/results.json")
+          in_hashes = {}
+          if generic_path.exists():
+              in_hashes["generic_arm_results"] = hashlib.sha256(generic_path.read_bytes()).hexdigest().upper()
+          if configured_path.exists():
+              in_hashes["configured_arm_results"] = hashlib.sha256(configured_path.read_bytes()).hexdigest().upper()
+
+          att = create_attestation(
+              stage            = "deterministic-blinding",
+              mode             = mode,
+              run_id           = run_id,
+              commit_sha       = commit_sha,
+              input_hashes     = in_hashes,
+              output_hashes    = {"mapping_bundle": bundle_hash},
+              runner_identity  = "github-actions/ubuntu-24.04",
+              timestamp_utc    = datetime.now(tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+              provider_model_id = None,
+              is_diagnostic    = dry_run,
+          )
+          os.makedirs("attestations", exist_ok=True)
+          with open("attestations/blinding_attestation.json", "w") as f:
+              json.dump(att.to_dict(), f, indent=2)
+          print(f"Blinding attestation emitted: {att.sha256()[:16]}…")
+          PYEOF
+
+      - name: Upload blinding attestation
+        uses: actions/upload-artifact@v4
+        with:
+          name: attestation-blinding
+          path: attestations/blinding_attestation.json
           retention-days: 30
 
   # =========================================================================
@@ -519,6 +708,55 @@ jobs:
           path: eval-outputs/
           retention-days: 30
 
+      - name: Emit evaluator attestation
+        env:
+          DRY_RUN: ${{ inputs.dry_run }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+          GITHUB_SHA: ${{ github.sha }}
+        run: |
+          python - <<'PYEOF'
+          import json, os, sys, hashlib
+          from pathlib import Path
+          sys.path.insert(0, "poc6c")
+          from attestation import create_attestation
+          from datetime import datetime, timezone
+
+          dry_run    = os.environ.get("DRY_RUN", "false").lower() == "true"
+          run_id     = os.environ["GITHUB_RUN_ID"]
+          commit_sha = os.environ["GITHUB_SHA"]
+          mode       = "diagnostic" if dry_run else "production"
+
+          bundle_path = Path("mapping-bundle/mapping_bundle.json")
+          in_hash = hashlib.sha256(bundle_path.read_bytes()).hexdigest().upper() if bundle_path.exists() else ""
+
+          results_path = Path("eval-outputs/evaluation_results.json")
+          out_hash = hashlib.sha256(results_path.read_bytes()).hexdigest().upper() if results_path.exists() else ""
+
+          att = create_attestation(
+              stage            = "blinded-evaluator",
+              mode             = mode,
+              run_id           = run_id,
+              commit_sha       = commit_sha,
+              input_hashes     = {"mapping_bundle": in_hash},
+              output_hashes    = {"evaluation_results": out_hash},
+              runner_identity  = "github-actions/ubuntu-24.04",
+              timestamp_utc    = datetime.now(tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+              provider_model_id = None,
+              is_diagnostic    = dry_run,
+          )
+          os.makedirs("attestations", exist_ok=True)
+          with open("attestations/evaluator_attestation.json", "w") as f:
+              json.dump(att.to_dict(), f, indent=2)
+          print(f"Evaluator attestation emitted: {att.sha256()[:16]}…")
+          PYEOF
+
+      - name: Upload evaluator attestation
+        uses: actions/upload-artifact@v4
+        with:
+          name: attestation-evaluator
+          path: attestations/evaluator_attestation.json
+          retention-days: 30
+
   # =========================================================================
   # 6. INTEGRITY AND ANALYSIS
   # No secrets.  Verifies all artifact hashes, runs test suite,
@@ -605,22 +843,113 @@ jobs:
           python -m pytest poc6c/ --ignore=poc6c/workloads -q
         continue-on-error: false
 
-      - name: Generate integrity report
+      - name: Validate attestation chain and generate integrity report
         env:
           DRY_RUN: ${{ inputs.dry_run }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
+          GITHUB_SHA: ${{ github.sha }}
         run: |
           python - <<'PYEOF'
-          import json, os
-          from datetime import datetime
+          import json, os, sys, hashlib
+          from pathlib import Path
+          from datetime import datetime, timezone
+          sys.path.insert(0, "poc6c")
+          from attestation import (
+              Attestation, aggregate_attestations, create_attestation,
+              ChainValidationError, EXPECTED_STAGES,
+          )
+
+          dry_run    = os.environ.get("DRY_RUN", "false").lower() == "true"
+          run_id     = os.environ["GITHUB_RUN_ID"]
+          commit_sha = os.environ["GITHUB_SHA"]
+          mode       = "diagnostic" if dry_run else "production"
+
+          # Load all upstream attestations (downloaded into all-artifacts/)
+          STAGE_FILES = {
+              "preflight":               "all-artifacts/attestation-preflight/preflight_attestation.json",
+              "generic-arm":             "all-artifacts/attestation-generic-arm/generic_arm_attestation.json",
+              "configured-arm":          "all-artifacts/attestation-configured-arm/configured_arm_attestation.json",
+              "deterministic-blinding":  "all-artifacts/attestation-blinding/blinding_attestation.json",
+              "blinded-evaluator":       "all-artifacts/attestation-evaluator/evaluator_attestation.json",
+          }
+
+          errors = []
+          attestations = []
+          for stage, path_str in STAGE_FILES.items():
+              p = Path(path_str)
+              if not p.exists():
+                  errors.append(f"Attestation missing for stage '{stage}': {path_str}")
+                  continue
+              try:
+                  att = Attestation.from_dict(json.loads(p.read_text(encoding="utf-8")))
+                  attestations.append(att)
+                  print(f"  loaded attestation: {att.stage} mode={att.mode} diag={att.is_diagnostic}")
+              except Exception as e:
+                  errors.append(f"Failed to load attestation for '{stage}': {e}")
+
+          chain_valid = False
+          if not errors:
+              upstream = tuple(s for s in EXPECTED_STAGES if s != "integrity-and-analysis")
+              try:
+                  aggregate_attestations(
+                      attestations, run_id=run_id, commit_sha=commit_sha,
+                      mode=mode, expected_stages=upstream,
+                  )
+                  chain_valid = True
+                  print("Attestation chain VALID — all five upstream stages verified.")
+              except ChainValidationError as e:
+                  errors.append(f"Attestation chain INVALID: {e}")
+                  print(f"FATAL: {e}", file=sys.stderr)
+          else:
+              for e in errors:
+                  print(f"ERROR: {e}", file=sys.stderr)
+
+          # Emit the integrity attestation
+          now = datetime.now(tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+          integrity_att = create_attestation(
+              stage            = "integrity-and-analysis",
+              mode             = mode,
+              run_id           = run_id,
+              commit_sha       = commit_sha,
+              input_hashes     = {},
+              output_hashes    = {},
+              runner_identity  = "github-actions/ubuntu-24.04",
+              timestamp_utc    = now,
+              provider_model_id = None,
+              is_diagnostic    = dry_run,
+          )
+          os.makedirs("integrity-outputs", exist_ok=True)
+          with open("integrity-outputs/integrity_attestation.json", "w") as f:
+              json.dump(integrity_att.to_dict(), f, indent=2)
+
           report = {
               "workflow": "poc6c-confirmation",
-              "dry_run": os.environ.get("DRY_RUN", "false"),
-              "timestamp_utc": datetime.utcnow().isoformat(),
-              "status": "completed",
+              "run_id": run_id,
+              "commit_sha": commit_sha,
+              "mode": mode,
+              "dry_run": dry_run,
+              "timestamp_utc": now,
+              "attestation_chain_valid": chain_valid,
+              "stages_verified": [a.stage for a in attestations],
+              "errors": errors,
+              "confirmation_ready": False,
               "note": (
-                  "No confirmation answer was generated, scored, or deblinded. "
-                  "R01-R05 remain blocked; Task 5 must not start."
+                  "Diagnostic synthetic run — no confirmation outputs." if dry_run
+                  else "R01-R05 remain blocked; Task 5 must not start."
               ),
           }
+          report_path = Path("integrity-outputs/integrity_report.json")
+          report_path.write_text(json.dumps(report, indent=2), encoding="utf-8")
           print(json.dumps(report, indent=2))
+
+          if errors or not chain_valid:
+              sys.exit(1)
           PYEOF
+
+      - name: Upload integrity outputs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: integrity-outputs
+          path: integrity-outputs/
+          retention-days: 30

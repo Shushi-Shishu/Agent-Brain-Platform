@@ -1,8 +1,8 @@
 {
   "schema": "poc6c-artifact-manifest-v1",
   "file_count": 380,
-  "total_bytes": 1553407,
-  "records_sha256": "8BCFF393E2DBA73E84EF4BEA3BBF8571DC41B598C9724597279338B6784FD7AA",
+  "total_bytes": 1572191,
+  "records_sha256": "CC8E65603B5D4621311F10047BC492597496442114C1839C2935968EA59FBBF4",
   "files": [
     {
       "path": "PLAN.md",
@@ -61,8 +61,8 @@
     },
     {
       "path": "confirmation/PREREGISTRATION_DRAFT.md",
-      "size_bytes": 6772,
-      "sha256": "6FE751F90F79DE57BEC55B0D842B2C4F45F9C4517727822BD898522BD099FD3F"
+      "size_bytes": 7075,
+      "sha256": "690360488ECF121190F0294EB3F7F0BFA585CC1B355DBBC398BC0B828373B15B"
     },
     {
       "path": "confirmation/READINESS_MATRIX.md",
@@ -276,8 +276,8 @@
     },
     {
       "path": "readiness.py",
-      "size_bytes": 43488,
-      "sha256": "7363DA785C3EC229622F034AB07B24D891536EDF19F9B13C6EA3AAC712E18C70"
+      "size_bytes": 50717,
+      "sha256": "944F01F0916451D9C311B8FADE21A02BF4709D46856699221F9E92B310EFD8D6"
     },
     {
       "path": "rubric.py",
@@ -291,8 +291,8 @@
     },
     {
       "path": "synthetic_runner.py",
-      "size_bytes": 12874,
-      "sha256": "157D439E829772D85095CC05B0CCC59693C4A68EC713C33FD9BF5D4EF511485D"
+      "size_bytes": 13049,
+      "sha256": "8C76FB90614B9CC310B3C93B4254B4F074C2B9A1CE068DA2E8487D7BCBEC1F8F"
     },
     {
       "path": "test_ablation.py",
@@ -346,23 +346,23 @@
     },
     {
       "path": "test_pipeline_mode.py",
-      "size_bytes": 3100,
-      "sha256": "224BF5463B254ECF8C4F82268933C91F3E387C672995A5BB4809E0F5994DA3A1"
+      "size_bytes": 3741,
+      "sha256": "B9169B4AE58C69A99DBA8941A42BD0B6767CCC883E59FFC3E88770BD57D55692"
     },
     {
       "path": "test_provider.py",
-      "size_bytes": 22686,
-      "sha256": "F4B70B11F1CD92E199B3CE4B49EAB0C9DA9EA97E5BD062D7B12B0C1B61864E05"
+      "size_bytes": 27443,
+      "sha256": "5E00D8643DA48E00700C4B532FF505437405DE6B2DDC34EBAF7669A6CE702122"
     },
     {
       "path": "test_readiness.py",
-      "size_bytes": 25680,
-      "sha256": "B747C97EF285E7DB02860696BE1AC8213524435B1CE3A8117ED2C6A6C2866A71"
+      "size_bytes": 26259,
+      "sha256": "8D95410F967DC7C8FACBF41C21637A25670A08F4A82C45D9B2D218B4667C6814"
     },
     {
       "path": "test_readiness_extended.py",
-      "size_bytes": 4956,
-      "sha256": "4313933A818734B13105F72E11FD49FD2BB82B888EE23B2D695EC60D18E6DD9F"
+      "size_bytes": 10056,
+      "sha256": "665AB6F34E9B782EF777EB1773EA37A9DBA5C31D1C20EC097D5AF50E43634516"
     },
     {
       "path": "test_trace.py",

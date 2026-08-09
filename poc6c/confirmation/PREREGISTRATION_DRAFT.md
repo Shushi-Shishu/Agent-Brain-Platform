@@ -90,11 +90,13 @@ No secondary result can rescue a failed primary gate.
 Gate IDs correspond to R01–R09 in `confirmation/READINESS_MATRIX.md` and
 `PLAN.md` Task 4.
 
-**Audit hold (2026-08-04):** Task 4B engineering remediation remains open.
-The separate-VM skeleton and passing unit tests do not yet establish R04 or
-R05. No checkbox below may be completed, and this draft must not be activated,
-until the remediation commit has passed independent acceptance review and the
-required real per-job evidence has been recorded.
+**Audit hold (2026-08-09):** R08 reopened — vault commitments (corpus_manifest,
+indexed_body) are now required for R08 to be SATISFIED; local-only hash match
+is no longer sufficient. R09 reconciled to reflect this. R04 engineering
+complete (per-job attestations wired; chain validation in integrity job).
+R03 readiness check now verifies fail-closed telemetry enforcement.
+No checkbox below may be completed, and this draft must not be activated,
+until all nine requirements are satisfied with real per-job evidence.
 
 - [x] **R00a** task file contains 32 questions unseen during configuration selection;
 - [x] **R00b** task file and all prompts/schemas/rubrics are hashed
@@ -115,16 +117,17 @@ required real per-job evidence has been recorded.
   that does not use confirmation answers
   — SATISFIED: `rubric.validate_rubric()` passes; hash matches preregistration;
   calibration used non-confirmation pilot material only;
-- [x] **R08** task, prompt, schema, rubric, corpus, label, and manifest hashes
-  reverified
-  — SATISFIED (local artifacts): all six local artifact hashes match;
-  corpus_manifest and indexed_body require Project 008 vault for final
-  verification before activation;
+- [ ] **R08** all eight frozen inputs re-hashed and confirmed against
+  preregistration values: six local artifacts plus corpus_manifest and
+  indexed_body from Project 008 vault
+  — PENDING: local six hashes match; corpus_manifest and indexed_body require
+  Project 008 vault present (set PROJECT008_PATH) before R08 is SATISFIED;
 - [ ] **R05** randomization seed and blind-mapping custody location are locked
   — BLOCKED (Custody): requires neutral human-held custody location;
-- [x] **R09** preregistration checklist updated without changing outcome
-  thresholds or incorporating confirmation outputs
-  — SATISFIED: this update; no thresholds changed; no confirmation outputs added;
+- [x] **R09** preregistration checklist reconciled to executable gate evidence
+  without changing outcome thresholds or incorporating confirmation outputs
+  — SATISFIED (2026-08-09): R08 unchecked to reflect vault requirement;
+  no thresholds changed; no confirmation outputs added;
 - [x] no investigator has inspected confirmation outputs.
 
 If any readiness gate is absent, do not label the run confirmation.
