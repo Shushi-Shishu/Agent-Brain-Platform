@@ -1,8 +1,8 @@
 {
   "schema": "poc6c-artifact-manifest-v1",
-  "file_count": 384,
-  "total_bytes": 1659794,
-  "records_sha256": "AF13E5F854044ED0A6A93F6CA240BA51331383A5356B3D6C87D0997B88E989E0",
+  "file_count": 385,
+  "total_bytes": 1686269,
+  "records_sha256": "517B400856284969C02C5578E06E048CF92CC6062A7FACB89B5D7351DE643A4C",
   "files": [
     {
       "path": "PLAN.md",
@@ -28,6 +28,11 @@
       "path": "TASK4B_EXECUTION_HANDOFF.md",
       "size_bytes": 14711,
       "sha256": "F937772D995010F5822BB84897AAADDE3758C4BEEF0D1A630EA2102CB3F1A39C"
+    },
+    {
+      "path": "TASK4B_JUDGE_HANDOFF.md",
+      "size_bytes": 14728,
+      "sha256": "BB3C723F1B49276B67D21D17AEEECFC77D8C41F8311021B090980337FE4B4829"
     },
     {
       "path": "TASK4B_REVIEW_FEEDBACK.md",
@@ -61,8 +66,8 @@
     },
     {
       "path": "ci_packaging.py",
-      "size_bytes": 9292,
-      "sha256": "F21396912EE0F3A04347E3CA75ABDAA19B772DC5041F05AE68D0C0FA784CDD11"
+      "size_bytes": 9626,
+      "sha256": "4BCF62AA85AE2F024F67564892BACF5F507BBDCB51F78F9688FE4B18CA071511"
     },
     {
       "path": "confirmation/EVALUATION_RUBRIC_V1.md",
@@ -381,8 +386,8 @@
     },
     {
       "path": "test_role_isolation.py",
-      "size_bytes": 13758,
-      "sha256": "6DB1D05CF61B16D2C22209FCE5B3DD014BA95C968EFC3C00CE39A036C881FF5E"
+      "size_bytes": 25171,
+      "sha256": "EE9E1B57ED3BE32069074D605D98D2F6D0920A05FC0F459042AFF37452F33A3D"
     },
     {
       "path": "test_trace.py",

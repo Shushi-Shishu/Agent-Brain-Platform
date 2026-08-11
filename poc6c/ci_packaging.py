@@ -42,6 +42,27 @@ _PILOT_PATTERNS: tuple[str, ...] = (
     "workloads/boundaries/",
 )
 
+# Paths forbidden for both arm roles and the evaluator role
+_ARM_FORBIDDEN: tuple[str, ...] = (
+    "confirmation/tasks_v1.json",
+    "confirmation/sealed/design_labels_v1.json",
+    "custodian_public_key.pem",
+    "pilot/",
+    "workloads/results/",
+    "workloads/runs/",
+    "workloads/boundaries/",
+)
+
+_EVALUATOR_FORBIDDEN: tuple[str, ...] = (
+    "confirmation/tasks_v1.json",
+    "confirmation/sealed/design_labels_v1.json",
+    "custodian_public_key.pem",
+    "pilot/",
+    "workloads/results/",
+    "workloads/runs/",
+    "workloads/boundaries/",
+)
+
 # The encrypted mapping bundle is a CI output, not a repository file.
 # These names identify mapping-related custody CI artifacts.
 _MAPPING_ARTIFACT_NAMES: tuple[str, ...] = (
@@ -87,21 +108,10 @@ FORBIDDEN_ARTIFACTS_BY_ROLE: dict[str, tuple[str, ...]] = {
 # Checked by test_role_isolation.py against the tarball contents.
 FORBIDDEN_PATHS_IN_PACKAGE_BY_ROLE: dict[str, tuple[str, ...]] = {
     "preflight": (),  # preflight is the one that builds the package
-    "generic-arm": (
-        "confirmation/tasks_v1.json",
-        "confirmation/sealed/design_labels_v1.json",
-        "custodian_public_key.pem",
-    ),
-    "configured-arm": (
-        "confirmation/tasks_v1.json",
-        "confirmation/sealed/design_labels_v1.json",
-        "custodian_public_key.pem",
-    ),
+    "generic-arm": _ARM_FORBIDDEN,
+    "configured-arm": _ARM_FORBIDDEN,
     "blinding": (),   # blinding legitimately has the public key (for wrapping)
-    "evaluator": (
-        "confirmation/tasks_v1.json",
-        "confirmation/sealed/design_labels_v1.json",
-    ),
+    "evaluator": _EVALUATOR_FORBIDDEN,
     "integrity": (),  # integrity checks the full tree
 }
 
@@ -200,44 +210,44 @@ def list_filtered_package_paths(role: str, root: Path | None = None) -> list[str
 
 
 def build_filtered_package_script(role: str) -> str:
-    """Return a shell command fragment that builds a role-specific tarball.
+    """Return a Python script string that builds a role-specific tarball from
+    poc6c-package.tar.gz (the full git archive built by preflight).
 
-    Used in the GitHub Actions preflight step to create per-role packages.
-    The script is added after the full git archive, filters out forbidden paths,
-    and writes a new tarball.
+    The generated script is self-contained and suitable for embedding in a
+    GitHub Actions ``run: python - <<'PYEOF'`` block, or for exec() in tests.
+    Generator expressions are avoided to prevent exec() scoping issues.
 
-    Returns a Python-executable script fragment (as a string) suitable for
-    embedding in a workflow run: block.
+    Output file: ``poc6c-{role}-package.tar.gz``
+    GITHUB_OUTPUT key: ``{role_underscored}_pkg_sha256``
     """
     forbidden = FORBIDDEN_PATHS_IN_PACKAGE_BY_ROLE.get(role, ())
     excluded_str = repr(list(forbidden))
+    output_key = role.replace("-", "_") + "_pkg_sha256"
+    output_file = f"poc6c-{role}-package.tar.gz"
     return f"""\
-# Build role-specific package for {role}
-python - <<'PYEOF'
-import tarfile, io, hashlib, sys
+import os, tarfile, io, hashlib
 FORBIDDEN_PREFIXES = {excluded_str}
 with tarfile.open("poc6c-package.tar.gz", "r:gz") as src:
     buf = io.BytesIO()
     with tarfile.open(fileobj=buf, mode="w:gz") as dst:
         for member in src.getmembers():
             name = member.name
-            # Strip leading poc6c/ for prefix matching
             rel = name[len("poc6c/"):] if name.startswith("poc6c/") else name
-            skip = any(
-                rel == fp or rel.startswith(fp)
-                for fp in FORBIDDEN_PREFIXES
-            )
+            skip = False
+            for fp in FORBIDDEN_PREFIXES:
+                if rel == fp or rel.startswith(fp):
+                    skip = True
+                    break
             if not skip:
                 fobj = src.extractfile(member)
                 dst.addfile(member, fobj)
     data = buf.getvalue()
 sha = hashlib.sha256(data).hexdigest().upper()
-with open("poc6c-{role}-package.tar.gz", "wb") as f:
+with open("{output_file}", "wb") as f:
     f.write(data)
 with open(os.environ["GITHUB_OUTPUT"], "a") as f:
-    f.write(f"{role.replace("-","_")}_pkg_sha256={{sha}}\\n")
-print(f"Role package {role} SHA256={{sha}}")
-PYEOF
+    f.write("{output_key}=" + sha + "\\n")
+print("Role package {role} SHA256=" + sha)
 """
 
 
