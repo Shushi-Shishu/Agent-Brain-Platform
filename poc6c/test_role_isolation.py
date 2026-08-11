@@ -569,4 +569,3 @@ class TestActualTarballContents:
             assert required in paths, (
                 f"generic-arm tarball missing required module '{required}'"
             )
-

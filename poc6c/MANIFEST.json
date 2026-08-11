@@ -1,8 +1,8 @@
 {
   "schema": "poc6c-artifact-manifest-v1",
   "file_count": 385,
-  "total_bytes": 1686647,
-  "records_sha256": "9D09A41D97B0D122AB966FCB4C3BE2194FE503C5A25943D695EDF6FCA69ECCAA",
+  "total_bytes": 1686646,
+  "records_sha256": "E4F160A6EB63068651B3227B987951B774E92B87541D460D0F38F5F338ED522B",
   "files": [
     {
       "path": "PLAN.md",
@@ -386,8 +386,8 @@
     },
     {
       "path": "test_role_isolation.py",
-      "size_bytes": 25171,
-      "sha256": "EE9E1B57ED3BE32069074D605D98D2F6D0920A05FC0F459042AFF37452F33A3D"
+      "size_bytes": 25170,
+      "sha256": "9286979842C68612F1594156E00866CD0577D2B7140755CE200D59A5656B536E"
     },
     {
       "path": "test_trace.py",
