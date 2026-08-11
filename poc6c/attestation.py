@@ -44,7 +44,16 @@ _SHA256_RE = re.compile(r"^[0-9a-fA-F]{64}$")
 # The blinding stage must receive both arm outputs.
 # The evaluator receives the blinded_answer_bundle only — never the mapping_bundle.
 # The integrity stage must receive the evaluation_results digest.
+# Preflight must attest each role package by its distinct key; no downstream stage
+# may substitute the full poc6c_package hash for its filtered package identity.
 REQUIRED_ARTIFACT_EDGES: tuple[tuple[str, str, str], ...] = (
+    # preflight → role stages (package identity provenance)
+    ("preflight",              "generic_arm_pkg",        "generic-arm"),
+    ("preflight",              "configured_arm_pkg",     "configured-arm"),
+    ("preflight",              "blinding_pkg",           "deterministic-blinding"),
+    ("preflight",              "evaluator_pkg",          "blinded-evaluator"),
+    ("preflight",              "integrity_pkg",          "integrity-and-analysis"),
+    # data flow edges
     ("generic-arm",            "generic_arm_results",    "deterministic-blinding"),
     ("configured-arm",         "configured_arm_results", "deterministic-blinding"),
     ("deterministic-blinding", "blinded_answer_bundle",  "blinded-evaluator"),

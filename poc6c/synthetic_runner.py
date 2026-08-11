@@ -86,29 +86,41 @@ def _rubric_sha256() -> str:
 # Stage 1: Preflight (diagnostic)
 # ---------------------------------------------------------------------------
 
-def _stage_preflight(run_id: str) -> Attestation:
+def _stage_preflight(run_id: str) -> tuple[Attestation, dict[str, str]]:
+    """Returns (attestation, role_pkg_hashes) where role_pkg_hashes maps each
+    role-package key to a deterministic synthetic hash for this run."""
     from readiness import run_diagnostic_preflight
     run_diagnostic_preflight(skip_r08_vault=True)
-    corpus_hash = _sha256_str("synthetic-corpus-package")
-    return create_attestation(
+    role_pkg_hashes = {
+        "generic_arm_pkg":    _sha256_str(f"{run_id}-pkg-generic-arm"),
+        "configured_arm_pkg": _sha256_str(f"{run_id}-pkg-configured-arm"),
+        "blinding_pkg":       _sha256_str(f"{run_id}-pkg-blinding"),
+        "evaluator_pkg":      _sha256_str(f"{run_id}-pkg-evaluator"),
+        "integrity_pkg":      _sha256_str(f"{run_id}-pkg-integrity"),
+    }
+    att = create_attestation(
         stage            = "preflight",
         mode             = PipelineMode.DIAGNOSTIC.value,
         run_id           = run_id,
         commit_sha       = _COMMIT_SHA,
         input_hashes     = {},
-        output_hashes    = {"preflight_report": _sha256_str(f"{run_id}-preflight-ok")},
+        output_hashes    = {
+            "preflight_report": _sha256_str(f"{run_id}-preflight-ok"),
+            **role_pkg_hashes,
+        },
         runner_identity  = _RUNNER_IDENTITY,
         timestamp_utc    = _now_utc(),
         provider_model_id = None,
         is_diagnostic    = True,
     )
+    return att, role_pkg_hashes
 
 
 # ---------------------------------------------------------------------------
 # Stage 2 & 3: Arm execution (synthetic)
 # ---------------------------------------------------------------------------
 
-def _run_arm(arm: str, run_id: str, task_ids: list[str]) -> tuple[list[ArmResult], Attestation]:
+def _run_arm(arm: str, run_id: str, task_ids: list[str], role_pkg_hash: str = "") -> tuple[list[ArmResult], Attestation]:
     assert_seed_not_in_environment()
     assert_mapping_not_in_environment()
 
@@ -129,12 +141,13 @@ def _run_arm(arm: str, run_id: str, task_ids: list[str]) -> tuple[list[ArmResult
     combined_hash = _sha256_str(json.dumps(
         [r.to_dict() for r in results], sort_keys=True
     ))
+    role_pkg_key = f"{arm}_arm_pkg"
     att = create_attestation(
         stage            = f"{arm}-arm",
         mode             = PipelineMode.DIAGNOSTIC.value,
         run_id           = run_id,
         commit_sha       = _COMMIT_SHA,
-        input_hashes     = {"task_package": _sha256_str(str(task_ids))},
+        input_hashes     = {role_pkg_key: role_pkg_hash},
         output_hashes    = {f"{arm}_arm_results": combined_hash},
         runner_identity  = _RUNNER_IDENTITY,
         timestamp_utc    = _now_utc(),
@@ -152,6 +165,7 @@ def _stage_blinding(
     all_arm_results: list[ArmResult],
     run_id: str,
     task_ids: list[str],
+    blinding_pkg_hash: str = "",
 ) -> tuple[BlindedAnswerBundle, CustodyMapping, Attestation, str, str]:
     """Returns (bundle, custody, att, bundle_hash, mapping_bundle_hash).
 
@@ -187,7 +201,7 @@ def _stage_blinding(
     mapping_bundle_hash = _sha256_str(json.dumps(mapping_bundle.to_dict(), sort_keys=True))
 
     # Blinding attestation:
-    #   inputs:  both arm results (for chain validation)
+    #   inputs:  blinding_pkg + both arm results (for chain validation)
     #   outputs: blinded_answer_bundle (→ evaluator) + mapping_bundle (→ custody only)
     att = create_attestation(
         stage            = "deterministic-blinding",
@@ -195,6 +209,7 @@ def _stage_blinding(
         run_id           = run_id,
         commit_sha       = _COMMIT_SHA,
         input_hashes     = {
+            "blinding_pkg":           blinding_pkg_hash,
             "generic_arm_results":    _sha256_str(json.dumps(
                 [r.to_dict() for r in all_arm_results if r.arm == "generic"], sort_keys=True)),
             "configured_arm_results": _sha256_str(json.dumps(
@@ -220,6 +235,7 @@ def _stage_evaluator(
     bundle: BlindedAnswerBundle,
     bundle_hash: str,
     run_id: str,
+    evaluator_pkg_hash: str = "",
 ) -> tuple[EvaluatorResult, Attestation]:
     # Evaluator receives ONLY: blinded bundle + rubric. Verify no labels present.
     assert_no_label_leakage(bundle)
@@ -252,8 +268,9 @@ def _stage_evaluator(
         mode             = PipelineMode.DIAGNOSTIC.value,
         run_id           = run_id,
         commit_sha       = _COMMIT_SHA,
-        # Evaluator sees the blinded bundle only — NOT the mapping_bundle or custody material
+        # Evaluator sees evaluator_pkg + blinded bundle only — NOT mapping_bundle or custody material
         input_hashes     = {
+            "evaluator_pkg":         evaluator_pkg_hash,
             "blinded_answer_bundle": bundle_hash,
         },
         output_hashes    = {"evaluation_results": result_hash},
@@ -273,6 +290,7 @@ def _stage_integrity(
     attestations: list[Attestation],
     eval_result: EvaluatorResult,
     run_id: str,
+    integrity_pkg_hash: str = "",
 ) -> tuple[IntegrityReport, Attestation]:
     notes: list[str] = [
         "Diagnostic synthetic run — no confirmation answers generated.",
@@ -316,7 +334,10 @@ def _stage_integrity(
         mode             = PipelineMode.DIAGNOSTIC.value,
         run_id           = run_id,
         commit_sha       = _COMMIT_SHA,
-        input_hashes     = {"evaluation_results": eval_result_hash},
+        input_hashes     = {
+            "integrity_pkg":      integrity_pkg_hash,
+            "evaluation_results": eval_result_hash,
+        },
         output_hashes    = {"integrity_report": report_hash},
         runner_identity  = _RUNNER_IDENTITY,
         timestamp_utc    = _now_utc(),
@@ -351,27 +372,42 @@ def run_diagnostic_pipeline(
     attestations: list[Attestation] = []
 
     # Stage 1
-    att_preflight = _stage_preflight(run_id)
+    att_preflight, role_pkg_hashes = _stage_preflight(run_id)
     attestations.append(att_preflight)
 
     # Stages 2 & 3
-    generic_results, att_generic = _run_arm("generic", run_id, task_ids)
-    configured_results, att_configured = _run_arm("configured", run_id, task_ids)
+    generic_results, att_generic = _run_arm(
+        "generic", run_id, task_ids,
+        role_pkg_hash=role_pkg_hashes["generic_arm_pkg"],
+    )
+    configured_results, att_configured = _run_arm(
+        "configured", run_id, task_ids,
+        role_pkg_hash=role_pkg_hashes["configured_arm_pkg"],
+    )
     attestations.append(att_generic)
     attestations.append(att_configured)
 
     all_arm_results = generic_results + configured_results
 
     # Stage 4
-    bundle, custody, att_blinding, bundle_hash, mapping_bundle_hash = _stage_blinding(all_arm_results, run_id, task_ids)
+    bundle, custody, att_blinding, bundle_hash, mapping_bundle_hash = _stage_blinding(
+        all_arm_results, run_id, task_ids,
+        blinding_pkg_hash=role_pkg_hashes["blinding_pkg"],
+    )
     attestations.append(att_blinding)
 
     # Stage 5 — evaluator receives blinded bundle only, not the mapping bundle
-    eval_result, att_evaluator = _stage_evaluator(bundle, bundle_hash, run_id)
+    eval_result, att_evaluator = _stage_evaluator(
+        bundle, bundle_hash, run_id,
+        evaluator_pkg_hash=role_pkg_hashes["evaluator_pkg"],
+    )
     attestations.append(att_evaluator)
 
     # Stage 6
-    report, att_integrity = _stage_integrity(attestations, eval_result, run_id)
+    report, att_integrity = _stage_integrity(
+        attestations, eval_result, run_id,
+        integrity_pkg_hash=role_pkg_hashes["integrity_pkg"],
+    )
     attestations.append(att_integrity)
 
     # Final chain validation with all six attestations
