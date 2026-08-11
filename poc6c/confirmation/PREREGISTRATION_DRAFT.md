@@ -125,10 +125,10 @@ required real per-job evidence has been recorded.
   — BLOCKED (Custody): requires neutral human-held custody location;
 - [x] **R09** preregistration checklist updated without changing outcome
   thresholds or incorporating confirmation outputs
-  — SATISFIED (documentation gate): checklist reconciled to executable gate
-  evidence; R06/R07 marked [x]; R08/R01–R05 PENDING/BLOCKED as warranted;
-  no thresholds or confirmation outputs changed; independent acceptance of the
-  final remediation commit required before activation;
+  — PENDING (acceptance pending): checklist updated; R06/R07 marked [x]; R08/R01–R05
+  PENDING/BLOCKED as warranted; no thresholds or confirmation outputs changed;
+  independent acceptance of the final remediation commit required before R09
+  is SATISFIED and before activation;
 - [x] no investigator has inspected confirmation outputs.
 
 If any readiness gate is absent, do not label the run confirmation.

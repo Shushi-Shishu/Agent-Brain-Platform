@@ -689,11 +689,25 @@ jobs:
           print(f"Deterministic-blinding attestation SHA256={att_sha}")
           PYEOF
 
-      - name: Upload blinding outputs
+      # Split uploads: evaluator receives ONLY the blinded answer bundle.
+      # The mapping bundle goes to a separate custody-output artifact that the
+      # evaluator job never downloads.
+      - name: Upload evaluator input (blinded bundle only — no mapping)
         uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b  # v4.5.0
         with:
-          name: blinding-outputs
-          path: blinding-outputs/
+          name: evaluator-input
+          path: |
+            blinding-outputs/blinded_answer_bundle.json
+            blinding-outputs/blinded_answer_bundle.sha256
+          retention-days: 30
+
+      - name: Upload custody output (mapping bundle — never reaches evaluator)
+        uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b  # v4.5.0
+        with:
+          name: custody-output
+          path: |
+            blinding-outputs/mapping_bundle.json
+            blinding-outputs/mapping_bundle.sha256
           retention-days: 30
 
       - name: Upload deterministic-blinding attestation
@@ -756,10 +770,11 @@ jobs:
           print("OK: All custody/mapping variables absent from evaluator.")
           PYEOF
 
-      - name: Download blinding outputs
+      # Evaluator receives the blinded answer bundle only — no mapping, no seed.
+      - name: Download evaluator input (blinded bundle only)
         uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16  # v4.1.8
         with:
-          name: blinding-outputs
+          name: evaluator-input
           path: blinding-outputs/
 
       - name: Verify bundle hash and reject dry-run bundles in production
@@ -850,18 +865,14 @@ jobs:
           timestamp = datetime.now(tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
           bundle_sha = os.environ.get("BUNDLE_SHA", "").lower()
           eval_sha   = os.environ.get("EVAL_SHA", "").lower()
-          mapping_sha = ""
-          if os.path.exists("blinding-outputs/mapping_bundle.sha256"):
-              mapping_sha = open("blinding-outputs/mapping_bundle.sha256").read().strip().lower()
+          # Evaluator attestation: input is blinded_answer_bundle ONLY.
+          # The mapping_bundle is on a separate custody path and must NOT appear here.
           att = create_attestation(
               stage="blinded-evaluator",
               mode="diagnostic" if dry_run else "production",
               run_id=run_id,
               commit_sha=commit_sha,
-              input_hashes={
-                  "blinded_answer_bundle": bundle_sha,
-                  "mapping_bundle":        mapping_sha,
-              },
+              input_hashes={"blinded_answer_bundle": bundle_sha},
               output_hashes={"evaluation_results": eval_sha},
               runner_identity=runner_id,
               timestamp_utc=timestamp,
@@ -1042,7 +1053,10 @@ jobs:
           from datetime import datetime, timezone
           from pathlib import Path
           sys.path.insert(0, "poc6c")
-          from attestation import create_attestation
+          from attestation import (
+              Attestation, create_attestation, validate_attestation_chain, EXPECTED_STAGES,
+              ChainValidationError,
+          )
           from pipeline_artifacts import IntegrityReport, SCHEMA_VERSION
           from pipeline_mode import PipelineMode
 
@@ -1053,12 +1067,57 @@ jobs:
           timestamp = datetime.now(tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
           mode = "diagnostic" if dry_run else "production"
 
+          # Load evaluation results hash
+          eval_sha_path = Path("all-artifacts/evaluation-results/evaluation_results.sha256")
+          if eval_sha_path.exists():
+              eval_sha = eval_sha_path.read_text().strip().lower()
+          else:
+              # Fallback: compute from downloaded json
+              eval_json_path = Path("all-artifacts/evaluation-results/evaluation_results.json")
+              if eval_json_path.exists():
+                  eval_sha = hashlib.sha256(eval_json_path.read_bytes()).hexdigest()
+              else:
+                  print("FATAL: evaluation_results not found in all-artifacts/", file=sys.stderr)
+                  sys.exit(1)
+
+          # Re-load all upstream attestations and derive chain_valid from actual validation
+          stage_to_file = {
+              "preflight":               "attestation-preflight/preflight-attestation.json",
+              "generic-arm":             "attestation-generic-arm/generic-arm-attestation.json",
+              "configured-arm":          "attestation-configured-arm/configured-arm-attestation.json",
+              "deterministic-blinding":  "attestation-deterministic-blinding/deterministic-blinding-attestation.json",
+              "blinded-evaluator":       "attestation-blinded-evaluator/blinded-evaluator-attestation.json",
+          }
+          attestations = []
+          for stage in [s for s in EXPECTED_STAGES if s != "integrity-and-analysis"]:
+              rel_path = stage_to_file.get(stage)
+              full_path = Path("all-artifacts") / rel_path if rel_path else None
+              if full_path and full_path.exists():
+                  with open(full_path) as f:
+                      attestations.append(Attestation.from_dict(json.load(f)))
+              else:
+                  print(f"MISSING attestation for stage: {stage} — chain invalid", file=sys.stderr)
+                  attestations = []
+                  break
+
+          expected_upstream = tuple(s for s in EXPECTED_STAGES if s != "integrity-and-analysis")
+          chain_valid = False
+          chain_notes = []
+          try:
+              validate_attestation_chain(attestations, run_id, commit_sha, mode, expected_upstream)
+              chain_valid = True
+              chain_notes.append("Upstream attestation chain validated across 5 stages.")
+          except ChainValidationError as e:
+              chain_notes.append(f"Attestation chain validation failed: {e}")
+          except Exception as e:
+              chain_notes.append(f"Attestation chain validation error: {e}")
+
           report = IntegrityReport(
               schema_version=SCHEMA_VERSION,
               run_id=run_id,
               mode=mode,
-              attestation_chain_valid=True,
-              all_stages_complete=True,
+              attestation_chain_valid=chain_valid,
+              all_stages_complete=chain_valid,
               confirmation_ready=False,
               is_diagnostic=dry_run,
               notes=[
@@ -1066,7 +1125,7 @@ jobs:
                   "No confirmation answer was generated, scored, or deblinded.",
                   "R01-R05 remain BLOCKED; Task 5 must not start.",
                   "confirmation_ready=False is the only valid outcome.",
-              ],
+              ] + chain_notes,
           )
           report_json = json.dumps(report.to_dict(), sort_keys=True, indent=2)
           report_sha = hashlib.sha256(report_json.encode()).hexdigest()
@@ -1076,7 +1135,7 @@ jobs:
               mode=mode,
               run_id=run_id,
               commit_sha=commit_sha,
-              input_hashes={},
+              input_hashes={"evaluation_results": eval_sha},
               output_hashes={"integrity_report": report_sha},
               runner_identity=runner_id,
               timestamp_utc=timestamp,
@@ -1090,6 +1149,7 @@ jobs:
               json.dump(att.to_dict(), f, indent=2)
           print(f"Integrity report SHA256={report_sha.upper()}")
           print(f"Integrity attestation SHA256={att.sha256()}")
+          print(f"attestation_chain_valid={chain_valid}")
           print(json.dumps(report.to_dict(), indent=2))
           PYEOF
 

@@ -538,3 +538,94 @@ No GitHub environment, provider key, custody key, seed, or confirmation workflow
 activation may be created or executed during this remediation cycle.
 
 `Task 4B REOPENED | R01–R05 BLOCKED | R06–R07 SATISFIED | R08–R09 PENDING | Task 5 BLOCKED`
+
+## 2026-08-11 — Task 4B WP1–WP7 engineering remediation (branch `codex/task4-external-readiness`)
+
+Seven bounded remediation items from `TASK4B_REVIEW_FEEDBACK.md` applied.
+No frozen confirmation material opened, no environments or secrets created,
+no live provider called, no custody key or seed generated.
+
+### Work packages delivered
+
+**WP1 — Role isolation (`poc6c/ci_packaging.py`, `poc6c/test_role_isolation.py`)**
+
+New `ci_packaging.py` defines explicit per-role allow-lists (`FORBIDDEN_PATHS_IN_PACKAGE_BY_ROLE`,
+`FORBIDDEN_ARTIFACTS_BY_ROLE`). `list_filtered_package_paths(role)` strips forbidden
+files before packaging. `assert_role_package_clean` and `assert_evaluator_no_mapping`
+enforce invariants. 32 new tests in `test_role_isolation.py` enumerate the actual
+working-tree package for each role and assert forbidden paths absent; `test_full_tree_would_fail_arm_check`
+confirms the tests have teeth.
+
+**WP2 — Workflow artifact isolation (`.github/workflows/poc6c-confirmation.yml`)**
+
+Split the single `blinding-outputs` upload into two separate artifacts:
+- `evaluator-input` — blinded answer bundle + digest only (→ blinded-evaluator job)
+- `custody-output` — mapping bundle + digest only (→ custody path; evaluator never downloads)
+
+Evaluator download step now explicitly requests `evaluator-input`, not `blinding-outputs`.
+
+**WP3 — Attestation graph (`poc6c/attestation.py`, `poc6c/test_attestation.py`)**
+
+`REQUIRED_ARTIFACT_EDGES` corrected:
+- Removed wrong edge `mapping_bundle → blinded-evaluator`
+- Replaced with `blinded_answer_bundle → blinded-evaluator`
+- Added mandatory new edge `evaluation_results → integrity-and-analysis`
+
+Three new adversarial attestation tests added: `test_evaluator_receives_mapping_bundle_raises`,
+`test_missing_evaluator_to_integrity_edge_raises`, `test_substituted_evaluator_results_raises`.
+
+**WP4 — Synthetic runner isolation (`poc6c/synthetic_runner.py`)**
+
+`_stage_blinding` returns 5-tuple `(bundle, custody, att, bundle_hash, mapping_bundle_hash)`.
+`_stage_evaluator` signature changed to `(bundle, bundle_hash, run_id)` — no longer receives
+`mapping_bundle_hash`; attestation records only `{"blinded_answer_bundle": bundle_hash}`.
+`_stage_integrity` records actual `evaluation_results` hash as `input_hashes`.
+
+**WP5 — Workflow evaluator attestation**
+
+Evaluator `create_attestation` step: removed `mapping_bundle` from `input_hashes`;
+attestation now records only `{"blinded_answer_bundle": bundle_sha}`.
+
+**WP6 — Workflow integrity attestation**
+
+Integrity `create_attestation` step completely rewritten:
+- Loads `evaluation_results.sha256` from downloaded `all-artifacts/evaluation-results/`
+- Re-loads all five upstream attestations from `all-artifacts/`
+- Calls `validate_attestation_chain()` directly; `chain_valid` derived from result
+- `attestation_chain_valid` and `all_stages_complete` set from `chain_valid` (not hardcoded `True`)
+- `input_hashes={"evaluation_results": eval_sha}` records the mandatory graph edge
+
+**WP7 — Readiness check alignment (`poc6c/readiness.py`)**
+
+`check_github_actions_workflow()` updated to match actual workflow artifact naming:
+- Replaced stale per-job variable names (`preflight_attestation`, etc.) with
+  artifact upload names (`attestation-preflight`, `attestation-generic-arm`, etc.)
+- Replaced `aggregate_attestations` check with `validate_attestation_chain` check
+  (workflow calls it directly)
+- `ChainValidationError` check retained (now present in integrity step)
+
+**MANIFEST.json regenerated** from working tree (`artifact_manifest.py write`);
+verified immediately (`artifact_manifest.py verify`); 384 files; `.gitattributes`
+enforces `eol=lf` globally so hashes are canonical across platforms.
+
+**Status document reconciliation:**
+- `READINESS_MATRIX.md` — R09 corrected from SATISFIED → PENDING; summary counts
+  updated (SATISFIED:2, PENDING:2); stale CI evidence block (`03cc882`) annotated as
+  superseded pending new post-remediation CI run
+- `PREREGISTRATION_DRAFT.md` — R09 checkbox changed from `[x]` to `[ ]` PENDING
+
+### Requirement matrix
+
+| Req | Status | Notes |
+|---|---|---|
+| R06 | **SATISFIED** | Corpus facade check passes |
+| R07 | **SATISFIED** | Rubric calibration check passes |
+| R08 | **PENDING** | Both vault commitments required; vault absent |
+| R09 | **PENDING** | Engineering remediation applied; independent acceptance required |
+| R01–R05 | **BLOCKED** | External infrastructure not yet created |
+
+`Task 4B ENGINEERING CANDIDATE COMPLETE | R01–R05 BLOCKED | R06–R07 SATISFIED | R08–R09 PENDING | Task 5 BLOCKED`
+
+Task 4B itself is **not complete** — independent acceptance of the exact final commit
+is required before R09 can be SATISFIED and before Task 5 is unblocked.
+No confirmation answer was generated, scored, or deblinded.

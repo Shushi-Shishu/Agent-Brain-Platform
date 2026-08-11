@@ -152,7 +152,12 @@ def _stage_blinding(
     all_arm_results: list[ArmResult],
     run_id: str,
     task_ids: list[str],
-) -> tuple[BlindedAnswerBundle, CustodyMapping, Attestation, str]:
+) -> tuple[BlindedAnswerBundle, CustodyMapping, Attestation, str, str]:
+    """Returns (bundle, custody, att, bundle_hash, mapping_bundle_hash).
+
+    bundle_hash       → evaluator input (blinded_answer_bundle)
+    mapping_bundle_hash → custody output only (never reaches evaluator)
+    """
     # Synthetic seed — never persisted
     seed = generate_seed()
     rubric_sha = _rubric_sha256()
@@ -180,6 +185,10 @@ def _stage_blinding(
 
     bundle_hash = bundle.sha256()
     mapping_bundle_hash = _sha256_str(json.dumps(mapping_bundle.to_dict(), sort_keys=True))
+
+    # Blinding attestation:
+    #   inputs:  both arm results (for chain validation)
+    #   outputs: blinded_answer_bundle (→ evaluator) + mapping_bundle (→ custody only)
     att = create_attestation(
         stage            = "deterministic-blinding",
         mode             = PipelineMode.DIAGNOSTIC.value,
@@ -200,7 +209,7 @@ def _stage_blinding(
         provider_model_id = None,
         is_diagnostic    = True,
     )
-    return bundle, custody, att, mapping_bundle_hash
+    return bundle, custody, att, bundle_hash, mapping_bundle_hash
 
 
 # ---------------------------------------------------------------------------
@@ -209,7 +218,7 @@ def _stage_blinding(
 
 def _stage_evaluator(
     bundle: BlindedAnswerBundle,
-    mapping_bundle_hash: str,
+    bundle_hash: str,
     run_id: str,
 ) -> tuple[EvaluatorResult, Attestation]:
     # Evaluator receives ONLY: blinded bundle + rubric. Verify no labels present.
@@ -243,9 +252,9 @@ def _stage_evaluator(
         mode             = PipelineMode.DIAGNOSTIC.value,
         run_id           = run_id,
         commit_sha       = _COMMIT_SHA,
+        # Evaluator sees the blinded bundle only — NOT the mapping_bundle or custody material
         input_hashes     = {
-            "blinded_answer_bundle": bundle.sha256(),
-            "mapping_bundle":        mapping_bundle_hash,
+            "blinded_answer_bundle": bundle_hash,
         },
         output_hashes    = {"evaluation_results": result_hash},
         runner_identity  = _RUNNER_IDENTITY,
@@ -298,15 +307,17 @@ def _stage_integrity(
         notes                   = notes,
     )
 
+    # Integrity attestation must record the actual evaluation-result digest as input
+    eval_result_hash = _sha256_str(json.dumps(eval_result.to_dict(), sort_keys=True))
+    report_hash = _sha256_str(json.dumps(report.to_dict(), sort_keys=True))
+
     att = create_attestation(
         stage            = "integrity-and-analysis",
         mode             = PipelineMode.DIAGNOSTIC.value,
         run_id           = run_id,
         commit_sha       = _COMMIT_SHA,
-        input_hashes     = {},
-        output_hashes    = {
-            "integrity_report": _sha256_str(json.dumps(report.to_dict(), sort_keys=True))
-        },
+        input_hashes     = {"evaluation_results": eval_result_hash},
+        output_hashes    = {"integrity_report": report_hash},
         runner_identity  = _RUNNER_IDENTITY,
         timestamp_utc    = _now_utc(),
         provider_model_id = None,
@@ -352,11 +363,11 @@ def run_diagnostic_pipeline(
     all_arm_results = generic_results + configured_results
 
     # Stage 4
-    bundle, custody, att_blinding, mapping_bundle_hash = _stage_blinding(all_arm_results, run_id, task_ids)
+    bundle, custody, att_blinding, bundle_hash, mapping_bundle_hash = _stage_blinding(all_arm_results, run_id, task_ids)
     attestations.append(att_blinding)
 
-    # Stage 5
-    eval_result, att_evaluator = _stage_evaluator(bundle, mapping_bundle_hash, run_id)
+    # Stage 5 — evaluator receives blinded bundle only, not the mapping bundle
+    eval_result, att_evaluator = _stage_evaluator(bundle, bundle_hash, run_id)
     attestations.append(att_evaluator)
 
     # Stage 6

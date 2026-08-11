@@ -58,7 +58,7 @@ Full test suite result (2026-08-09, CI run 31304676125): **369 passed, 0 failed*
 | R06 | Corpus | Deterministic `FrozenCorpus` / `SearchSession` facade is the only vault access path | **SATISFIED** | `readiness.check_corpus_facade_enforced()` passes; `test_readiness.py::TestCorpusFacadeRealFile` passes. | Local | All vault access must flow through `FrozenCorpus` and `SearchSession`. | Yes |
 | R07 | Rubric | Anchored 100-point rubric dimensions, score bounds, and canonical hash verified | **SATISFIED** | `rubric.validate_rubric()` passes; hash matches preregistration; calibration scope: non-confirmation pilot material only. | Local | `EVALUATION_RUBRIC_V1.md` must remain present, hash-stable, and structurally valid. | Yes |
 | R08 | Hashes | All frozen inputs re-hashed and confirmed against `PREREGISTRATION_DRAFT.md` values | **PENDING** | Six local artifact hashes pass; `build_requirements_matrix()` requires both `corpus_manifest` and `indexed_body` vault commitments before R08 can be SATISFIED. Vault absent → PENDING. | Engineering + local | Complete vault integration: both vault hash functions must return matching evidence in the same R08 result. | Yes |
-| R09 | Process | Preregistration checklist updated to reflect current readiness without changing outcome thresholds or incorporating confirmation outputs | **SATISFIED (documentation gate)** | `PREREGISTRATION_DRAFT.md` updated: R06/R07 marked [x]; R08/R01–R05 PENDING/BLOCKED; R09 marked [x]; no thresholds or confirmation outputs changed; `check_preregistration_checklist()` passes. Independent acceptance of the final remediation commit required before activation. | Local | `check_preregistration_checklist()` must pass; independent reviewer must accept the exact commit. | Yes |
+| R09 | Process | Preregistration checklist updated to reflect current readiness without changing outcome thresholds or incorporating confirmation outputs | **PENDING** | Engineering remediation (WP1–WP7) applied to branch `codex/task4-external-readiness`; `check_preregistration_checklist()` passes locally. Status is PENDING until an independent reviewer accepts the exact final commit. | Local | `check_preregistration_checklist()` must pass; independent reviewer must accept the exact commit. | Yes |
 
 ---
 
@@ -66,9 +66,9 @@ Full test suite result (2026-08-09, CI run 31304676125): **369 passed, 0 failed*
 
 | Status | Count | IDs |
 |---|---|---|
-| **SATISFIED** | 3 | R06, R07, R09 |
+| **SATISFIED** | 2 | R06, R07 |
 | **BLOCKED** | 5 | R01, R02, R03, R04, R05 |
-| **PENDING** | 1 | R08 |
+| **PENDING** | 2 | R08, R09 |
 | **Total** | **9** | R01–R09 |
 
 **Confirmation ready: NO** — Task 5 must not start.
@@ -90,7 +90,12 @@ environment, live credential, custody key, or seed is created.
 5. ✅ Regenerate `MANIFEST.json` from clean working tree (382 files, commit `03cc882`).
 6. ✅ GitHub Actions CI run confirms `artifact_manifest.py verify` equivalent passes on the accepted commit.
 
-**J3-10 — Diagnostic CI run evidence (run 31304676125, 2026-08-09)**
+**J3-10 — Diagnostic CI run evidence (SUPERSEDED — pre-remediation commit `03cc882`)**
+
+The run below was recorded against commit `03cc882` before the WP1–WP7 remediation
+cycle on branch `codex/task4-external-readiness`. A new diagnostic CI run must be
+triggered on the accepted final remediation commit and its run URL and artifact
+hashes recorded here before Phase A item 4 can be accepted.
 
 | Field | Value |
 |---|---|

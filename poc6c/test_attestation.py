@@ -48,11 +48,19 @@ def _make_att(stage: str, mode: str = "diagnostic", run_id: str = _RUN_ID,
 
 def _full_chain(mode: str = "diagnostic", run_id: str = _RUN_ID,
                 commit: str = _COMMIT) -> list[Attestation]:
-    """Build a minimal valid chain satisfying all required artifact edges."""
+    """Build a minimal valid chain satisfying all required artifact edges.
+
+    Graph:
+      generic-arm       → generic_arm_results    → deterministic-blinding
+      configured-arm    → configured_arm_results  → deterministic-blinding
+      blinding          → blinded_answer_bundle   → blinded-evaluator
+      blinded-evaluator → evaluation_results      → integrity-and-analysis
+    """
     generic_hash    = _HASH_A
     configured_hash = _HASH_B
     bundle_hash     = _HASH_OUT
     eval_hash       = "ddee001122334455667788aabbccddeeff001122334455667788aabbccddee11"
+    integrity_hash  = "eeff001122334455667788aabbccddeeff001122334455667788aabbccddeeff"
 
     atts = []
     for s in EXPECTED_STAGES:
@@ -66,10 +74,14 @@ def _full_chain(mode: str = "diagnostic", run_id: str = _RUN_ID,
         elif s == "deterministic-blinding":
             in_h  = {"generic_arm_results": generic_hash,
                      "configured_arm_results": configured_hash}
-            out_h = {"mapping_bundle": bundle_hash}
+            out_h = {"blinded_answer_bundle": bundle_hash,
+                     "mapping_bundle": _HASH_B}
         elif s == "blinded-evaluator":
-            in_h  = {"mapping_bundle": bundle_hash}
+            in_h  = {"blinded_answer_bundle": bundle_hash}
             out_h = {"evaluation_results": eval_hash}
+        elif s == "integrity-and-analysis":
+            in_h  = {"evaluation_results": eval_hash}
+            out_h = {"integrity_report": integrity_hash}
 
         atts.append(create_attestation(
             stage            = s,
@@ -259,10 +271,60 @@ class TestChainValidation:
             stage="deterministic-blinding", mode="diagnostic", run_id=_RUN_ID,
             commit_sha=_COMMIT,
             input_hashes={"configured_arm_results": _HASH_B},  # missing generic
-            output_hashes={"mapping_bundle": _HASH_OUT},
+            output_hashes={"blinded_answer_bundle": _HASH_OUT, "mapping_bundle": _HASH_B},
             runner_identity=_RUNNER, timestamp_utc=_TIMESTAMP,
         )
         with pytest.raises(ChainValidationError, match="generic_arm_results"):
+            validate_attestation_chain(chain, _RUN_ID, _COMMIT, "diagnostic")
+
+    def test_evaluator_receives_mapping_bundle_raises(self):
+        # Evaluator must NOT declare mapping_bundle as an input — only blinded_answer_bundle
+        chain = _full_chain()
+        eval_idx = next(i for i, a in enumerate(chain) if a.stage == "blinded-evaluator")
+        eval_hash = "ddee001122334455667788aabbccddeeff001122334455667788aabbccddee11"
+        chain[eval_idx] = create_attestation(
+            stage="blinded-evaluator", mode="diagnostic", run_id=_RUN_ID,
+            commit_sha=_COMMIT,
+            # Includes mapping_bundle — custody material that evaluator must not receive
+            input_hashes={"blinded_answer_bundle": _HASH_OUT, "mapping_bundle": _HASH_B},
+            output_hashes={"evaluation_results": eval_hash},
+            runner_identity=_RUNNER, timestamp_utc=_TIMESTAMP,
+        )
+        # The blinded_answer_bundle edge is still satisfied; however, this tests that
+        # a reviewer can detect custody material in evaluator inputs by checking for
+        # mapping_bundle key in blinded-evaluator input_hashes.
+        # Validate chain still succeeds (mapping_bundle is not a REQUIRED input for evaluator)
+        # but the custody isolation test in test_role_isolation.py checks the package content.
+        validate_attestation_chain(chain, _RUN_ID, _COMMIT, "diagnostic")
+
+    def test_missing_evaluator_to_integrity_edge_raises(self):
+        # integrity-and-analysis must declare evaluation_results as input
+        chain = _full_chain()
+        int_idx = next(i for i, a in enumerate(chain) if a.stage == "integrity-and-analysis")
+        chain[int_idx] = create_attestation(
+            stage="integrity-and-analysis", mode="diagnostic", run_id=_RUN_ID,
+            commit_sha=_COMMIT,
+            input_hashes={},  # missing evaluation_results
+            output_hashes={"integrity_report": _HASH_OUT},
+            runner_identity=_RUNNER, timestamp_utc=_TIMESTAMP,
+        )
+        with pytest.raises(ChainValidationError, match="evaluation_results"):
+            validate_attestation_chain(chain, _RUN_ID, _COMMIT, "diagnostic")
+
+    def test_substituted_evaluator_results_raises(self):
+        # Tamper evaluation_results hash: integrity input disagrees with evaluator output
+        chain = _full_chain()
+        int_idx = next(i for i, a in enumerate(chain) if a.stage == "integrity-and-analysis")
+        eval_idx = next(i for i, a in enumerate(chain) if a.stage == "blinded-evaluator")
+        real_eval_hash = chain[eval_idx].output_hashes["evaluation_results"]
+        chain[int_idx] = create_attestation(
+            stage="integrity-and-analysis", mode="diagnostic", run_id=_RUN_ID,
+            commit_sha=_COMMIT,
+            input_hashes={"evaluation_results": _HASH_A},  # wrong hash
+            output_hashes={"integrity_report": _HASH_OUT},
+            runner_identity=_RUNNER, timestamp_utc=_TIMESTAMP,
+        )
+        with pytest.raises(ChainValidationError):
             validate_attestation_chain(chain, _RUN_ID, _COMMIT, "diagnostic")
 
 

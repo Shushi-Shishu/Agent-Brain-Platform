@@ -586,24 +586,25 @@ def check_github_actions_workflow(
         errors.append("Workflow has automatic triggers (push/pull_request); must be manual only")
 
     # R04: each job must emit an attestation (per-job contract)
-    required_attestation_stages = [
-        "preflight_attestation",
-        "generic_arm_attestation",
-        "configured_arm_attestation",
-        "blinding_attestation",
-        "evaluator_attestation",
+    # Artifact names used in workflow upload steps
+    required_attestation_artifacts = [
+        "attestation-preflight",
+        "attestation-generic-arm",
+        "attestation-configured-arm",
+        "attestation-deterministic-blinding",
+        "attestation-blinded-evaluator",
     ]
-    for stage_file in required_attestation_stages:
-        if stage_file not in content:
+    for artifact_name in required_attestation_artifacts:
+        if artifact_name not in content:
             errors.append(
-                f"Workflow missing per-job attestation for '{stage_file}' — "
+                f"Workflow missing per-job attestation upload for '{artifact_name}' — "
                 "R04 requires each stage to emit and upload an attestation record"
             )
 
     # R04: integrity job must validate the attestation chain
-    if "aggregate_attestations" not in content:
+    if "validate_attestation_chain" not in content:
         errors.append(
-            "Workflow integrity job does not call aggregate_attestations — "
+            "Workflow integrity job does not call validate_attestation_chain — "
             "R04 requires chain validation before producing the integrity report"
         )
     if "ChainValidationError" not in content:
@@ -1072,13 +1073,14 @@ def build_requirements_matrix(
                 "incorporating confirmation outputs."
             ),
             status=(
-                RequirementStatus.SATISFIED
+                RequirementStatus.PENDING
                 if prereg_result["passed"]
                 else RequirementStatus.PENDING
             ),
             evidence=(
-                "PREREGISTRATION_DRAFT.md updated; R06/R07/R08 gates marked [x]; "
-                "status remains Not Yet Activated; no confirmation outputs added."
+                "PREREGISTRATION_DRAFT.md updated; R06/R07 marked [x]; R08/R01–R05 "
+                "PENDING/BLOCKED; no confirmation outputs added. "
+                "R09 PENDING: independent acceptance of remediation commit required."
                 if prereg_result["passed"]
                 else "; ".join(prereg_result["errors"])
             ),
@@ -1251,6 +1253,13 @@ def run_diagnostic_preflight(
             r08_result = req.check_result
             if r08_result.get("vault_pending") and not r08_result.get("errors"):
                 # Only skip when the sole failure is vault-absent; local hashes are fine
+                continue
+        if req.req_id == "R09":
+            r09_result = req.check_result
+            if r09_result.get("passed"):
+                # Documentation work is done ([x] in checklist); status is PENDING only
+                # because independent acceptance has not yet been recorded.  This is an
+                # external gate — it does not block local diagnostic traversal.
                 continue
         unmet_local.append(req.req_id)
 

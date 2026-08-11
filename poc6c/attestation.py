@@ -41,11 +41,14 @@ _ISO8601_RE = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$")
 _SHA256_RE = re.compile(r"^[0-9a-fA-F]{64}$")
 
 # Mandatory artifact edges: each entry is (output_stage, artifact_key, input_stage)
-# The blinding stage must receive both arm outputs; evaluator must receive the bundle.
+# The blinding stage must receive both arm outputs.
+# The evaluator receives the blinded_answer_bundle only — never the mapping_bundle.
+# The integrity stage must receive the evaluation_results digest.
 REQUIRED_ARTIFACT_EDGES: tuple[tuple[str, str, str], ...] = (
     ("generic-arm",            "generic_arm_results",    "deterministic-blinding"),
     ("configured-arm",         "configured_arm_results", "deterministic-blinding"),
-    ("deterministic-blinding", "mapping_bundle",         "blinded-evaluator"),
+    ("deterministic-blinding", "blinded_answer_bundle",  "blinded-evaluator"),
+    ("blinded-evaluator",      "evaluation_results",     "integrity-and-analysis"),
 )
 
 

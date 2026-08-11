@@ -1,8 +1,8 @@
 {
   "schema": "poc6c-artifact-manifest-v1",
-  "file_count": 382,
-  "total_bytes": 1626479,
-  "records_sha256": "4CBDD71E16CE0C7362F33D581AC6F87E63AA793734C73C8C35FB58D761429FBF",
+  "file_count": 384,
+  "total_bytes": 1659794,
+  "records_sha256": "AF13E5F854044ED0A6A93F6CA240BA51331383A5356B3D6C87D0997B88E989E0",
   "files": [
     {
       "path": "PLAN.md",
@@ -11,8 +11,8 @@
     },
     {
       "path": "PROGRESS.md",
-      "size_bytes": 32902,
-      "sha256": "AA1CC7A568D7FA4751B0A27B9AC77A74E156FAA2862B2044E19094D59F7C5963"
+      "size_bytes": 37728,
+      "sha256": "20DA7144DC1AA6D32D6A52008F71ACE972E39CF5823227DAD6E0C43214AA0483"
     },
     {
       "path": "README.md",
@@ -51,13 +51,18 @@
     },
     {
       "path": "attestation.py",
-      "size_bytes": 12125,
-      "sha256": "7C3DB4A4D9B0C346276C4AD83D1AF921029570CEE9509E69B523F15153F368E4"
+      "size_bytes": 12326,
+      "sha256": "92AB73DDE2C110E021016726D67536B36E369627CD1CE0672D8968ADE37EAD6D"
     },
     {
       "path": "blinding.py",
       "size_bytes": 34520,
       "sha256": "C3C35EA875CB331046D9767D656D9E4E521020A8F29E721AE9961591CA0A55F4"
+    },
+    {
+      "path": "ci_packaging.py",
+      "size_bytes": 9292,
+      "sha256": "F21396912EE0F3A04347E3CA75ABDAA19B772DC5041F05AE68D0C0FA784CDD11"
     },
     {
       "path": "confirmation/EVALUATION_RUBRIC_V1.md",
@@ -66,13 +71,13 @@
     },
     {
       "path": "confirmation/PREREGISTRATION_DRAFT.md",
-      "size_bytes": 7063,
-      "sha256": "FABEBA5348D43626A2968A2F29ACC85B04D34D2D0EEDEAC64885271C37F34688"
+      "size_bytes": 7058,
+      "sha256": "CE698C21796A5AA26CAD43336CFC8251BF01CAA076E84FBF8855EA2B3FE62ED2"
     },
     {
       "path": "confirmation/READINESS_MATRIX.md",
-      "size_bytes": 14827,
-      "sha256": "4A3D1F33C69B53FD576F379AEDB63494A01ED753D857C7424CA37CF90BC953ED"
+      "size_bytes": 15075,
+      "sha256": "857D8BFFD2C4C273D7A85EE7FCABAC8D287EE88EAB40462DB684B282C70B00AE"
     },
     {
       "path": "confirmation/__init__.py",
@@ -281,8 +286,8 @@
     },
     {
       "path": "readiness.py",
-      "size_bytes": 50717,
-      "sha256": "944F01F0916451D9C311B8FADE21A02BF4709D46856699221F9E92B310EFD8D6"
+      "size_bytes": 51290,
+      "sha256": "4B2D281617A4A1504182E786D1996BA1C6C42F3967C14F46E01BDD96A0E67159"
     },
     {
       "path": "requirements-lock.txt",
@@ -301,8 +306,8 @@
     },
     {
       "path": "synthetic_runner.py",
-      "size_bytes": 13289,
-      "sha256": "DA3BEA0CF0411858BB2F0387B231B6CDFCB607C09018D4F1B98411A587ED4A46"
+      "size_bytes": 14022,
+      "sha256": "5A58183F3FCBED91A40339DD69A7AC998C4281871FE20CEF24C9A5B5A0457737"
     },
     {
       "path": "test_ablation.py",
@@ -321,8 +326,8 @@
     },
     {
       "path": "test_attestation.py",
-      "size_bytes": 11653,
-      "sha256": "B99E4EE9795059AEAC06DCADD1B1616040E69077D1E35A2798A70F5CC540C911"
+      "size_bytes": 15342,
+      "sha256": "5F82551659AC7BC3B4BFAE45EDFD5D303EA65F470DA3E648B236B38BC5B31B41"
     },
     {
       "path": "test_blinding.py",
@@ -373,6 +378,11 @@
       "path": "test_readiness_extended.py",
       "size_bytes": 10056,
       "sha256": "665AB6F34E9B782EF777EB1773EA37A9DBA5C31D1C20EC097D5AF50E43634516"
+    },
+    {
+      "path": "test_role_isolation.py",
+      "size_bytes": 13758,
+      "sha256": "6DB1D05CF61B16D2C22209FCE5B3DD014BA95C968EFC3C00CE39A036C881FF5E"
     },
     {
       "path": "test_trace.py",
