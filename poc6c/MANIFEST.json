@@ -1,8 +1,8 @@
 {
   "schema": "poc6c-artifact-manifest-v1",
   "file_count": 385,
-  "total_bytes": 1686269,
-  "records_sha256": "517B400856284969C02C5578E06E048CF92CC6062A7FACB89B5D7351DE643A4C",
+  "total_bytes": 1686647,
+  "records_sha256": "9D09A41D97B0D122AB966FCB4C3BE2194FE503C5A25943D695EDF6FCA69ECCAA",
   "files": [
     {
       "path": "PLAN.md",
@@ -31,8 +31,8 @@
     },
     {
       "path": "TASK4B_JUDGE_HANDOFF.md",
-      "size_bytes": 14728,
-      "sha256": "BB3C723F1B49276B67D21D17AEEECFC77D8C41F8311021B090980337FE4B4829"
+      "size_bytes": 15106,
+      "sha256": "F1C3C40E160D0EC03F0BB7425AEB5410C0C7E82D8E80B8E66A379356A7531849"
     },
     {
       "path": "TASK4B_REVIEW_FEEDBACK.md",

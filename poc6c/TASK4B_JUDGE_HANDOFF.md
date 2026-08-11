@@ -1,9 +1,10 @@
 # Task 4B Judge Handoff — Independent Acceptance Review
 
-**Submitted commit:** `82ca9413b50bd5fd60a8cd03507211100d549f50`
+**Submitted commit:** `cfe2d5b80e0e6a9722a5679d9e29a72080cf5ff7`
 **Branch:** `codex/task4-external-readiness`
 **Remote:** `https://github.com/Shushi-Shishu/Agent-Brain-Platform`
 **Base commit (rejected):** `cac1cac`
+**Prior remediation commit:** `82ca9413b50bd5fd60a8cd03507211100d549f50`
 **Review feedback contract:** `poc6c/TASK4B_REVIEW_FEEDBACK.md`
 **Date submitted:** 2026-08-11
 
@@ -24,12 +25,12 @@ Section 5 lists what remains BLOCKED/PENDING and why that is correct.
 
 ```bash
 git fetch origin codex/task4-external-readiness
-git checkout 82ca9413b50bd5fd60a8cd03507211100d549f50
-git diff --stat cac1cac..82ca941
+git checkout cfe2d5b80e0e6a9722a5679d9e29a72080cf5ff7
+git diff --stat cac1cac..cfe2d5b
 ```
 
-Expected scope: 11 files, 2 new (`poc6c/ci_packaging.py`,
-`poc6c/test_role_isolation.py`), 9 modified.
+Expected scope: 13 files, 2 new (`poc6c/ci_packaging.py`,
+`poc6c/test_role_isolation.py`), 11 modified.
 
 Files changed:
 
@@ -37,15 +38,16 @@ Files changed:
 |---|---|
 | `poc6c/attestation.py` | Artifact graph edges corrected |
 | `poc6c/test_attestation.py` | Adversarial graph tests added |
-| `poc6c/ci_packaging.py` | NEW — per-role allow-lists |
-| `poc6c/test_role_isolation.py` | NEW — 32 role isolation tests |
+| `poc6c/ci_packaging.py` | NEW — per-role allow-lists + expanded forbidden paths (pilot/, workloads/results|runs|boundaries/) |
+| `poc6c/test_role_isolation.py` | NEW — 59 role isolation tests incl. actual tarball inspection |
 | `poc6c/synthetic_runner.py` | Evaluator/integrity stage isolation |
 | `poc6c/readiness.py` | Workflow check names; R09 PENDING semantics |
-| `poc6c/MANIFEST.json` | Regenerated from 384 LF-canonical files |
+| `poc6c/MANIFEST.json` | Regenerated from 385 LF-canonical files |
 | `poc6c/PROGRESS.md` | 2026-08-11 remediation entry appended |
+| `poc6c/TASK4B_JUDGE_HANDOFF.md` | Updated with final SHA (this file) |
 | `poc6c/confirmation/READINESS_MATRIX.md` | R09 PENDING; counts corrected; CI block annotated superseded |
 | `poc6c/confirmation/PREREGISTRATION_DRAFT.md` | R09 [x] doc-done, PENDING note |
-| `.github/workflows/poc6c-confirmation.yml` | Artifact split; evaluator/integrity attestation fixed |
+| `.github/workflows/poc6c-confirmation.yml` | Role packages; evaluator isolation; 6-attestation chain |
 
 ---
 
@@ -224,7 +226,7 @@ before `ACCEPTED` can be issued** (see Section 4).
 
 ## 3. WP1–WP7 evaluation commands and results
 
-Run all commands from the repository root on commit `82ca941`.
+Run all commands from the repository root on commit `cfe2d5b`.
 
 ### pytest
 
@@ -232,11 +234,12 @@ Run all commands from the repository root on commit `82ca941`.
 python -m pytest poc6c -q
 ```
 
-**Recorded result:** `500 passed, 2 skipped, 1 warning, 117 subtests passed`
+**Recorded result:** `524 passed, 2 skipped, 1 warning, 117 subtests passed`
 
-New tests contributing to this count:
-- `poc6c/test_role_isolation.py` — 32 tests (all pass)
-- `poc6c/test_attestation.py` — 3 new adversarial tests (all pass)
+New tests contributing to this count vs prior submission:
+- `poc6c/test_role_isolation.py` — 59 tests (was 32; +27 new tests including
+  `TestActualTarballContents` which builds and inspects real tarballs)
+- `poc6c/test_attestation.py` — 3 adversarial graph tests (unchanged)
 
 ### Manifest verify
 
@@ -244,12 +247,12 @@ New tests contributing to this count:
 python poc6c/artifact_manifest.py verify --manifest poc6c/MANIFEST.json
 ```
 
-**Recorded result:** `verified manifest for 384 files`
+**Recorded result:** `verified manifest for 385 files`
 
 ### Whitespace check
 
 ```bash
-git diff --check HEAD
+git diff --check cac1cac..HEAD
 ```
 
 **Recorded result:** clean, exit 0
@@ -275,7 +278,7 @@ python poc6c/artifact_manifest.py verify --manifest /tmp/poc6c-archive/poc6c/MAN
 ```
 
 **Status:** Cannot run on Windows without WSL/bash. Judge must run on Linux.
-Expected result: `verified manifest for 384 files` — `.gitattributes eol=lf`
+Expected result: `verified manifest for 385 files` — `.gitattributes eol=lf`
 ensures LF bytes on both platforms.
 
 ---
@@ -297,7 +300,7 @@ Record the following in `poc6c/confirmation/READINESS_MATRIX.md` under the
 |---|---|
 | Run ID | (from GitHub UI) |
 | Run URL | https://github.com/Shushi-Shishu/Agent-Brain-Platform/actions/runs/`<id>` |
-| Head SHA | `82ca9413b50bd5fd60a8cd03507211100d549f50` |
+| Head SHA | `cfe2d5b80e0e6a9722a5679d9e29a72080cf5ff7` |
 | Branch | `codex/task4-external-readiness` |
 | Conclusion | success |
 | Mode | diagnostic (`dry_run=true`) |
@@ -340,7 +343,7 @@ python poc6c/artifact_manifest.py verify --manifest poc6c/MANIFEST.json
 
 If all conditions in `TASK4B_REVIEW_FEEDBACK.md § Acceptance decision rule` hold:
 
-- Issue `ACCEPTED` and record the accepted commit SHA (`82ca941`).
+- Issue `ACCEPTED` and record the accepted commit SHA (`cfe2d5b`).
 - Update `poc6c/PLAN.md` Task 4B status from `REJECTED / REOPENED` to `ACCEPTED`.
 - Update `poc6c/confirmation/READINESS_MATRIX.md` R09 from PENDING → SATISFIED.
 - Update `poc6c/PROGRESS.md` with the acceptance entry and final CI run evidence.
