@@ -1,5 +1,21 @@
 # POC 6c Progress
 
+## 2026-08-15 — Task 4B evidence commit (J3-10 pre-close documentation)
+
+Engineering remediation complete at commit `4b2e7ba`. This documentation commit
+establishes the evidence placeholder for J3-10. Actions pending:
+
+1. Trigger `workflow_dispatch` (dry_run=true) on `codex/task4-external-readiness`
+   at the evidence commit (this commit's SHA).
+2. Record CI run ID, URL, six-stage attestation SHA-256 chain, and runner identities
+   in `poc6c/confirmation/READINESS_MATRIX.md` J3-10 block.
+3. Obtain independent acceptance of the evidence commit; record accepted SHA.
+4. On acceptance: update R09 PENDING → SATISFIED in READINESS_MATRIX.md.
+
+Task 5 remains BLOCKED — R01–R05 require real production infrastructure,
+live provider credentials, OS-isolated GitHub environments, and offline custody
+key material. No synthetic or diagnostic evidence satisfies R01–R05.
+
 ## 2026-07-31 — Autonomous execution checkpoint 1
 
 Completed:

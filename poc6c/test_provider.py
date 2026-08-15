@@ -635,7 +635,6 @@ class TestCheckProviderAdapterReadiness:
         }
         p = tmp_path / "pricing_lock.json"
         p.write_text(json.dumps(lock), encoding="utf-8")
-        from poc6c.readiness import HERE
         result = check_provider_adapter(
             provider_module_path=HERE / "provider.py",
             pricing_lock_path=p,
@@ -659,7 +658,6 @@ class TestCheckProviderAdapterReadiness:
         }
         p = tmp_path / "pricing_lock.json"
         p.write_text(json.dumps(lock), encoding="utf-8")
-        from poc6c.readiness import HERE
         result = check_provider_adapter(
             provider_module_path=HERE / "provider.py",
             pricing_lock_path=p,

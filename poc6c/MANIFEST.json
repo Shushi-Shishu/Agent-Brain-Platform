@@ -1,8 +1,8 @@
 {
   "schema": "poc6c-artifact-manifest-v1",
   "file_count": 385,
-  "total_bytes": 1708043,
-  "records_sha256": "01C6EE8EF4681DCF5D24C8399F7028A1CCA75C24DC28FC7376AE7A6F28DA161C",
+  "total_bytes": 1709467,
+  "records_sha256": "4D4ABDDA499698F1B1B406CC81BD749CC5BB20012C59234E9F71829FE3C9F464",
   "files": [
     {
       "path": "PLAN.md",
@@ -11,8 +11,8 @@
     },
     {
       "path": "PROGRESS.md",
-      "size_bytes": 40219,
-      "sha256": "69714E69D0A0E716D0A757201FD3FE79A7FB7E23C5C3666DBB6E2A04683AD255"
+      "size_bytes": 41097,
+      "sha256": "4D16FC7A16F2C5E6314F7DC1C69D66A25657D818417260A53F929D672750198B"
     },
     {
       "path": "README.md",
@@ -81,8 +81,8 @@
     },
     {
       "path": "confirmation/READINESS_MATRIX.md",
-      "size_bytes": 15193,
-      "sha256": "60649BAC7596ECB610A9801E0EDF426E9F52581D0676106CD0755630EB98CA3C"
+      "size_bytes": 15821,
+      "sha256": "19DA394D513307366A13B87FEF80AF3A87754B636E20E97374E7AFD5ED0FB06E"
     },
     {
       "path": "confirmation/__init__.py",
@@ -371,8 +371,8 @@
     },
     {
       "path": "test_provider.py",
-      "size_bytes": 27588,
-      "sha256": "0ABDAAE8F12B8F58BE61F46EF8D6758BF6B3CFB7348D312B8A67E6838414C03F"
+      "size_bytes": 27506,
+      "sha256": "767D898E4BAF67D0888A26B207BAF0D5E00CFFD50026405383F4BDDD9DCABE7B"
     },
     {
       "path": "test_readiness.py",

@@ -1,6 +1,6 @@
 # Task 4 — Confirmation Readiness Matrix
 
-**Status date:** 2026-08-15 (Task 4B remediation candidate complete — pending CI run on final commit and independent acceptance review)
+**Status date:** 2026-08-15 (Task 4B engineering complete — evidence commit pending CI run and independent acceptance)
 **Overall Task 4 status: BLOCKED** — R01–R05 external evidence is absent;
 Task 5 must not start until all nine requirements are SATISFIED.  
 All ablation results remain labeled **selection-only**. No confirmation or
@@ -90,13 +90,28 @@ environment, live credential, custody key, or seed is created.
 5. ✅ Regenerate `MANIFEST.json` from clean working tree (382 files, commit `03cc882`).
 6. ✅ GitHub Actions CI run confirms `artifact_manifest.py verify` equivalent passes on the accepted commit.
 
-**J3-10 — Diagnostic CI run evidence (PENDING — new run required on final commit)**
+**J3-10 — Diagnostic CI run evidence (PENDING — engineering remediation complete at `4b2e7ba`; evidence commit pending CI run and independent acceptance)**
 
-The run recorded below (`31304676125`) was on pre-remediation commit `03cc882`.
-Run `31460878322` (on `0057977`) failed at integrity chain validation; that
-failure motivated the role-package attestation graph fix in `e915aa6`.
-A successful `workflow_dispatch` diagnostic run on the current final commit is
-required before J3-10 can be closed.
+Engineering remediation is complete at commit `4b2e7ba` (2026-08-15).
+The next required action is: trigger `workflow_dispatch` (dry_run=true) on branch
+`codex/task4-external-readiness` at the **evidence commit** — the documentation
+update commit that follows `4b2e7ba` (produced by the Task 4B pre-close sequence).
+
+J3-10 will be CLOSED only after:
+- (a) successful `workflow_dispatch` run with `conclusion=success` on the evidence commit,
+- (b) run evidence recorded in the STEP 2 block below, and
+- (c) independent acceptance of the evidence commit obtained and recorded.
+
+**STEP 2 CI run — to be recorded:**
+
+| Field | Value |
+|---|---|
+| Run ID | _(to be recorded)_ |
+| Run URL | _(to be recorded)_ |
+| Head SHA | _(evidence commit SHA — to be recorded after documentation commit is pushed)_ |
+| Branch | `codex/task4-external-readiness` |
+| Conclusion | _(to be recorded)_ |
+| Mode | _(to be recorded)_ |
 
 **Superseded evidence (pre-remediation, commit `03cc882`):**
 
