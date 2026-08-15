@@ -585,6 +585,17 @@ def check_github_actions_workflow(
     if "on:\n  push:" in content or "on:\n  pull_request:" in content:
         errors.append("Workflow has automatic triggers (push/pull_request); must be manual only")
 
+    # WP6 / J3-08: all 'uses:' lines must reference full 40-hex commit SHAs
+    import re as _re
+    _sha_pin_re = _re.compile(r"@[0-9a-f]{40}\b", _re.IGNORECASE)
+    for lineno, line in enumerate(content.splitlines(), 1):
+        stripped = line.strip()
+        if stripped.startswith("uses:") and not _sha_pin_re.search(line):
+            errors.append(
+                f"Workflow line {lineno}: '{stripped}' is not SHA-pinned — "
+                "all 'uses:' refs must end with @<40-hex-SHA> for reproducibility"
+            )
+
     # R04: each job must emit an attestation (per-job contract)
     # Artifact names used in workflow upload steps
     required_attestation_artifacts = [

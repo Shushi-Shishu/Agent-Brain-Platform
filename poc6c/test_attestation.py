@@ -211,6 +211,40 @@ class TestSingleAttestationValidation:
         with pytest.raises(ChainValidationError, match="Unknown stage"):
             validate_attestation_chain(chain, _RUN_ID, _COMMIT, "diagnostic")
 
+    def test_production_provider_stage_missing_model_id_raises(self):
+        """In production mode a provider stage (generic-arm, configured-arm,
+        blinded-evaluator) must declare a non-empty provider_model_id.
+
+        WP3 required fixture: 'absent provider identity for a production
+        provider stage' must raise ChainValidationError.
+        """
+        from attestation import _PROVIDER_STAGES
+        for provider_stage in sorted(_PROVIDER_STAGES):
+            # Build a production attestation for the provider stage with
+            # provider_model_id missing — validate_attestation_chain must reject it
+            # even when it is the only attestation in the list (per-att validation
+            # runs before cross-stage checks, so a single bad attestation is enough).
+            bad_att = create_attestation(
+                stage=provider_stage,
+                mode="production",
+                run_id=_RUN_ID,
+                commit_sha=_COMMIT,
+                input_hashes={},
+                output_hashes={"out": _HASH_OUT},
+                runner_identity=_RUNNER,
+                timestamp_utc=_TIMESTAMP,
+                provider_model_id=None,   # absent — must be rejected
+                is_diagnostic=False,
+            )
+            with pytest.raises(ChainValidationError, match="provider_model_id"):
+                # validate_attestation_chain calls _validate_single_attestation
+                # on every attestation before cross-stage checks, so a one-element
+                # list is sufficient to trigger the provider-identity guard.
+                validate_attestation_chain(
+                    [bad_att], _RUN_ID, _COMMIT, "production",
+                    expected_stages=(provider_stage,),
+                )
+
 
 class TestChainValidation:
     def test_full_chain_passes(self):

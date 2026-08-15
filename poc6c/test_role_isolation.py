@@ -404,6 +404,72 @@ class TestWorkflowStructure:
             "Integrity job must validate against EXPECTED_STAGES (all 6 stages)."
         )
 
+    def test_all_action_refs_are_sha_pinned(self):
+        """Every 'uses:' line must reference a full 40-hex commit SHA — no floating tags.
+
+        A regression to 'actions/checkout@v4' would silently unpin Actions and
+        make the workflow non-reproducible (WP6 / J3-08 static evaluation).
+        """
+        _SHA_REF_RE = re.compile(r"@[0-9a-f]{40}\b", re.IGNORECASE)
+        _FLOATING_RE = re.compile(r"uses:\s+\S+@(?!(?:[0-9a-f]{40})\b)", re.IGNORECASE)
+        text = _workflow_text()
+        floating = []
+        for i, line in enumerate(text.splitlines(), 1):
+            stripped = line.strip()
+            if stripped.startswith("uses:"):
+                if not _SHA_REF_RE.search(line):
+                    floating.append(f"  line {i}: {stripped}")
+        assert not floating, (
+            "Workflow contains floating Action refs (not SHA-pinned). "
+            "All 'uses:' lines must end with @<40-hex-SHA>.\n"
+            + "\n".join(floating)
+        )
+
+    def test_requirements_lock_has_hashes_for_all_packages(self):
+        """requirements-lock.txt must use --hash=sha256: for every package entry.
+
+        A bare 'package>=version' line would allow pip to install any matching
+        wheel, making the dependency environment non-reproducible (WP6 / J3-08).
+        """
+        lock_path = HERE / "requirements-lock.txt"
+        assert lock_path.exists(), "poc6c/requirements-lock.txt not found"
+        lines = lock_path.read_text(encoding="utf-8").splitlines()
+        # Collect non-comment, non-empty lines that look like package specs
+        pkg_lines_without_hash = []
+        i = 0
+        while i < len(lines):
+            line = lines[i].strip()
+            # Skip comments and blanks
+            if not line or line.startswith("#"):
+                i += 1
+                continue
+            # A package spec line: contains '==' or '>=' or starts with a letter
+            # followed by a version spec without --hash
+            if re.match(r"^[A-Za-z0-9_\-]+[>=!].*", line) and "--hash=" not in line:
+                # Check if the NEXT line provides hashes (continuation with \)
+                if line.endswith("\\"):
+                    # The hash should be on following lines
+                    i += 1
+                    continue
+                # Bare package line with no hash continuation
+                pkg_lines_without_hash.append(f"  {line}")
+            i += 1
+        assert not pkg_lines_without_hash, (
+            "requirements-lock.txt has package lines without --hash=sha256:.\n"
+            "Every package must be hash-locked for reproducible installs.\n"
+            + "\n".join(pkg_lines_without_hash)
+        )
+
+    def test_requirements_lock_install_flag_present(self):
+        """requirements-lock.txt must document --require-hashes installation."""
+        lock_path = HERE / "requirements-lock.txt"
+        assert lock_path.exists(), "poc6c/requirements-lock.txt not found"
+        content = lock_path.read_text(encoding="utf-8")
+        assert "--require-hashes" in content, (
+            "requirements-lock.txt must document 'pip install --require-hashes' "
+            "to enforce hash validation at install time (WP6 / J3-08)."
+        )
+
 
 # ---------------------------------------------------------------------------
 # Tarball content tests — build actual archives and inspect them

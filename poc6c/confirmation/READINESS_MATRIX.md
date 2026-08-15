@@ -1,6 +1,6 @@
 # Task 4 — Confirmation Readiness Matrix
 
-**Status date:** 2026-08-09 (Task 4B remediation in progress — engineering complete, pending independent review)
+**Status date:** 2026-08-15 (Task 4B remediation candidate complete — pending CI run on final commit and independent acceptance review)
 **Overall Task 4 status: BLOCKED** — R01–R05 external evidence is absent;
 Task 5 must not start until all nine requirements are SATISFIED.  
 All ablation results remain labeled **selection-only**. No confirmation or
@@ -90,12 +90,15 @@ environment, live credential, custody key, or seed is created.
 5. ✅ Regenerate `MANIFEST.json` from clean working tree (382 files, commit `03cc882`).
 6. ✅ GitHub Actions CI run confirms `artifact_manifest.py verify` equivalent passes on the accepted commit.
 
-**J3-10 — Diagnostic CI run evidence (SUPERSEDED — pre-remediation commit `03cc882`)**
+**J3-10 — Diagnostic CI run evidence (PENDING — new run required on final commit)**
 
-The run below was recorded against commit `03cc882` before the WP1–WP7 remediation
-cycle on branch `codex/task4-external-readiness`. A new diagnostic CI run must be
-triggered on the accepted final remediation commit and its run URL and artifact
-hashes recorded here before Phase A item 4 can be accepted.
+The run recorded below (`31304676125`) was on pre-remediation commit `03cc882`.
+Run `31460878322` (on `0057977`) failed at integrity chain validation; that
+failure motivated the role-package attestation graph fix in `e915aa6`.
+A successful `workflow_dispatch` diagnostic run on the current final commit is
+required before J3-10 can be closed.
+
+**Superseded evidence (pre-remediation, commit `03cc882`):**
 
 | Field | Value |
 |---|---|

@@ -1,8 +1,8 @@
 {
   "schema": "poc6c-artifact-manifest-v1",
   "file_count": 385,
-  "total_bytes": 1699917,
-  "records_sha256": "482BEF95A664F450DD74D99B70BF25224A076B605BB45B191220868C0A73A237",
+  "total_bytes": 1708043,
+  "records_sha256": "01C6EE8EF4681DCF5D24C8399F7028A1CCA75C24DC28FC7376AE7A6F28DA161C",
   "files": [
     {
       "path": "PLAN.md",
@@ -11,8 +11,8 @@
     },
     {
       "path": "PROGRESS.md",
-      "size_bytes": 37728,
-      "sha256": "20DA7144DC1AA6D32D6A52008F71ACE972E39CF5823227DAD6E0C43214AA0483"
+      "size_bytes": 40219,
+      "sha256": "69714E69D0A0E716D0A757201FD3FE79A7FB7E23C5C3666DBB6E2A04683AD255"
     },
     {
       "path": "README.md",
@@ -81,8 +81,8 @@
     },
     {
       "path": "confirmation/READINESS_MATRIX.md",
-      "size_bytes": 15075,
-      "sha256": "857D8BFFD2C4C273D7A85EE7FCABAC8D287EE88EAB40462DB684B282C70B00AE"
+      "size_bytes": 15193,
+      "sha256": "60649BAC7596ECB610A9801E0EDF426E9F52581D0676106CD0755630EB98CA3C"
     },
     {
       "path": "confirmation/__init__.py",
@@ -291,8 +291,8 @@
     },
     {
       "path": "readiness.py",
-      "size_bytes": 51290,
-      "sha256": "4B2D281617A4A1504182E786D1996BA1C6C42F3967C14F46E01BDD96A0E67159"
+      "size_bytes": 51823,
+      "sha256": "AACBA117AFAFDA649D8460C5B80BB2441A36109F4FD13D03E2DEDEBC99359E3B"
     },
     {
       "path": "requirements-lock.txt",
@@ -331,8 +331,8 @@
     },
     {
       "path": "test_attestation.py",
-      "size_bytes": 26631,
-      "sha256": "2D22F0065A3DC13FF16EA4BE11551186F0A5BF317B405A11CC9C202050855D03"
+      "size_bytes": 28399,
+      "sha256": "94759B9FAB120B61EAE4CDC2339BBC72A7BA23DA39D55F67BB3E7BAC4DF2AB49"
     },
     {
       "path": "test_blinding.py",
@@ -386,8 +386,8 @@
     },
     {
       "path": "test_role_isolation.py",
-      "size_bytes": 25170,
-      "sha256": "9286979842C68612F1594156E00866CD0577D2B7140755CE200D59A5656B536E"
+      "size_bytes": 28386,
+      "sha256": "867121569FE0C962AE79E856A3E6FB08C9F1D402D52C78548916AE8CFF601AD0"
     },
     {
       "path": "test_trace.py",

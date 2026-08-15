@@ -629,3 +629,61 @@ enforces `eol=lf` globally so hashes are canonical across platforms.
 Task 4B itself is **not complete** — independent acceptance of the exact final commit
 is required before R09 can be SATISFIED and before Task 5 is unblocked.
 No confirmation answer was generated, scored, or deblinded.
+
+## 2026-08-15 — Task 4B WP6/WP3 static-evaluation gap closure
+
+Adversarial audit of commit `e915aa6` against the acceptance criteria in
+`TASK4B_REVIEW_FEEDBACK.md` found three residual gaps in the required evaluation
+fixtures and one gap in the `check_github_actions_workflow()` infrastructure check.
+
+### Gaps identified and closed
+
+**WP6 — Missing static tests for immutable Action refs and dependency lock**
+
+`TASK4B_REVIEW_FEEDBACK.md` WP6 evaluation requires:
+> "Static tests reject floating Action refs and non-exact dependency specs."
+
+No test in `TestWorkflowStructure` verified SHA-pinning of `uses:` lines.
+Three tests added to `poc6c/test_role_isolation.py::TestWorkflowStructure`:
+
+| Test | What it rejects |
+|---|---|
+| `test_all_action_refs_are_sha_pinned` | Any `uses:` line not ending in `@<40-hex>` |
+| `test_requirements_lock_has_hashes_for_all_packages` | Package lines without `--hash=sha256:` |
+| `test_requirements_lock_install_flag_present` | Lock file without `--require-hashes` documentation |
+
+`check_github_actions_workflow()` in `poc6c/readiness.py` extended with a
+SHA-pin check: each `uses:` line that lacks a 40-hex SHA ref now produces an
+error entry, causing the check to return `passed=False`.
+
+**WP3 — Missing adversarial fixture for absent production provider identity**
+
+`TASK4B_REVIEW_FEEDBACK.md` WP3 evaluation requires:
+> "absent provider identity for a production provider stage... Each must fail."
+
+No test exercised the path where a production attestation for `generic-arm`,
+`configured-arm`, or `blinded-evaluator` carries `provider_model_id=None`.
+One parameterised test added to
+`poc6c/test_attestation.py::TestSingleAttestationValidation`:
+
+| Test | What it rejects |
+|---|---|
+| `test_production_provider_stage_missing_model_id_raises` | Production attestation for each provider stage with `provider_model_id=None` |
+
+### Test result
+
+```
+python -m pytest poc6c -q
+541 passed, 2 skipped, 1 warning, 117 subtests passed
+```
+
+Prior count: 537. New count: 541 (+4 tests). Zero failures.
+
+**J3-10 status:** still pending — no successful GitHub Actions run on the current
+final commit exists yet. A `workflow_dispatch` diagnostic run on the pushed final
+commit is required before independent acceptance can be issued.
+
+No confirmation answer was generated, scored, or deblinded. No frozen experimental
+input changed.
+
+`Task 4B ENGINEERING CANDIDATE COMPLETE | R01–R05 BLOCKED | R06–R07 SATISFIED | R08–R09 PENDING | Task 5 BLOCKED`
